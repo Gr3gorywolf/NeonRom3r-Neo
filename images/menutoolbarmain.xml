@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<menu xmlns:android="//schemas.android.com/apk/res/android"
+      xmlns:app="//schemas.android.com/apk/res-auto"
+      >
+  <item
+    android:id="@+id/descargartool"
+    android:icon="@drawable/download24"
+    app:showAsAction="never"
+    android:title="Actualizar directorios"/>
+</menu>
