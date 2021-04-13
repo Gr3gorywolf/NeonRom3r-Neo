@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/models/console.dart';
 import 'package:test_app/models/rom_item.dart';
-import 'package:test_app/services/roms_api_client.dart';
-import 'package:test_app/ui/components/console_list.dart';
-import 'package:test_app/ui/components/flutter_search_bar_custom.dart';
-import 'package:test_app/ui/components/rom_details.dart/rom_details.dart';
-import 'package:test_app/ui/components/unselected_placeholder.dart';
+import 'package:test_app/repository/roms_repository.dart';
+import 'package:test_app/ui/widgets/console_list.dart';
+import 'package:test_app/ui/widgets/flutter_search_bar_custom.dart';
+import 'package:test_app/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:test_app/ui/widgets/unselected_placeholder.dart';
 import 'package:animate_do/animate_do.dart';
 
 class RomsPage extends StatefulWidget {
@@ -75,7 +75,7 @@ class RomsPage_State extends State<RomsPage> {
     setState(() {
       _isLoading = true;
     });
-    var roms = await new RomsApiClient().getRoms(this._selectedConsole);
+    var roms = await new RomsRepository().fetchRoms(this._selectedConsole);
     setState(() {
       _roms = roms;
       _isLoading = false;
@@ -150,7 +150,7 @@ class RomListItem extends StatelessWidget {
         showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (context) => RomDetails(
+            builder: (context) => RomDetailsDialog(
                   infoLink: romItem.infoLink,
                 ));
       },

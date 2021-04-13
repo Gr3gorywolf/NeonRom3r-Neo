@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/ui/components/console_list.dart';
+import 'package:test_app/ui/widgets/console_list.dart';
 import 'package:test_app/utils/consoles_helper.dart';
 
-class Consoles extends StatefulWidget {
+class ConsolesPage extends StatefulWidget {
   @override
-  _ConsolesState createState() => _ConsolesState();
+  _ConsolesPageState createState() => _ConsolesPageState();
 }
 
-class _ConsolesState extends State<Consoles> {
+class _ConsolesPageState extends State<ConsolesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -52,7 +52,7 @@ class _ConsoleListState extends State<ConsoleList> {
                                 children: [
                                   Image(
                                     image: AssetImage(
-                                        'images/${_currentConsole.slug}.png'),
+                                        'assets/images/${_currentConsole.slug}.png'),
                                     height: 20,
                                     width: 20,
                                   ),

@@ -7,8 +7,8 @@ import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/models/rom_item.dart';
 import 'package:test_app/utils/constants.dart';
 
-class RomsApiClient {
-  Future<List<RomItem>> getRoms(Console console) async {
+class RomsRepository {
+  Future<List<RomItem>> fetchRoms(Console console) async {
     List<RomItem> roms = [];
     var client = new http.Client();
     var res =
@@ -23,7 +23,7 @@ class RomsApiClient {
     }
   }
 
-  Future<RomInfo> getRomDetails(String infoLink) async {
+  Future<RomInfo> fetchRomDetails(String infoLink) async {
     List<RomInfo> roms = [];
     var client = new http.Client();
     var res = await client.get(infoLink);

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/models/rom_item.dart';
-import 'package:test_app/services/roms_api_client.dart';
-import 'package:test_app/ui/components/rom_details.dart/rom_details_content.dart';
+import 'package:test_app/repository/roms_repository.dart';
+import 'package:test_app/ui/pages/rom_details_dialog/widgets/rom_details_dialog_content.dart';
 
-class RomDetails extends StatefulWidget {
-  static openModal(BuildContext context, RomItem romItem) {
+class RomDetailsDialog extends StatefulWidget {
+  static show(BuildContext context, RomItem romItem) {
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (context) => RomDetails(
+        builder: (context) => RomDetailsDialog(
               infoLink: romItem.infoLink,
             ));
   }
 
   String infoLink;
-  RomDetails({@required this.infoLink});
+  RomDetailsDialog({@required this.infoLink});
   @override
-  _RomDetailsState createState() => _RomDetailsState();
+  _RomDetailsDialogState createState() => _RomDetailsDialogState();
 }
 
-class _RomDetailsState extends State<RomDetails> {
+class _RomDetailsDialogState extends State<RomDetailsDialog> {
   bool _isLoading = false;
   RomInfo _rom;
   @override
@@ -33,7 +33,7 @@ class _RomDetailsState extends State<RomDetails> {
     setState(() {
       _isLoading = true;
     });
-    var rom = await RomsApiClient().getRomDetails(widget.infoLink);
+    var rom = await RomsRepository().fetchRomDetails(widget.infoLink);
     setState(() {
       _rom = rom;
       _isLoading = false;

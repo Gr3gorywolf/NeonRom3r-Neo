@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/models/rom_download.dart';
 import 'package:test_app/models/rom_item.dart';
-import 'package:test_app/ui/components/no_downloads_placeholder.dart';
-import 'package:test_app/ui/screens/roms.dart';
+import 'package:test_app/ui/widgets/no_downloads_placeholder.dart';
+import 'package:test_app/ui/pages/roms/roms_page.dart';
 import 'package:test_app/utils/downloads_helper.dart';
 
 class DownloadsPage extends StatefulWidget {
