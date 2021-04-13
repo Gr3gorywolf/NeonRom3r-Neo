@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/utils/animations_helper.dart';
+import 'package:test_app/utils/animation_helper.dart';
 
 class UnselectedPlaceholder extends StatelessWidget {
   @override
