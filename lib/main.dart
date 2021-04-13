@@ -1,11 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:test_app/models/console.dart';
+import 'package:test_app/providers/app_provider.dart';
 import 'package:test_app/ui/pages/downloads/downloads_page.dart';
 import 'package:test_app/ui/pages/emulators/emulators_page.dart';
 import 'package:test_app/ui/pages/roms/roms_page.dart';
 import 'package:test_app/ui/pages/settings/settings_page.dart';
+import 'package:test_app/ui/pages/splashcreen/splashcreen_page.dart';
 import 'package:test_app/ui/widgets/console_list.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:test_app/utils/downloads_helper.dart';
@@ -32,42 +35,25 @@ class MyApp extends StatelessWidget {
               labelStyle: TextStyle(color: Colors.white),
               hintStyle: TextStyle(color: Colors.grey[100]),
               helperStyle: TextStyle(color: Colors.white)),
-        
           primarySwatch: Colors.green,
           scaffoldBackgroundColor: Colors.grey[900],
           canvasColor: Color.fromARGB(200, 0, 0, 0),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: HomePage());
+        home: MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AppProvider>(
+              create: (context) => AppProvider(),
+            ),
+          ],
+          builder: (ctx, wg) {
+            var _appProvider = Provider.of<AppProvider>(ctx);
+            if (_appProvider.isAppLoaded) {
+              return HomePage();
+            } else {
+              return SplashcreenPage();
+            }
+          },
+        ));
   }
 }
-
-
-/*
-class MainNavigation extends StatefulWidget {
-  @override
-  _MainNavigationState createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<MainNavigation> {
- 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    initPlugins();
-  }
-
-  void initPlugins() async {
-    if (Platform.isAndroid) {
-      DownloadsHelper().initPaths();
-      DownloadsHelper().initDownloader();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    
-  }
-}
-*/

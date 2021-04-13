@@ -22,7 +22,8 @@ environment:
 
 dependencies:
   http: ^0.12.2
-  animate_do: ^1.7.3
+  animate_do: ^2.0.0 
+  provider: ^5.0.0
   flutter_search_bar: ^2.1.0
   flutter_downloader: ^1.5.0
   path_provider_ex: ^1.0.1
@@ -54,6 +55,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
       - assets/images/
+      - assets/icons/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

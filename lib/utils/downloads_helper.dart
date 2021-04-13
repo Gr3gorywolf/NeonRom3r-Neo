@@ -9,38 +9,16 @@ import 'package:test_app/models/rom_download.dart';
 import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/utils/constants.dart';
 import 'package:http/http.dart' as http;
+import 'package:test_app/utils/files_system_helper.dart';
 
 class DownloadsHelper {
-  initPaths() async {
-    var status = await Permission.storage.status;
-    if (status.isUndetermined || status.isDenied) {
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.storage,
-      ].request();
-      if (!statuses[0].isGranted) {
-        return;
-      }
-    }
-
-    var paths = [
-      await Constants.getDownloadsPath(),
-      await Constants.getCachePath(),
-      await Constants.getPortraitsPath()
-    ];
-    for (var path in paths) {
-      if (!await Directory(path).exists()) {
-        await Directory(path).create(recursive: true);
-      }
-    }
-  }
-
   initDownloader() async {
     WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize(debug: false);
   }
 
   downloadRom(RomInfo rom) async {
-    var downloadsPath = await Constants.getDownloadsPath();
+    var downloadsPath = FileSystemHelper.downloadsPath;
     String fileName = rom.downloadLink.split('/').last;
     final taskId = await FlutterDownloader.enqueue(
       url: rom.downloadLink,
@@ -56,7 +34,7 @@ class DownloadsHelper {
   }
 
   void catchRomPortrait(RomInfo romInfo) {
-    var portraitName = '${Constants.getPortraitsPath()}/${romInfo.name}.png';
+    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.name}.png';
     if (!File(portraitName).existsSync()) {
       http.get(romInfo.portrait).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
@@ -66,7 +44,7 @@ class DownloadsHelper {
 
   List<RomDownload> getDownloadedRoms() {
     var registryData = "[]";
-    File registryFile = File(Constants.getDownloadRegistryFile());
+    File registryFile = File(FileSystemHelper.downloadRegistryFile);
     if (registryFile.existsSync()) {
       registryData = registryFile.readAsStringSync();
     } else {
@@ -81,7 +59,7 @@ class DownloadsHelper {
   }
 
   void registerRomDownload(RomInfo downloadedRom, String downloadedPath) {
-    File registryFile = File(Constants.getDownloadRegistryFile());
+    File registryFile = File(FileSystemHelper.downloadRegistryFile);
     var downloads = getDownloadedRoms();
     var downloadIndex = downloads.indexWhere(
         (element) => element.downloadLink == downloadedRom.downloadLink);

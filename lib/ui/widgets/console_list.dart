@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/models/console.dart';
+import 'package:test_app/utils/assets_helper.dart';
 import 'package:test_app/utils/consoles_helper.dart';
 
 class ConsoleList extends StatefulWidget {
@@ -50,12 +51,8 @@ class _ConsoleListState extends State<ConsoleList> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Image(
-                                    image: AssetImage(
-                                        'assets/images/${_currentConsole.slug}.png'),
-                                    height: 20,
-                                    width: 20,
-                                  ),
+                                  AssetsHelper.getIcon(_currentConsole.slug,
+                                      size: 20),
                                   SizedBox(
                                     width: 5,
                                   ),
