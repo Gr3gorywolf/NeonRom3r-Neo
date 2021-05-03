@@ -26,11 +26,15 @@ class _RomDetailsContentState extends State<RomDetailsContent> {
         duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
   }
 
-  handlePlay() {
+  handlePlay() async {
     var downloaded = DownloadsHelper().getDownloadedRoms();
     var rom = downloaded.firstWhere(
         (element) => element.downloadLink == widget.rom.downloadLink);
-    RomsHelper.openDownloadedRom(rom);
+    Toast.show("Launching rom...", context,
+        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    await RomsHelper.openDownloadedRom(rom);
+    Toast.show("Rom launched", context,
+        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
   }
 
   @override

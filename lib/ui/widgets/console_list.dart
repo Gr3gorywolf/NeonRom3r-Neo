@@ -14,7 +14,7 @@ class ConsoleList extends StatefulWidget {
 }
 
 class _ConsoleListState extends State<ConsoleList> {
-  var _consoles = ConsolesHelper().getConsoles();
+  var _consoles = ConsolesHelper.getConsoles();
   Color getItemBackgroundColor(Console console) {
     if (widget.selectedConsole != null) {
       if (console.slug == widget.selectedConsole.slug) {

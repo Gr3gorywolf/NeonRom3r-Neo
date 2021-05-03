@@ -58,7 +58,6 @@ class DownloadsHelper {
     return downloads;
   }
 
- 
   void registerRomDownload(RomInfo downloadedRom, String downloadedPath) {
     File registryFile = File(FileSystemHelper.downloadRegistryFile);
     var downloads = getDownloadedRoms();

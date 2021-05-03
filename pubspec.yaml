@@ -29,6 +29,8 @@ dependencies:
   path_provider_ex: ^1.0.1 
   permission_handler: 5.1.0+2
   toast: ^0.1.5
+  device_apps: ^2.1.1
+  android_intent: ^2.0.0
   flutter:
     sdk: flutter
 

@@ -1,5 +1,6 @@
 class Console {
-  Console({this.name, this.slug});
+  Console({this.name,this.altName, this.slug});
   String name;
   String slug;
+  String altName;
 }

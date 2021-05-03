@@ -10,6 +10,7 @@ import 'package:test_app/utils/assets_helper.dart';
 import 'package:test_app/utils/constants.dart';
 import 'package:test_app/utils/downloads_helper.dart';
 import 'package:test_app/utils/files_system_helper.dart';
+import 'package:test_app/utils/roms_helper.dart';
 
 class SplashcreenPage extends StatefulWidget {
   @override
@@ -27,10 +28,12 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
     if (Platform.isAndroid) {
       await FileSystemHelper.initPaths();
       await initPlugins();
+      await RomsHelper.catchEmulatorsIntents();
       Provider.of<DownloadProvider>(context, listen: false)
           .initDownloadsListener();
     }
-    Provider.of<AppProvider>(context, listen: false).setAppLoaded(true);
+    Future.delayed(Duration(milliseconds: 2000)).then((value) =>
+        {Provider.of<AppProvider>(context, listen: false).setAppLoaded(true)});
   }
 
   Future initPlugins() async {

@@ -27,6 +27,10 @@ class FileSystemHelper {
     return cachePath + "/downloads.json";
   }
 
+  static get emulatorIntentsFile {
+    return cachePath + "/emulatorIntents.json";
+  }
+
   //root-path initializer
   static _initRootPath() async {
     var rootPath = "";
@@ -35,10 +39,7 @@ class FileSystemHelper {
       if (storageInfo.length > 0) {
         rootPath = storageInfo[0].rootDir;
       }
-    } on PlatformException catch (er) {
-      print(er.message);
-    }
-    print(">>>" + rootPath);
+    } on PlatformException catch (er) {}
     _rootPath = rootPath;
   }
 
