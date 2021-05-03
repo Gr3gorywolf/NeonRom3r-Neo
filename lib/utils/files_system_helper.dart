@@ -20,11 +20,11 @@ class FileSystemHelper {
   }
 
   static get portraitsPath {
-    return _rootPath + "/portraits";
+    return cachePath + "/portraits";
   }
 
   static get downloadRegistryFile {
-    return _rootPath + "/downloads.json";
+    return cachePath + "/downloads.json";
   }
 
   //root-path initializer
@@ -35,7 +35,10 @@ class FileSystemHelper {
       if (storageInfo.length > 0) {
         rootPath = storageInfo[0].rootDir;
       }
-    } on PlatformException {}
+    } on PlatformException catch (er) {
+      print(er.message);
+    }
+    print(">>>" + rootPath);
     _rootPath = rootPath;
   }
 
@@ -46,7 +49,8 @@ class FileSystemHelper {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.storage,
       ].request();
-      if (!statuses[0].isGranted) {
+      var status = statuses[Permission.storage];
+      if (!status.isGranted) {
         return;
       }
     }

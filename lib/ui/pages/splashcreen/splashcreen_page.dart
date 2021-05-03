@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_app/providers/app_provider.dart';
+import 'package:test_app/providers/download_provider.dart';
 import 'package:test_app/utils/animation_helper.dart';
 import 'package:test_app/utils/assets_helper.dart';
 import 'package:test_app/utils/constants.dart';
@@ -26,11 +27,13 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
     if (Platform.isAndroid) {
       await FileSystemHelper.initPaths();
       await initPlugins();
+      Provider.of<DownloadProvider>(context, listen: false)
+          .initDownloadsListener();
     }
     Provider.of<AppProvider>(context, listen: false).setAppLoaded(true);
   }
 
-  void initPlugins() async {
+  Future initPlugins() async {
     DownloadsHelper().initDownloader();
   }
 
@@ -41,8 +44,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
             child: FadeOut(
       duration: Duration(milliseconds: 2000),
       manualTrigger: true,
-      controller: (controller) =>
-          AnimationHelper.handleAnimation(controller),
+      controller: (controller) => AnimationHelper.handleAnimation(controller),
       child: AssetsHelper.getImage("logo", size: 250),
     )));
   }

@@ -8,6 +8,7 @@ class NoDownloadsPlaceholder extends StatelessWidget {
       child: Center(
         heightFactor: 2,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.download_sharp,

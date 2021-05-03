@@ -29,6 +29,7 @@ class RomDownload {
         size: this.size);
   }
 
+
   RomDownload(
       {this.filePath,
       this.name,

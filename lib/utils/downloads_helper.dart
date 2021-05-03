@@ -33,7 +33,7 @@ class DownloadsHelper {
     catchRomPortrait(rom);
   }
 
-  void catchRomPortrait(RomInfo romInfo) {
+  void catchRomPortrait(RomInfo romInfo) async {
     var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.name}.png';
     if (!File(portraitName).existsSync()) {
       http.get(romInfo.portrait).then((response) {
@@ -48,7 +48,7 @@ class DownloadsHelper {
     if (registryFile.existsSync()) {
       registryData = registryFile.readAsStringSync();
     } else {
-      registryFile.createSync();
+      return [];
     }
     var registryObject = json.decode(registryData);
     List<RomDownload> downloads = [];
@@ -58,6 +58,7 @@ class DownloadsHelper {
     return downloads;
   }
 
+ 
   void registerRomDownload(RomInfo downloadedRom, String downloadedPath) {
     File registryFile = File(FileSystemHelper.downloadRegistryFile);
     var downloads = getDownloadedRoms();

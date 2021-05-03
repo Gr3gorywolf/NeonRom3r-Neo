@@ -26,8 +26,8 @@ dependencies:
   provider: ^5.0.0
   flutter_search_bar: ^2.1.0
   flutter_downloader: ^1.5.0
-  path_provider_ex: ^1.0.1
-  permission_handler: ^5.0.1+1
+  path_provider_ex: ^1.0.1 
+  permission_handler: 5.1.0+2
   toast: ^0.1.5
   flutter:
     sdk: flutter

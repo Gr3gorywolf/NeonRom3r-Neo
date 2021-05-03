@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/models/console.dart';
-import 'package:test_app/models/rom_item.dart';
+import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/repository/roms_repository.dart';
 import 'package:test_app/ui/widgets/console_list.dart';
 import 'package:test_app/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:test_app/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:test_app/ui/widgets/rom_list.dart';
 import 'package:test_app/ui/widgets/unselected_placeholder.dart';
 import 'package:animate_do/animate_do.dart';
 
@@ -18,7 +19,7 @@ final _romsScaffoldKey = GlobalKey<ScaffoldState>();
 
 class RomsPage_State extends State<RomsPage> {
   Console _selectedConsole = null;
-  List<RomItem> _roms = [];
+  List<RomInfo> _roms = [];
   bool _isLoading = false;
   String _searchQuery = "";
   SearchBar searchBar;
@@ -63,7 +64,7 @@ class RomsPage_State extends State<RomsPage> {
         });
   }
 
-  List<RomItem> getFilteredRoms() {
+  List<RomInfo> getFilteredRoms() {
     return _roms
         .where((element) => element.name
             .toLowerCase()
@@ -103,75 +104,12 @@ class RomsPage_State extends State<RomsPage> {
             ),
             (this._selectedConsole == null
                 ? UnselectedPlaceholder()
-                : RomList(
-                    isLoading: this._isLoading, roms: this.getFilteredRoms())),
+                : Expanded(
+                    child: RomList(
+                        isLoading: this._isLoading,
+                        roms: this.getFilteredRoms()),
+                  )),
           ],
         ));
-  }
-}
-
-class RomList extends StatelessWidget {
-  bool isLoading = false;
-  List<RomItem> roms;
-  RomList({this.isLoading, this.roms});
-  @override
-  Widget build(BuildContext context) {
-    return (this.isLoading
-        ? Expanded(child: Center(child: CircularProgressIndicator()))
-        : Expanded(
-            child: Scrollbar(
-              isAlwaysShown: kIsWeb,
-                          child: ListView.separated(
-                  padding: EdgeInsets.all(10),
-                  separatorBuilder: (context, index) {
-                    return Divider(
-                      thickness: 0.2,
-                      color: Colors.white,
-                    );
-                  },
-                  itemCount: this.roms.length,
-                  itemBuilder: (ctx, index) {
-                    return FadeIn(
-                        duration: Duration(seconds: 2),
-                        child: RomListItem(romItem: this.roms[index]));
-                  }),
-            ),
-          ));
-  }
-}
-
-class RomListItem extends StatelessWidget {
-  final RomItem romItem;
-  RomListItem({this.romItem});
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => RomDetailsDialog(
-                  infoLink: romItem.infoLink,
-                ));
-      },
-      contentPadding: EdgeInsets.all(5),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: Image.network(
-          romItem.portrait,
-          height: 50,
-          width: 50,
-          fit: BoxFit.cover,
-        ),
-      ),
-      title: Text(
-        romItem.name,
-        style: TextStyle(color: Colors.white),
-      ),
-      subtitle: Text(
-        romItem.region,
-        style: TextStyle(color: Colors.white),
-      ),
-    );
   }
 }
