@@ -24,7 +24,7 @@ class FileSystemHelper {
   }
 
   static get downloadRegistryFile {
-    return cachePath + "/downloads.json";
+    return cachePath + "/downloads-neo.json";
   }
 
   static get emulatorIntentsFile {

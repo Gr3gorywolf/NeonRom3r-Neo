@@ -71,4 +71,27 @@ class DownloadsHelper {
     var jsonData = json.encode(downloads);
     registryFile.writeAsStringSync(jsonData);
   }
+
+  //import the downloaded roms from the old version of neonrom3r
+  void importOldRoms() async {
+    var registryData = "[]";
+    File registryFile = File(FileSystemHelper.cachePath + "/downloads.json");
+    if (registryFile.existsSync()) {
+      registryData = registryFile.readAsStringSync();
+      var oldDownloads = json.decode(registryData);
+      for (var oldDownload in oldDownloads) {
+        if (oldDownload['path'] != null) {
+          registerRomDownload(
+              RomInfo(
+                  console: oldDownload['consola'],
+                  downloadLink: oldDownload['linkdescarga'],
+                  name: oldDownload['nombre'],
+                  portrait: oldDownload['portadalink'],
+                  region: "--",
+                  size: "--"),
+              oldDownload['path']);
+        }
+      }
+    }
+  }
 }

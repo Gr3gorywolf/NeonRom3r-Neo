@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/repository/roms_repository.dart';
-import 'package:test_app/ui/pages/rom_details_dialog/widgets/rom_details_dialog_content.dart';
+import 'package:test_app/ui/pages/rom_details_dialog/widgets/rom_details_bottom_sheet.dart';
 
 class RomDetailsDialog extends StatefulWidget {
   static show(BuildContext context, RomInfo romItem) {
@@ -26,17 +26,10 @@ class _RomDetailsDialogState extends State<RomDetailsDialog> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: _isLoading
-            ? CircularProgressIndicator()
-            : RomDetailsContent(
-                rom: widget.rom,
-              ),
-      ),
+    return RomDetailsBottomSheet(
+      widget.rom,
     );
   }
 }

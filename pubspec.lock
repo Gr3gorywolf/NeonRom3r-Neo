@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  any_widget_marquee:
+    dependency: "direct main"
+    description:
+      name: any_widget_marquee
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   async:
     dependency: transitive
     description:
@@ -123,6 +130,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.12.10"
+  material_segmented_control:
+    dependency: "direct main"
+    description:
+      name: material_segmented_control
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.1.2"
   meta:
     dependency: transitive
     description:

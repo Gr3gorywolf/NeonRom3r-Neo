@@ -20,6 +20,7 @@ class DownloadProvider extends ChangeNotifier {
   List<RomDownload> _downloadRegistry = [];
   List<DownloadInfo> _downloads = [];
   List<DownloadInfo> get downloads => _downloads;
+  List<RomDownload> get downloadsRegistry => _downloadRegistry;
 
   bool isRomDownloading(RomInfo rom) {
     return !_downloads

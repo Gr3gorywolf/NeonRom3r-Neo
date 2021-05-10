@@ -4,38 +4,44 @@ import 'package:flutter/material.dart';
 import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:test_app/ui/widgets/download_indicator.dart';
+import 'package:test_app/utils/consoles_helper.dart';
 
 class RomList extends StatelessWidget {
   bool isLoading = false;
   List<RomInfo> roms;
-  RomList({this.isLoading, this.roms});
+  bool showConsole;
+  RomList({this.isLoading, this.roms, this.showConsole = false});
   @override
   Widget build(BuildContext context) {
     return (this.isLoading
         ? Center(child: CircularProgressIndicator())
         : Scrollbar(
-          isAlwaysShown: kIsWeb,
-          child: ListView.separated(
-              padding: EdgeInsets.all(10),
-              separatorBuilder: (context, index) {
-                return Divider(
-                  thickness: 0.2,
-                  color: Colors.white,
-                );
-              },
-              itemCount: this.roms.length,
-              itemBuilder: (ctx, index) {
-                return FadeIn(
-                    duration: Duration(seconds: 2),
-                    child: RomListItem(romItem: this.roms[index]));
-              }),
-        ));
+            isAlwaysShown: kIsWeb,
+            child: ListView.separated(
+                padding: EdgeInsets.all(10),
+                separatorBuilder: (context, index) {
+                  return Divider(
+                    thickness: 0.2,
+                    color: Colors.white,
+                  );
+                },
+                itemCount: this.roms.length,
+                itemBuilder: (ctx, index) {
+                  return FadeIn(
+                      duration: Duration(seconds: 2),
+                      child: RomListItem(
+                        romItem: this.roms[index],
+                        showConsole: showConsole,
+                      ));
+                }),
+          ));
   }
 }
 
 class RomListItem extends StatelessWidget {
   final RomInfo romItem;
-  RomListItem({this.romItem});
+  bool showConsole;
+  RomListItem({this.romItem, this.showConsole = false});
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -61,9 +67,23 @@ class RomListItem extends StatelessWidget {
         romItem.name,
         style: TextStyle(color: Colors.white),
       ),
-      subtitle: Text(
-        romItem.region,
-        style: TextStyle(color: Colors.white),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showConsole)
+            Text(
+              ConsolesHelper.getConsoleFromName(romItem.console).name,
+              style: TextStyle(color: Colors.white70),
+            ),
+          SizedBox(
+            height: 2,
+          ),
+          Text(
+            romItem.region,
+            style: TextStyle(color: Colors.white54),
+          ),
+        ],
       ),
       trailing: DownloadIndicator(romItem),
     );

@@ -29,6 +29,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
       await FileSystemHelper.initPaths();
       await initPlugins();
       await RomsHelper.catchEmulatorsIntents();
+      await DownloadsHelper().importOldRoms();
       Provider.of<DownloadProvider>(context, listen: false)
           .initDownloadsListener();
     }

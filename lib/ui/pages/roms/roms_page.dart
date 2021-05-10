@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:test_app/models/console.dart';
 import 'package:test_app/models/rom_info.dart';
 import 'package:test_app/repository/roms_repository.dart';
+import 'package:test_app/ui/pages/console_roms/console_roms_page.dart';
 import 'package:test_app/ui/widgets/console_list.dart';
+import 'package:test_app/ui/widgets/console_tile.dart';
 import 'package:test_app/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:test_app/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:test_app/ui/widgets/rom_list.dart';
 import 'package:test_app/ui/widgets/unselected_placeholder.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:test_app/utils/consoles_helper.dart';
 
 class RomsPage extends StatefulWidget {
   @override
@@ -18,98 +21,32 @@ class RomsPage extends StatefulWidget {
 final _romsScaffoldKey = GlobalKey<ScaffoldState>();
 
 class RomsPage_State extends State<RomsPage> {
-  Console _selectedConsole = null;
-  List<RomInfo> _roms = [];
-  bool _isLoading = false;
-  String _searchQuery = "";
-  SearchBar searchBar;
-  String getTitle() {
-    if (_selectedConsole != null) {
-      return "${_selectedConsole.name} roms";
-    } else {
-      return "Select a console";
-    }
-  }
-
-  AppBar getDefaultAppbar() {
-    return AppBar(
-      title: Text(this.getTitle()),
-      actions: [searchBar.getSearchAction(context)],
-    );
-  }
-
-  RomsPage_State() {
-    searchBar = new SearchBar(
-        setState: setState,
-        inBar: true,
-        closeOnSubmit: false,
-        clearOnSubmit: false,
-        onSubmitted: (search) {
-          setState(() {
-            this._searchQuery = search;
-          });
-        },
-        onCleared: () {
-          setState(() {
-            this._searchQuery = "";
-          });
-        },
-        onClosed: () {
-          setState(() {
-            this._searchQuery = "";
-          });
-        },
-        buildDefaultAppBar: (context) {
-          return getDefaultAppbar();
-        });
-  }
-
-  List<RomInfo> getFilteredRoms() {
-    return _roms
-        .where((element) => element.name
-            .toLowerCase()
-            .contains(this._searchQuery.toLowerCase()))
-        .toList();
-  }
-
-  void fetchRoms() async {
-    setState(() {
-      _isLoading = true;
-    });
-    var roms = await new RomsRepository().fetchRoms(this._selectedConsole);
-    setState(() {
-      _roms = roms;
-      _isLoading = false;
-    });
-  }
+  List<Console> _consoles = ConsolesHelper.getConsoles();
 
   @override
   Widget build(BuildContext bldContext) {
     return Scaffold(
         key: _romsScaffoldKey,
-        appBar: searchBar.build(context),
-        body: Column(
-          children: [
-            ConsoleList(
-              selectedConsole: this._selectedConsole,
-              onConsoleSelected: (console) {
-                setState(() {
-                  this._selectedConsole = console;
-                });
-                setState(() {
-                  this._searchQuery = "";
-                });
-                this.fetchRoms();
-              },
-            ),
-            (this._selectedConsole == null
-                ? UnselectedPlaceholder()
-                : Expanded(
-                    child: RomList(
-                        isLoading: this._isLoading,
-                        roms: this.getFilteredRoms()),
-                  )),
-          ],
+        appBar: AppBar(
+          title: Text("Roms"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: GridView.count(
+            crossAxisCount: 3,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: List.generate(_consoles.length, (index) {
+              var _console = _consoles[index];
+              return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            ConsoleRomsPage(_console)));
+                  },
+                  child: FadeInUp(delay: Duration(milliseconds: 50 * index),child: ConsoleTile(_console)));
+            }),
+          ),
         ));
   }
 }

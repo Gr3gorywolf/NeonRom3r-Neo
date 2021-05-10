@@ -7,7 +7,9 @@ import 'package:test_app/utils/consoles_helper.dart';
 class ConsoleList extends StatefulWidget {
   final Function(Console) onConsoleSelected;
   Console selectedConsole;
-  ConsoleList({@required this.onConsoleSelected, this.selectedConsole});
+  List<Console> consoles;
+  ConsoleList(
+      {@required this.onConsoleSelected, this.selectedConsole, this.consoles});
 
   @override
   _ConsoleListState createState() => _ConsoleListState();
@@ -15,6 +17,14 @@ class ConsoleList extends StatefulWidget {
 
 class _ConsoleListState extends State<ConsoleList> {
   var _consoles = ConsolesHelper.getConsoles();
+  @override
+  void initState() {
+    super.initState();
+    if (widget.consoles != null) {
+      _consoles = widget.consoles;
+    }
+  }
+
   Color getItemBackgroundColor(Console console) {
     if (widget.selectedConsole != null) {
       if (console.slug == widget.selectedConsole.slug) {
