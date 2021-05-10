@@ -9,10 +9,10 @@ class ConsoleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+     /* decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.all(Radius.circular(18)),
-          border: Border.all(color: Colors.green, width: 1.5)),
+          border: Border.all(color: Colors.green, width: 1.5)),*/
       child: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Center(
