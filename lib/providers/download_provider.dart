@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:provider/provider.dart';
-import 'package:test_app/models/download_info.dart';
-import 'package:test_app/models/rom_download.dart';
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/utils/downloads_helper.dart';
-import 'package:test_app/utils/files_system_helper.dart';
+import 'package:neonrom3r/models/download_info.dart';
+import 'package:neonrom3r/models/rom_download.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/downloads_helper.dart';
+import 'package:neonrom3r/utils/files_system_helper.dart';
 
 class DownloadProvider extends ChangeNotifier {
   static DownloadProvider of(BuildContext ctx) {
@@ -34,6 +34,18 @@ class DownloadProvider extends ChangeNotifier {
     try {
       var info = _downloads
           .where((element) => element.download.downloadLink == rom.downloadLink)
+          .first;
+
+      return info;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  RomDownload getDownloadedRomInfo(RomInfo rom){
+    try {
+      var info = _downloadRegistry
+          .where((element) => element.downloadLink == rom.downloadLink)
           .first;
 
       return info;

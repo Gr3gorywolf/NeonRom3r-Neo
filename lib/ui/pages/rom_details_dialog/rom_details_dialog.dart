@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/repository/roms_repository.dart';
-import 'package:test_app/ui/pages/rom_details_dialog/widgets/rom_details_bottom_sheet.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/repository/roms_repository.dart';
+import 'package:neonrom3r/ui/pages/rom_details_dialog/widgets/rom_details_bottom_sheet.dart';
 
 class RomDetailsDialog extends StatefulWidget {
   static show(BuildContext context, RomInfo romItem) {

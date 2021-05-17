@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:test_app/providers/app_provider.dart';
-import 'package:test_app/providers/download_provider.dart';
-import 'package:test_app/utils/animation_helper.dart';
-import 'package:test_app/utils/assets_helper.dart';
-import 'package:test_app/utils/constants.dart';
-import 'package:test_app/utils/downloads_helper.dart';
-import 'package:test_app/utils/files_system_helper.dart';
-import 'package:test_app/utils/roms_helper.dart';
+import 'package:neonrom3r/providers/app_provider.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/utils/animation_helper.dart';
+import 'package:neonrom3r/utils/assets_helper.dart';
+import 'package:neonrom3r/utils/constants.dart';
+import 'package:neonrom3r/utils/downloads_helper.dart';
+import 'package:neonrom3r/utils/files_system_helper.dart';
+import 'package:neonrom3r/utils/roms_helper.dart';
 
 class SplashcreenPage extends StatefulWidget {
   @override

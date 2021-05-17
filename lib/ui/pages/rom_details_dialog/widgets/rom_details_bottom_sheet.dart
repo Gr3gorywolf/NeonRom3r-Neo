@@ -2,13 +2,15 @@ import 'package:animate_do/animate_do.dart';
 import 'package:any_widget_marquee/any_widget_marquee.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/providers/download_provider.dart';
-import 'package:test_app/ui/pages/rom_details_dialog/widgets/rom_details_action_button.dart';
-import 'package:test_app/ui/widgets/download_spinner.dart';
-import 'package:test_app/utils/alerts_helpers.dart';
-import 'package:test_app/utils/downloads_helper.dart';
-import 'package:test_app/utils/roms_helper.dart';
+import 'package:provider/provider.dart';
+import 'package:share/share.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/ui/pages/rom_details_dialog/widgets/rom_details_action_button.dart';
+import 'package:neonrom3r/ui/widgets/download_spinner.dart';
+import 'package:neonrom3r/utils/alerts_helpers.dart';
+import 'package:neonrom3r/utils/downloads_helper.dart';
+import 'package:neonrom3r/utils/roms_helper.dart';
 import 'package:toast/toast.dart';
 
 class RomDetailsBottomSheet extends StatefulWidget {
@@ -21,6 +23,34 @@ class RomDetailsBottomSheet extends StatefulWidget {
 class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   double _iconsSize = 30;
 
+  DownloadProvider get _downloadProvider{
+           return Provider.of<DownloadProvider>(context, listen: false);
+  } 
+   
+  shareFile(){
+    var downloadedRom =  _downloadProvider.getDownloadedRomInfo(widget.rom);
+     Share.shareFiles([downloadedRom.filePath],
+         text:"${widget.rom.name}\n shared and downloaded from NeonRom3r");
+  }
+  shareLink() {
+    var normalizedLink = Uri.decodeFull(widget.rom.downloadLink).toString();
+    Share.share(
+        "Download link for the rom: ${widget.rom.name}\n ${normalizedLink}\n shared from NeonRom3r");
+  }
+
+  handleShare() {
+    bool isRomDownloaded =  _downloadProvider.isRomReadyToPlay(widget.rom);
+    AlertsHelpers.showAlert(
+        context, "Rom share", "How do you want to share your rom?",
+        cancelable: true,
+        additionalAction:isRomDownloaded?buildShareFileAction():null ,
+        acceptTitle: "Download link", callback: shareLink);
+  }
+ buildShareFileAction(){
+    return FlatButton(
+                  onPressed:shareFile,
+                  child: Text("Rom file"));
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -33,6 +63,12 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 80,
+              height: 2,
+              color: Colors.green,
+              margin: EdgeInsets.only(bottom: 10),
+            ),
             //Rom details row
             Row(
               children: [
@@ -81,7 +117,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                   width: 12,
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: handleShare,
                   icon: Icon(
                     Icons.share,
                     size: _iconsSize,

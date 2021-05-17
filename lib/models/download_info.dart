@@ -1,4 +1,4 @@
-import 'package:test_app/models/rom_download.dart';
+import 'package:neonrom3r/models/rom_download.dart';
 
 class DownloadInfo {
   RomDownload download;

@@ -1,8 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/models/console.dart';
-import 'package:test_app/utils/assets_helper.dart';
-import 'package:test_app/utils/consoles_helper.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/utils/assets_helper.dart';
+import 'package:neonrom3r/utils/consoles_helper.dart';
 
 class ConsoleList extends StatefulWidget {
   final Function(Console) onConsoleSelected;

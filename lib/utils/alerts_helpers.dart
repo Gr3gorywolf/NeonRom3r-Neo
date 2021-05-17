@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AlertsHelpers {
- /* static showSnackbar(BuildContext ctx, String text,
+  /* static showSnackbar(BuildContext ctx, String text,
       {String title = "Error",
       IconData icon = null,
       int duration = 1,
@@ -95,27 +95,43 @@ class AlertsHelpers {
       {Function callback = null,
       Function onClose = null,
       bool cancelable = false,
-      String acceptTitle = "Ok"}) {
+      String acceptTitle = "Ok",
+      FlatButton additionalAction = null}) {
     showDialog(
         context: ctx,
         barrierDismissible: cancelable,
         builder: (cont) {
           return AlertDialog(
-            title: Text(title),
-            content: Text(text),
+            title: Text(
+              title,
+              style: TextStyle(color: Colors.green),
+            ),
+            backgroundColor: Colors.grey[900],
+            content: Text(text, style: TextStyle(color: Colors.green)),
             actions: [
               if (cancelable || onClose != null)
                 FlatButton(
+                  textColor: Colors.red,
                     onPressed: () {
                       Navigator.pop(ctx);
-                      if(onClose != null){
+                      if (onClose != null) {
                         onClose();
                       }
                     },
-                    child: Text("No")),
+                    child: Text("Cancel")),
               SizedBox(
                 width: 10,
               ),
+              if (additionalAction != null)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    additionalAction,
+                    SizedBox(
+                      width: 10,
+                    ),
+                  ],
+                ),
               FlatButton(
                   onPressed: () {
                     Navigator.pop(ctx);

@@ -1,10 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/models/download_info.dart';
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/providers/download_provider.dart';
-import 'package:test_app/ui/widgets/download_spinner.dart';
-import 'package:test_app/utils/downloads_helper.dart';
+import 'package:neonrom3r/models/download_info.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/ui/widgets/download_spinner.dart';
+import 'package:neonrom3r/utils/downloads_helper.dart';
 
 class DownloadIndicator extends StatelessWidget {
   RomInfo rom;

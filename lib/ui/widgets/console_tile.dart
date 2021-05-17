@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/models/console.dart';
-import 'package:test_app/utils/assets_helper.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/utils/assets_helper.dart';
 
 class ConsoleTile extends StatelessWidget {
   Console console;

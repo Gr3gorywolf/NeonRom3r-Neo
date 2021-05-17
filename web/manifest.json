@@ -1,6 +1,6 @@
 {
-    "name": "test_app",
-    "short_name": "test_app",
+    "name": "neonrom3r",
+    "short_name": "neonrom3r",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

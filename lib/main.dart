@@ -2,17 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:test_app/models/console.dart';
-import 'package:test_app/providers/app_provider.dart';
-import 'package:test_app/providers/download_provider.dart';
-import 'package:test_app/ui/pages/downloads/downloads_page.dart';
-import 'package:test_app/ui/pages/emulators/emulators_page.dart';
-import 'package:test_app/ui/pages/roms/roms_page.dart';
-import 'package:test_app/ui/pages/settings/settings_page.dart';
-import 'package:test_app/ui/pages/splashcreen/splashcreen_page.dart';
-import 'package:test_app/ui/widgets/console_list.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/providers/app_provider.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
+import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
+import 'package:neonrom3r/ui/pages/roms/roms_page.dart';
+import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
+import 'package:neonrom3r/ui/pages/splashcreen/splashcreen_page.dart';
+import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:test_app/utils/downloads_helper.dart';
+import 'package:neonrom3r/utils/downloads_helper.dart';
 
 import 'ui/pages/home/home_page.dart';
 

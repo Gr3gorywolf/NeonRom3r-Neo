@@ -1,4 +1,4 @@
-import 'package:test_app/models/rom_info.dart';
+import 'package:neonrom3r/models/rom_info.dart';
 
 class RomDownload {
   String filePath;

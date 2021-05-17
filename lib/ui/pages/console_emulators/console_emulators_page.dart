@@ -1,32 +1,32 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_search_bar/flutter_search_bar.dart';
 import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/models/emulator.dart';
 import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/repository/roms_repository.dart';
-import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
-import 'package:neonrom3r/ui/widgets/rom_list.dart';
+import 'package:neonrom3r/ui/widgets/emulator_list_item.dart';
 
-class ConsoleRomsPage extends StatefulWidget {
+class ConsoleEmulatorsPage extends StatefulWidget {
+  List<Emulator> emulators;
   Console console;
-  List<RomInfo> infos;
-  ConsoleRomsPage(this.console, {this.infos});
+  ConsoleEmulatorsPage(this.console, this.emulators);
   @override
-  _ConsoleRomsPageState createState() => _ConsoleRomsPageState();
+  _ConsoleEmulatorsPageState createState() => _ConsoleEmulatorsPageState();
 }
 
-class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
+class _ConsoleEmulatorsPageState extends State<ConsoleEmulatorsPage> {
   String _searchQuery = "";
   SearchBar searchBar;
-  List<RomInfo> _roms = [];
   bool _isLoading = false;
   AppBar get defaultAppbar {
     return AppBar(
-      title: Text(widget.console.name + " Roms"),
+      title: Text(widget.console.name + " Emulators"),
       actions: [searchBar.getSearchAction(context)],
     );
   }
 
-  List<RomInfo> get filteredRoms {
-    return _roms
+  List<Emulator> get filteredEmulators {
+    return widget.emulators
         .where((element) => element.name
             .toLowerCase()
             .contains(this._searchQuery.toLowerCase()))
@@ -37,25 +37,9 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    if (widget.infos == null) {
-      fetchRoms();
-    } else {
-      _roms = widget.infos;
-    }
   }
 
-  void fetchRoms() async {
-    setState(() {
-      _isLoading = true;
-    });
-    var roms = await new RomsRepository().fetchRoms(widget.console);
-    setState(() {
-      _roms = roms;
-      _isLoading = false;
-    });
-  }
-
-  _ConsoleRomsPageState() {
+  _ConsoleEmulatorsPageState() {
     searchBar = new SearchBar(
         setState: setState,
         inBar: true,
@@ -85,7 +69,20 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: searchBar.build(context),
-      body: RomList(isLoading: this._isLoading, roms: filteredRoms),
+      body: ListView.separated(
+          padding: EdgeInsets.all(10),
+          separatorBuilder: (context, index) {
+            return Divider(
+              thickness: 0.2,
+              color: Colors.white,
+            );
+          },
+          itemCount: filteredEmulators.length,
+          itemBuilder: (ctx, index) {
+            return FadeIn(
+                duration: Duration(seconds: 2),
+                child: EmulatorListItem(filteredEmulators[index]));
+          }),
     );
   }
 }

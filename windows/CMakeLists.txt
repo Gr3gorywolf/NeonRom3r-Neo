@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
-project(test_app LANGUAGES CXX)
+project(neonrom3r LANGUAGES CXX)
 
-set(BINARY_NAME "test_app")
+set(BINARY_NAME "neonrom3r")
 
 cmake_policy(SET CMP0063 NEW)
 

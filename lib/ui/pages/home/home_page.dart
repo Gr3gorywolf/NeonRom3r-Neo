@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/ui/pages/downloads/downloads_page.dart';
-import 'package:test_app/ui/pages/emulators/emulators_page.dart';
-import 'package:test_app/ui/pages/roms/roms_page.dart';
-import 'package:test_app/ui/pages/settings/settings_page.dart';
-import 'package:test_app/utils/assets_helper.dart';
+import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
+import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
+import 'package:neonrom3r/ui/pages/roms/roms_page.dart';
+import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
+import 'package:neonrom3r/utils/assets_helper.dart';
 
 class HomePage extends StatefulWidget {
   @override

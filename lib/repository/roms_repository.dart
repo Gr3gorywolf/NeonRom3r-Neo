@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:test_app/models/console.dart';
+import 'package:neonrom3r/models/console.dart';
 
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/utils/constants.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/constants.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {

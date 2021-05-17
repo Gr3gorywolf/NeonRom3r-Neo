@@ -1,10 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/models/rom_info.dart';
-import 'package:test_app/ui/pages/rom_details_dialog/rom_details_dialog.dart';
-import 'package:test_app/ui/widgets/download_indicator.dart';
-import 'package:test_app/utils/consoles_helper.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:neonrom3r/ui/widgets/download_indicator.dart';
+import 'package:neonrom3r/utils/consoles_helper.dart';
 
 class RomList extends StatelessWidget {
   bool isLoading = false;

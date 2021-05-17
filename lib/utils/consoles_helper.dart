@@ -1,6 +1,6 @@
-import 'package:test_app/models/console.dart';
-import 'package:test_app/models/emulator.dart';
-import 'package:test_app/models/rom_info.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/models/emulator.dart';
+import 'package:neonrom3r/models/rom_info.dart';
 
 class ConsolesHelper {
   static List<Console> getConsoles() {
@@ -20,7 +20,7 @@ class ConsolesHelper {
 
   static Console getConsoleFromName(String name) {
     var consoles = getConsoles();
-    var results = consoles.where((element) => element.altName == name || element.name == name);
+    var results = consoles.where((element) => element.altName == name || element.name == name || element.slug == name);
     if (results.isEmpty) {
       return null;
     } else {
