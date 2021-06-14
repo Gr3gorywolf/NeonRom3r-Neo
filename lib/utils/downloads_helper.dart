@@ -20,7 +20,10 @@ class DownloadsHelper {
   }
 
   downloadRom(RomInfo rom) async {
-    var downloadsPath = FileSystemHelper.downloadsPath;
+    var downloadsPath = FileSystemHelper.downloadsPath + "/" + rom.console;
+    if (!await Directory(downloadsPath).exists()) {
+      await Directory(downloadsPath).create();
+    }
     String fileName = rom.downloadLink.split('/').last;
     final taskId = await FlutterDownloader.enqueue(
       url: rom.downloadLink,
