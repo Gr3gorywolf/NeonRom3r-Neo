@@ -21,13 +21,13 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
   void initState() {
     super.initState();
     checkAvailability();
-   _timer =  Timer.periodic(Duration(seconds: 5), (timer) async {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) async {
       checkAvailability();
     });
   }
 
   @override
-  void dispose() { 
+  void dispose() {
     _timer.cancel();
     super.dispose();
   }
@@ -50,8 +50,13 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        AndroidIntent(data: widget.emulator.downloadLink, action: "action_view")
-            .launch();
+        if (!isEmulatorAvailable) {
+          AndroidIntent(
+                  data: widget.emulator.downloadLink, action: "action_view")
+              .launch();
+        } else {
+         DeviceApps.openApp(widget.emulator.packageName);
+        }
       },
       contentPadding: EdgeInsets.all(5),
       leading: ClipRRect(
@@ -75,9 +80,7 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
             height: 2,
           ),
           Text(
-            isFetchingAvailability
-                ? "Checking availability..."
-                : emulatorTag,
+            isFetchingAvailability ? "Checking availability..." : emulatorTag,
             style: TextStyle(color: Colors.white54),
           ),
         ],

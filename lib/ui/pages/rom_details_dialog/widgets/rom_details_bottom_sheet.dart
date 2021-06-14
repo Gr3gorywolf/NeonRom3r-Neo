@@ -23,34 +23,36 @@ class RomDetailsBottomSheet extends StatefulWidget {
 class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   double _iconsSize = 30;
 
-  DownloadProvider get _downloadProvider{
-           return Provider.of<DownloadProvider>(context, listen: false);
-  } 
-   
-  shareFile(){
-    var downloadedRom =  _downloadProvider.getDownloadedRomInfo(widget.rom);
-     Share.shareFiles([downloadedRom.filePath],
-         text:"${widget.rom.name}\n shared and downloaded from NeonRom3r");
+  DownloadProvider get _downloadProvider {
+    return Provider.of<DownloadProvider>(context, listen: false);
   }
+
+  shareFile() {
+    var downloadedRom = _downloadProvider.getDownloadedRomInfo(widget.rom);
+    Share.shareFiles([downloadedRom.filePath],
+        text: "${widget.rom.name}\n shared and downloaded from NeonRom3r");
+  }
+
   shareLink() {
-    var normalizedLink = Uri.decodeFull(widget.rom.downloadLink).toString();
+    var normalizedLink = Uri.encodeFull(widget.rom.downloadLink).toString();
     Share.share(
         "Download link for the rom: ${widget.rom.name}\n ${normalizedLink}\n shared from NeonRom3r");
   }
 
   handleShare() {
-    bool isRomDownloaded =  _downloadProvider.isRomReadyToPlay(widget.rom);
+    bool isRomDownloaded = _downloadProvider.isRomReadyToPlay(widget.rom);
     AlertsHelpers.showAlert(
         context, "Rom share", "How do you want to share your rom?",
         cancelable: true,
-        additionalAction:isRomDownloaded?buildShareFileAction():null ,
-        acceptTitle: "Download link", callback: shareLink);
+        additionalAction: isRomDownloaded ? buildShareFileAction() : null,
+        acceptTitle: "Download link",
+        callback: shareLink);
   }
- buildShareFileAction(){
-    return FlatButton(
-                  onPressed:shareFile,
-                  child: Text("Rom file"));
+
+  buildShareFileAction() {
+    return FlatButton(onPressed: shareFile, child: Text("Rom file"));
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(

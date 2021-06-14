@@ -1,10 +1,9 @@
-
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/emulator.dart';
 import 'package:neonrom3r/repository/emulators_repository.dart';
-import 'package:neonrom3r/ui/pages/console_emulators/console_emulators_page.dart';
+import 'package:neonrom3r/ui/pages/emulators/console_emulators_page.dart';
 import 'package:neonrom3r/ui/widgets/console_tile.dart';
 
 class EmulatorsPage extends StatefulWidget {
@@ -17,7 +16,7 @@ class _EmulatorsPageState extends State<EmulatorsPage> {
   bool _isLoading = false;
   @override
   void initState() {
-    fetchRoms();
+    fetchEmulators();
     super.initState();
   }
 
@@ -27,7 +26,7 @@ class _EmulatorsPageState extends State<EmulatorsPage> {
     });
   }
 
-  fetchRoms() async {
+  fetchEmulators() async {
     setLoading(true);
     try {
       var _res = await EmulatorsRepository().fetchEmulators();
