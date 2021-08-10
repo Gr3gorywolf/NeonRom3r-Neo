@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:any_widget_marquee/any_widget_marquee.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:neonrom3r/models/rom_info.dart';
@@ -74,8 +75,8 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
             //Rom details row
             Row(
               children: [
-                Image.network(
-                  widget.rom.portrait,
+                RomThumbnail(
+                  widget.rom,
                   height: 94,
                   width: 94,
                 ),

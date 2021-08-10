@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       builder: (context, wg) {
-       return MaterialApp(
+        return MaterialApp(
             title: 'NeonRom3r',
             theme: ThemeData(
               highlightColor: Colors.white,
