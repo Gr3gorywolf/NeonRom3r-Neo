@@ -12,7 +12,7 @@ class _ConsolesPageState extends State<ConsolesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Consoles")),
-      body: ConsoleList(),
+      body: ConsoleList()
     );
   }
 }

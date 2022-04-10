@@ -19,12 +19,38 @@ class DownloadsHelper {
     await FlutterDownloader.initialize(debug: false);
   }
 
+  Future<Map<String, String>> fetchDownloadHeaders(url) async {
+    var client = new http.Client();
+    try {
+      var res = await client.head(url);
+      return res.headers;
+    } catch (err) {
+      return new Map<String, String>();
+    }
+  }
+
+  String _getFileNameFromHeaders(Map<String, String> headers) {
+    if (headers.keys.contains('content-disposition')) {
+      var fileNameArray =  headers['content-disposition'].split('filename="');
+      if(fileNameArray.length > 0){
+        fileNameArray = fileNameArray[1].split('";');
+        return fileNameArray[0];
+      }
+    }
+    return null;
+  }
+
   downloadRom(RomInfo rom) async {
     var downloadsPath = FileSystemHelper.downloadsPath + "/" + rom.console;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
     }
+    var headers = await fetchDownloadHeaders(rom.downloadLink);
     String fileName = rom.downloadLink.split('/').last;
+    String headersFileName = _getFileNameFromHeaders(headers);
+    if (headersFileName != null) {
+      fileName = headersFileName;
+    }
     final taskId = await FlutterDownloader.enqueue(
       url: rom.downloadLink,
       savedDir: downloadsPath,

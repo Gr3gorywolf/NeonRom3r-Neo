@@ -94,11 +94,11 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                               fontWeight: FontWeight.bold,
                               fontSize: 15),
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          widget.rom.size,
-                          style: TextStyle(color: Colors.green[700]),
-                        ),
+                        // SizedBox(height: 5),
+                        // Text(
+                        // widget.rom.size,
+                        //   style: TextStyle(color: Colors.green[700]),
+                        // ),
                         SizedBox(height: 5),
                         Text(
                           widget.rom.region,

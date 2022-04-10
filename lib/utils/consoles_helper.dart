@@ -14,13 +14,21 @@ class ConsolesHelper {
       Console(name: "Playstation", altName: "Playstation", slug: "PSX"),
       Console(name: "Sega Genesis", altName: "Sega_Genesis", slug: "Genesis"),
       Console(name: "Dreamcast", altName: "Sega_Dreamcast", slug: "Dreamcast"),
-      Console(name: "Nintendo DS", altName: "Nintendo_DS", slug: "NDS")
+      Console(name: "Nintendo DS", altName: "Nintendo_DS", slug: "NDS"),
+      Console(
+          name: "Nintendo Gamecube",
+          altName: "NintendoGamecube",
+          slug: "Gamecube"),
+      Console(name: "Psp", altName: "Psp", slug: "PSP")
     ];
   }
 
   static Console getConsoleFromName(String name) {
     var consoles = getConsoles();
-    var results = consoles.where((element) => element.altName == name || element.name == name || element.slug == name);
+    var results = consoles.where((element) =>
+        element.altName == name ||
+        element.name == name ||
+        element.slug == name);
     if (results.isEmpty) {
       return null;
     } else {
