@@ -34,25 +34,33 @@ class FileSystemHelper {
   //root-path initializer
   static _initRootPath() async {
     var rootPath = "";
-    try {
-      var storageInfo = await PathProviderEx.getStorageInfo();
-      if (storageInfo.length > 0) {
-        rootPath = storageInfo[0].rootDir;
-      }
-    } on PlatformException catch (er) {}
+    var isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    if (Platform.isAndroid) {
+      try {
+        var storageInfo = await PathProviderEx.getStorageInfo();
+        if (storageInfo.length > 0) {
+          rootPath = storageInfo[0].rootDir;
+        }
+      } on PlatformException catch (er) {}
+    } else if (isDesktop) {
+      rootPath = Directory.current.path;
+    }
+    print("Root path initialized to: " + rootPath);
     _rootPath = rootPath;
   }
 
   //initializer
   static initPaths() async {
-    var status = await Permission.storage.status;
-    if (status.isUndetermined || status.isDenied) {
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.storage,
-      ].request();
-      var status = statuses[Permission.storage];
-      if (!status.isGranted) {
-        return;
+    if (Platform.isAndroid) {
+      var status = await Permission.storage.status;
+      if (status.isUndetermined || status.isDenied) {
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.storage,
+        ].request();
+        var status = statuses[Permission.storage];
+        if (!status.isGranted) {
+          return;
+        }
       }
     }
     await _initRootPath();

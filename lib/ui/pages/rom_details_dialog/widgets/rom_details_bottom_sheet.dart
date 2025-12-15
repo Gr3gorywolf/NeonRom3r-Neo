@@ -2,6 +2,8 @@ import 'package:animate_do/animate_do.dart';
 import 'package:any_widget_marquee/any_widget_marquee.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:neonrom3r/models/download_source_rom.dart';
+import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
@@ -31,13 +33,13 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   shareFile() {
     var downloadedRom = _downloadProvider.getDownloadedRomInfo(widget.rom);
     Share.shareFiles([downloadedRom.filePath],
-        text: "${widget.rom.name}\n shared and downloaded from NeonRom3r");
+        text: "${widget.rom.title}\n shared and downloaded from NeonRom3r");
   }
 
   shareLink() {
     var normalizedLink = Uri.encodeFull(widget.rom.downloadLink).toString();
     Share.share(
-        "Download link for the rom: ${widget.rom.name}\n ${normalizedLink}\n shared from NeonRom3r");
+        "Download link for the rom: ${widget.rom.title}\n ${normalizedLink}\n shared from NeonRom3r");
   }
 
   handleShare() {
@@ -86,7 +88,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.rom.name,
+                          widget.rom.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -94,16 +96,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                               fontWeight: FontWeight.bold,
                               fontSize: 15),
                         ),
-                        // SizedBox(height: 5),
-                        // Text(
-                        // widget.rom.size,
-                        //   style: TextStyle(color: Colors.green[700]),
-                        // ),
                         SizedBox(height: 5),
-                        Text(
-                          widget.rom.region,
-                          style: TextStyle(color: Colors.green[700]),
-                        ),
                       ],
                       mainAxisSize: MainAxisSize.min),
                 )

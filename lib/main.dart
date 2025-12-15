@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
@@ -30,6 +31,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<DownloadProvider>(
           create: (context) => DownloadProvider(),
+        ),
+        ChangeNotifierProvider<DownloadSourcesProvider>(
+          create: (context) => DownloadSourcesProvider(),
         ),
       ],
       builder: (context, wg) {

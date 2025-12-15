@@ -31,8 +31,8 @@ class DownloadsHelper {
 
   String _getFileNameFromHeaders(Map<String, String> headers) {
     if (headers.keys.contains('content-disposition')) {
-      var fileNameArray =  headers['content-disposition'].split('filename="');
-      if(fileNameArray.length > 0){
+      var fileNameArray = headers['content-disposition'].split('filename="');
+      if (fileNameArray.length > 0) {
         fileNameArray = fileNameArray[1].split('";');
         return fileNameArray[0];
       }
@@ -65,7 +65,7 @@ class DownloadsHelper {
   }
 
   void catchRomPortrait(RomInfo romInfo) async {
-    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.name}.png';
+    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.title}.png';
     if (!File(portraitName).existsSync()) {
       http.get(romInfo.portrait).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
@@ -116,7 +116,7 @@ class DownloadsHelper {
               RomInfo(
                   console: oldDownload['consola'],
                   downloadLink: oldDownload['linkdescarga'],
-                  name: oldDownload['nombre'],
+                  title: oldDownload['nombre'],
                   portrait: oldDownload['portadalink'],
                   region: "--",
                   size: "--"),

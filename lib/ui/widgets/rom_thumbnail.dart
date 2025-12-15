@@ -16,7 +16,7 @@ class RomThumbnail extends StatelessWidget {
   RomThumbnail(this.info, {this.height = 50, this.width = 50});
 
   File get catchedImage {
-    var path = "${FileSystemHelper.portraitsPath}/${this.info.name}.png";
+    var path = "${FileSystemHelper.portraitsPath}/${this.info.title}.png";
     if (File(path).existsSync()) {
       return File(path);
     } else {

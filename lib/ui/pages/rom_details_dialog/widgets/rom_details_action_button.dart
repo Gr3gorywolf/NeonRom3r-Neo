@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
+import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
 import 'package:neonrom3r/utils/alerts_helpers.dart';
 import 'package:neonrom3r/utils/downloads_helper.dart';
 import 'package:neonrom3r/utils/roms_helper.dart';
@@ -18,6 +20,16 @@ class RomDetailsActionButton extends StatefulWidget {
 
 class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
   double _iconsSize = 30;
+
+  handleShowDownload() async {
+    final rom = await showDialog<DownloadSourceRom>(
+      context: context,
+      builder: (_) => RomDownloadSourcesDialog(
+        rom: widget.rom,
+      ),
+    );
+  }
+
   handleDownload() {
     DownloadsHelper().downloadRom(this.widget.rom);
     //Navigator.pop(context);
@@ -86,7 +98,7 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
       );
     } else {
       return IconButton(
-        onPressed: handleDownload,
+        onPressed: handleShowDownload,
         icon: Icon(
           Icons.download_rounded,
           size: _iconsSize,

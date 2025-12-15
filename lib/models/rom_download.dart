@@ -12,7 +12,7 @@ class RomDownload {
     return RomDownload(
         console: romInfo.console,
         downloadLink: romInfo.downloadLink,
-        name: romInfo.name,
+        name: romInfo.title,
         portrait: romInfo.portrait,
         region: romInfo.region,
         size: romInfo.size,
@@ -23,12 +23,11 @@ class RomDownload {
     return RomInfo(
         console: this.console,
         downloadLink: this.downloadLink,
-        name: this.name,
+        title: this.name,
         portrait: this.portrait,
         region: this.region,
         size: this.size);
   }
-
 
   RomDownload(
       {this.filePath,

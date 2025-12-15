@@ -52,7 +52,7 @@ class RomsHelper {
             data: romPath,
             type: intent.type,
             package: intent.package,
-            componentName:  intent.activity,
+            componentName: intent.activity,
             action: "action_view")
         .launch();
   }
@@ -63,5 +63,16 @@ class RomsHelper {
       new File(FileSystemHelper.emulatorIntentsFile).writeAsStringSync(
           json.encode(intents.map((e) => e.toJson()).toList()));
     } catch (err) {}
+  }
+
+  static String normalizeRomTitle(String input) {
+    var value = input.toLowerCase();
+    value = value.replaceAll(RegExp(r'\(.*?\)'), '');
+    value = value.replaceAll(RegExp(r'\[.*?\]'), '');
+    value = value.replaceAll(RegExp(r'[-+_]'), ' ');
+    value = value.replaceAll(RegExp(r'[^a-z0-9\s]'), '');
+    value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+    value = value.replaceAll(" ", "");
+    return value;
   }
 }

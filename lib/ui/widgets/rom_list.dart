@@ -47,8 +47,7 @@ class RomListItem extends StatelessWidget {
   final RomInfo romItem;
   bool showConsole;
 
-
-  RomListItem({this.romItem, this.showConsole = false});   
+  RomListItem({this.romItem, this.showConsole = false});
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -62,11 +61,10 @@ class RomListItem extends StatelessWidget {
       },
       contentPadding: EdgeInsets.all(5),
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: RomThumbnail(this.romItem)
-      ),
+          borderRadius: BorderRadius.circular(5),
+          child: RomThumbnail(this.romItem)),
       title: Text(
-        romItem.name,
+        romItem.title,
         style: TextStyle(color: Colors.white),
       ),
       subtitle: Column(
@@ -80,10 +78,6 @@ class RomListItem extends StatelessWidget {
             ),
           SizedBox(
             height: 2,
-          ),
-          Text(
-            romItem.region,
-            style: TextStyle(color: Colors.white54),
           ),
         ],
       ),

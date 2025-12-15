@@ -10,7 +10,7 @@ import 'package:neonrom3r/utils/constants.dart';
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {
     List<RomInfo> roms = [];
-    var baseUrl = "${Constants.apiBasePath}/Data/${console.slug}.json";
+    var baseUrl = "${Constants.apiBasePath}/Data/Roms/${console.slug}.json";
     var client = new http.Client();
     //If is catched tries to retrieve the cache file
     var signature = await CacheHelper.getCacheSignature(console.slug);

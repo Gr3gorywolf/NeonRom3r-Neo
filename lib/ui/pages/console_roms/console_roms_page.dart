@@ -27,7 +27,7 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
 
   List<RomInfo> get filteredRoms {
     return _roms
-        .where((element) => element.name
+        .where((element) => element.title
             .toLowerCase()
             .contains(this._searchQuery.toLowerCase()))
         .toList();

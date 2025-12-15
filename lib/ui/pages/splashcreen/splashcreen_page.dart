@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
@@ -26,13 +27,15 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
 
   initApp() async {
     if (Platform.isAndroid) {
-      await FileSystemHelper.initPaths();
       await initPlugins();
       await RomsHelper.catchEmulatorsIntents();
       await DownloadsHelper().importOldRoms();
       Provider.of<DownloadProvider>(context, listen: false)
           .initDownloadsListener();
     }
+    await FileSystemHelper.initPaths();
+    await Provider.of<DownloadSourcesProvider>(context, listen: false)
+        .initDownloadSources();
     Future.delayed(Duration(milliseconds: 2000)).then((value) =>
         {Provider.of<AppProvider>(context, listen: false).setAppLoaded(true)});
   }

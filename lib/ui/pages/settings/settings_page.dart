@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/ui/pages/download_sources/download_sources_page.dart';
+
 class SettingsPage extends StatefulWidget {
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -7,8 +9,21 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
-    );
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Settings'),
+        ),
+        body: ListView(
+          children: [
+            ListTile(
+              title: Text("Download Sources"),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => DownloadSourcesPage(),
+                ));
+              },
+            )
+          ],
+        ));
   }
 }
