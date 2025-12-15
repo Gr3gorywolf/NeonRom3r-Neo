@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:neonrom3r/models/aria2c.dart';
+import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neonrom3r/models/rom_download.dart';
@@ -12,6 +14,8 @@ import 'package:neonrom3r/utils/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:neonrom3r/utils/files_system_helper.dart';
 import 'package:neonrom3r/utils/roms_helper.dart';
+
+import 'aria2c_download_manager.dart';
 
 class DownloadsHelper {
   initDownloader() async {
@@ -40,28 +44,39 @@ class DownloadsHelper {
     return null;
   }
 
-  downloadRom(RomInfo rom) async {
+  downloadRom(RomInfo rom, DownloadSourceRom sourceRom) async {
     var downloadsPath = FileSystemHelper.downloadsPath + "/" + rom.console;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
     }
-    var headers = await fetchDownloadHeaders(rom.downloadLink);
-    String fileName = rom.downloadLink.split('/').last;
-    String headersFileName = _getFileNameFromHeaders(headers);
-    if (headersFileName != null) {
-      fileName = headersFileName;
-    }
-    final taskId = await FlutterDownloader.enqueue(
-      url: rom.downloadLink,
-      savedDir: downloadsPath,
-      fileName: Uri.decodeFull(fileName),
-      showNotification:
-          true, // show download progress in status bar (for Android)
-      openFileFromNotification:
-          true, // click on notification to open downloaded file (for Android)
+
+    final handle = await Aria2DownloadManager.startDownload(
+      romName: rom.title,
+      aria2cPath: FileSystemHelper.aria2cPath + "/aria2c",
+      uri: sourceRom.uris[0],
+      filePathInTorrent: sourceRom.filePath,
+      selectIndex: sourceRom.fileIndex,
+      // OR selectIndex: 5907,
     );
-    registerRomDownload(rom, downloadsPath + "/" + Uri.decodeFull(fileName));
-    catchRomPortrait(rom);
+    final sub = handle.events.listen((e) {
+      if (e is Aria2ProgressEvent) {
+        // Here’s the string you asked for (pct, up/down speeds, seeds, eta when present):
+        final p = e.progress;
+        final s = 'pct=${p.percent ?? "-"} '
+            'dl=${p.dlSpeed ?? "-"} '
+            'ul=${p.ulSpeed ?? "-"} '
+            'sd=${p.seeds ?? "-"} '
+            'eta=${p.eta ?? "-"}';
+        print(s);
+      } else if (e is Aria2LogEvent) {
+        // Optional: raw logs
+        print(e.line);
+      } else if (e is Aria2ErrorEvent) {
+        print('ERROR: ${e.message}');
+      } else if (e is Aria2DoneEvent) {
+        print('DONE: ${e.outputFilePath}');
+      }
+    });
   }
 
   void catchRomPortrait(RomInfo romInfo) async {

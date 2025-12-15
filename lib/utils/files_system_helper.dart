@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 class FileSystemHelper {
   static String _rootPath = "";
+  static var isDesktop =
+      Platform.isWindows || Platform.isLinux || Platform.isMacOS;
   //getters
   static get rootPath {
     return _rootPath;
@@ -27,6 +29,14 @@ class FileSystemHelper {
     return cachePath + "/downloads-neo.json";
   }
 
+  static get aria2cPath {
+    return _rootPath + "/aria2c";
+  }
+
+  static get torrentsCache {
+    return cachePath + "/torrents";
+  }
+
   static get emulatorIntentsFile {
     return cachePath + "/emulatorIntents.json";
   }
@@ -34,7 +44,6 @@ class FileSystemHelper {
   //root-path initializer
   static _initRootPath() async {
     var rootPath = "";
-    var isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
     if (Platform.isAndroid) {
       try {
         var storageInfo = await PathProviderEx.getStorageInfo();
@@ -65,7 +74,7 @@ class FileSystemHelper {
     }
     await _initRootPath();
 
-    var paths = [downloadsPath, cachePath, portraitsPath];
+    var paths = [downloadsPath, cachePath, portraitsPath, torrentsCache];
     for (var path in paths) {
       if (!await Directory(path).exists()) {
         await Directory(path).create(recursive: true);

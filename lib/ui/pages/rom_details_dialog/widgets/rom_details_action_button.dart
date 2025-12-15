@@ -22,17 +22,16 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
   double _iconsSize = 30;
 
   handleShowDownload() async {
-    final rom = await showDialog<DownloadSourceRom>(
+    final romSource = await showDialog<DownloadSourceRom>(
       context: context,
       builder: (_) => RomDownloadSourcesDialog(
         rom: widget.rom,
       ),
     );
-  }
-
-  handleDownload() {
-    DownloadsHelper().downloadRom(this.widget.rom);
-    //Navigator.pop(context);
+    if (romSource == null) {
+      return;
+    }
+    DownloadsHelper().downloadRom(this.widget.rom, romSource);
     Toast.show("Download started...", context,
         duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
   }

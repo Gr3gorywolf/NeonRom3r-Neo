@@ -43,4 +43,5 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 .romercache/
+aria2c/
 downloaded-roms/
