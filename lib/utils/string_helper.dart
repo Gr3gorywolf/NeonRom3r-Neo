@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+
 class StringHelper {
   static bool hasMinConsecutiveMatch(
     String a,
@@ -17,4 +20,7 @@ class StringHelper {
     }
     return false;
   }
+
+  static String hash20(String input) =>
+      sha1.convert(utf8.encode(input)).toString().substring(0, 20);
 }

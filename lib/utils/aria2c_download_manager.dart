@@ -2,147 +2,22 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+
 import 'package:crypto/crypto.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:neonrom3r/models/aria2c.dart';
+import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/process_helper.dart';
+import 'package:neonrom3r/utils/string_helper.dart';
 import 'package:path/path.dart' as p;
+
 import 'files_system_helper.dart';
 
-class Aria2DownloadManager {
-  static final Map<String, _ActiveJob> _jobs = {};
-
-  /// Start a download in its own isolate.
-  ///
-  /// [uri] can be a magnet (string containing "magnet:") or a .torrent path/url.
-  /// If [filePathInTorrent] is provided, we will find its index using `--show-files`.
-  /// If [selectIndex] is provided, we skip `--show-files` and use that index directly.
-  ///
-  /// Returns a handle containing:
-  /// - a stream of events (progress/log/error/done)
-  /// - a `done` future
-  /// - an `abort()` function
-  static Future<Aria2DownloadHandle> startDownload({
-    String romName,
-    String aria2cPath,
-    String uri,
-    String filePathInTorrent,
-    int selectIndex,
-  }) async {
-    final id = _hash20(uri + romName);
-    if (_jobs.containsKey(id)) {
-      throw StateError('A download with id=$id is already running.');
-    }
-
-    final receivePort = ReceivePort();
-    final doneCompleter = Completer<Aria2DoneEvent>();
-    final controller = StreamController<Aria2Event>.broadcast();
-
-    final isolate = await Isolate.spawn<_IsolateArgs>(
-      _downloadIsolateMain,
-      _IsolateArgs(
-        sendPort: receivePort.sendPort,
-        aria2cPath: aria2cPath,
-        uri: uri,
-        torrentsCacheDir: FileSystemHelper.torrentsCache,
-        filePathInTorrent: filePathInTorrent,
-        selectIndex: selectIndex,
-      ),
-      debugName: 'aria2c-download-$id',
-    );
-
-    StreamSubscription sub = receivePort.listen((msg) {
-      if (msg is Map) {
-        final type = msg['type'];
-        switch (type) {
-          case 'progress':
-            controller
-                .add(Aria2ProgressEvent(_parseProgress(msg['line'] as String)));
-            break;
-          case 'log':
-            controller.add(Aria2LogEvent(msg['line'] as String));
-            break;
-          case 'error':
-            controller.add(Aria2ErrorEvent(msg['message'] as String));
-            if (!doneCompleter.isCompleted) {
-              doneCompleter.completeError(StateError(msg['message'] as String));
-            }
-            break;
-          case 'done':
-            final ev = Aria2DoneEvent(
-              outputFilePath: msg['outputFilePath'] as String,
-              selectedIndex: msg['selectedIndex'] as int,
-              selectedTorrentPath: msg['selectedTorrentPath'] as String,
-            );
-            controller.add(ev);
-            if (!doneCompleter.isCompleted) doneCompleter.complete(ev);
-            break;
-        }
-      }
-    });
-
-    void abort() {
-      final job = _jobs.remove(id);
-      if (job == null) return;
-      // Tell isolate to abort nicely; if it doesn't, kill it.
-      job.controlPort?.send({'cmd': 'abort'});
-      Future.delayed(const Duration(milliseconds: 300), () {
-        job.isolate.kill(priority: Isolate.immediate);
-      });
-      job.receivePort.close();
-      job.sub.cancel();
-      job.controller.close();
-    }
-
-    final active = _ActiveJob(
-      id: id,
-      isolate: isolate,
-      receivePort: receivePort,
-      sub: sub,
-      controller: controller,
-    );
-    _jobs[id] = active;
-
-    // First message from isolate should contain a control SendPort.
-    // We wait a short moment and capture it if it arrives.
-    controller.stream.listen((event) {
-      if (event is Aria2DoneEvent) {
-        _cleanup(id);
-      } else if (event is Aria2ErrorEvent) {
-        _cleanup(id);
-      }
-    });
-
-    return Aria2DownloadHandle(
-      id: id,
-      events: controller.stream,
-      done: doneCompleter.future.whenComplete(() => _cleanup(id)),
-      abort: abort,
-    );
-  }
-
-  /// Abort a running download by id.
-  static void abort(String id) {
-    _jobs[id]?.controlPort?.send({'cmd': 'abort'});
-    _jobs[id]?.isolate.kill(priority: Isolate.immediate);
-    _cleanup(id);
-  }
-
-  static void _cleanup(String id) {
-    final job = _jobs.remove(id);
-    if (job == null) return;
-    job.receivePort.close();
-    job.sub.cancel();
-    job.controller.close();
-  }
-
-  static String _hash20(String input) {
-    final bytes = utf8.encode(input);
-    final hex = sha1.convert(bytes).toString(); // 40 hex chars
-    return hex.substring(0, 20);
-  }
-}
-
-class _ActiveJob {
+/// ============================================================================
+/// Internal Classes
+/// ============================================================================
+class IsolateActiveJob {
   final String id;
   final Isolate isolate;
   final ReceivePort receivePort;
@@ -150,7 +25,7 @@ class _ActiveJob {
   final StreamController<Aria2Event> controller;
   SendPort controlPort;
 
-  _ActiveJob({
+  IsolateActiveJob({
     this.id,
     this.isolate,
     this.receivePort,
@@ -159,29 +34,155 @@ class _ActiveJob {
   });
 }
 
-class _IsolateArgs {
+class IsolateArgs {
   final SendPort sendPort;
   final String aria2cPath;
   final String uri;
-  final String torrentsCacheDir;
-  final String filePathInTorrent;
-  final int selectIndex;
+  final int fileIndex;
+  final String downloadPath;
 
-  _IsolateArgs({
+  IsolateArgs({
     this.sendPort,
     this.aria2cPath,
     this.uri,
-    this.torrentsCacheDir,
-    this.filePathInTorrent,
-    this.selectIndex,
+    this.fileIndex,
+    this.downloadPath,
   });
 }
 
-/// Isolate entry point.
-Future<void> _downloadIsolateMain(_IsolateArgs args) async {
-  final mainSend = args.sendPort;
+/// ============================================================================
+/// Download Manager
+/// ============================================================================
+
+class Aria2DownloadManager {
+  static final Map<String, IsolateActiveJob> _jobs = {};
+
+  /// Starts a ROM download using:
+  /// - [RomInfo]   → metadata / folder name
+  /// - [DownloadSourceRom] → torrent source & file index
+  static Future<Aria2DownloadHandle> startDownload({
+    RomInfo rom,
+    DownloadSourceRom source,
+    String aria2cPath,
+  }) async {
+    final uri = source.uris.first;
+    final id = StringHelper.hash20(uri + rom.title);
+
+    if (_jobs.containsKey(id)) {
+      throw StateError('Download already running for id=$id');
+    }
+
+    final receivePort = ReceivePort();
+    final controller = StreamController<Aria2Event>.broadcast();
+    final doneCompleter = Completer<Aria2DoneEvent>();
+
+    final isolate = await Isolate.spawn<IsolateArgs>(
+      _downloadIsolateMain,
+      IsolateArgs(
+        sendPort: receivePort.sendPort,
+        aria2cPath: aria2cPath,
+        uri: uri,
+        fileIndex: source.fileIndex,
+        downloadPath:
+            p.join(FileSystemHelper.downloadsPath, rom.console, rom.title),
+      ),
+      debugName: 'aria2c-$id',
+    );
+
+    SendPort controlPort;
+
+    final sub = receivePort.listen((msg) {
+      if (msg is! Map) return;
+
+      switch (msg['type']) {
+        case 'controlPort':
+          controlPort = msg['port'];
+          _jobs[id]?.controlPort = controlPort;
+          break;
+
+        case 'log':
+          controller.add(Aria2LogEvent(msg['line']));
+          break;
+
+        case 'progress':
+          controller.add(
+            Aria2ProgressEvent(_parseProgress(msg['line'])),
+          );
+          break;
+
+        case 'error':
+          controller.add(Aria2ErrorEvent(msg['message']));
+          if (!doneCompleter.isCompleted) {
+            doneCompleter.completeError(
+              StateError(msg['message']),
+            );
+          }
+          _cleanup(id);
+          break;
+
+        case 'done':
+          final ev = Aria2DoneEvent(
+            outputFilePath: msg['outputFilePath'],
+            selectedIndex: msg['selectedIndex'],
+            selectedTorrentPath: msg['selectedTorrentPath'],
+          );
+          controller.add(ev);
+          if (!doneCompleter.isCompleted) {
+            doneCompleter.complete(ev);
+          }
+          _cleanup(id);
+          break;
+      }
+    });
+
+    void abort() {
+      final job = _jobs.remove(id);
+      if (job == null) return;
+
+      job.controlPort?.send({'cmd': 'abort'});
+      Future.delayed(const Duration(milliseconds: 300), () {
+        job.isolate.kill(priority: Isolate.immediate);
+      });
+
+      job.receivePort.close();
+      job.sub.cancel();
+      job.controller.close();
+    }
+
+    _jobs[id] = IsolateActiveJob(
+      id: id,
+      isolate: isolate,
+      receivePort: receivePort,
+      sub: sub,
+      controller: controller,
+    );
+
+    return Aria2DownloadHandle(
+      id: id,
+      events: controller.stream,
+      done: doneCompleter.future,
+      abort: abort,
+    );
+  }
+
+  static void _cleanup(String id) {
+    final job = _jobs.remove(id);
+    if (job == null) return;
+
+    job.receivePort.close();
+    job.sub.cancel();
+    job.controller.close();
+  }
+}
+
+/// ============================================================================
+/// Isolate entry point
+/// ============================================================================
+
+Future<void> _downloadIsolateMain(IsolateArgs args) async {
+  final main = args.sendPort;
   final control = ReceivePort();
-  mainSend.send({'type': 'controlPort', 'port': control.sendPort});
+  main.send({'type': 'controlPort', 'port': control.sendPort});
 
   bool aborted = false;
   Process running;
@@ -189,238 +190,138 @@ Future<void> _downloadIsolateMain(_IsolateArgs args) async {
   control.listen((msg) {
     if (msg is Map && msg['cmd'] == 'abort') {
       aborted = true;
-      try {
-        running?.kill(ProcessSignal.sigterm);
-      } catch (_) {}
+      running?.kill(ProcessSignal.sigterm);
     }
   });
 
-  void log(String line) => mainSend.send({'type': 'log', 'line': line});
-  void progress(String line) =>
-      mainSend.send({'type': 'progress', 'line': line});
-  void error(String message) =>
-      mainSend.send({'type': 'error', 'message': message});
+  void log(String m) => main.send({'type': 'log', 'line': m});
+  void progress(String l) => main.send({'type': 'progress', 'line': l});
+  void fail(Object e) => main.send({'type': 'error', 'message': e.toString()});
 
   try {
-    final cacheDir = Directory(args.torrentsCacheDir);
-    await cacheDir.create(recursive: true);
+    final torrentPath = await _resolveTorrent(
+      aria2cPath: args.aria2cPath,
+      uri: args.uri,
+      onLog: log,
+      onProgress: progress,
+      onRunning: (p) => running = p,
+      isAborted: () => aborted,
+    );
 
-    final isMagnet = args.uri.contains('magnet:');
-    final isTorrent = args.uri.toLowerCase().endsWith('.torrent');
-
-    if (!isMagnet && !isTorrent) {
-      throw StateError(
-          'URI must be a magnet (contains "magnet:") or ends with ".torrent".');
-    }
-
-    final id = _hash20(args.uri);
-    final cachedTorrentPath = p.join(cacheDir.path, '$id.torrent');
-
-    String torrentPath;
-    if (isMagnet) {
-      torrentPath = await _ensureTorrentFromMagnet(
-        aria2cPath: args.aria2cPath,
-        magnet: args.uri,
-        cacheDir: cacheDir,
-        cachedTorrentPath: cachedTorrentPath,
-        onLog: log,
-        onProgressLine: progress,
-        onSetRunning: (p) => running = p,
-        isAborted: () => aborted,
-      );
-    } else {
-      // If uri is a local path/url; for local paths we use directly.
-      // If it is a URL, you can download it first; here we assume local path.
-      torrentPath = args.uri;
-    }
-
-    if (aborted) throw StateError('Aborted');
-
-    // Determine the selected file index + relative path from `--show-files`
-    final showFiles = await _showFiles(
+    final files = await _showFiles(
       aria2cPath: args.aria2cPath,
       torrentPath: torrentPath,
-      cwd: cacheDir.path,
+      cwd: FileSystemHelper.torrentsCache,
       onLog: log,
       onSetRunning: (p) => running = p,
       isAborted: () => aborted,
     );
 
-    if (aborted) throw StateError('Aborted');
+    final relPath = files[args.fileIndex] ??
+        (throw StateError('File index not found in torrent'));
 
-    int selectedIndex;
-    String selectedRelPath;
+    final romDir = Directory(args.downloadPath)..createSync(recursive: true);
 
-    if (args.selectIndex != null) {
-      selectedIndex = args.selectIndex;
-      final match = showFiles.entries.firstWhere(
-        (e) => e.key == selectedIndex,
-        orElse: () => throw StateError(
-            'selectIndex=$selectedIndex not found in torrent file list.'),
-      );
-      selectedRelPath = match.value;
-    } else {
-      final wanted = args.filePathInTorrent;
-      if (wanted == null || wanted.trim().isEmpty) {
-        throw StateError(
-            'filePathInTorrent is required when selectIndex is not provided.');
-      }
-
-      // Match by exact end path or contains (more forgiving).
-      final normalizedWanted = wanted.replaceAll('\\', '/');
-      final entry = showFiles.entries.firstWhere(
-        (e) {
-          final rel = e.value.replaceAll('\\', '/');
-          return rel.endsWith(normalizedWanted) ||
-              rel.contains(normalizedWanted);
-        },
-        orElse: () =>
-            throw StateError('File "$wanted" not found in torrent listing.'),
-      );
-
-      selectedIndex = entry.key;
-      selectedRelPath = entry.value;
-    }
-
-    // Create ROM folder before download
-    final romFileName = p.basename(selectedRelPath);
-    final romName = p.basenameWithoutExtension(romFileName);
-    final romFolder =
-        Directory(p.join(FileSystemHelper.downloadsPath, romName));
-    await romFolder.create(recursive: true);
-
-    // Download selected file into cacheDir (aria2 will create nested folders)
     await _downloadSelectedFile(
       aria2cPath: args.aria2cPath,
       torrentPath: torrentPath,
-      selectIndex: selectedIndex,
-      cwd: FileSystemHelper.downloadsPath,
+      selectIndex: args.fileIndex,
+      cwd: args.downloadPath,
       onLog: log,
       onProgressLine: progress,
-      onSetRunning: (p0) => running = p0,
+      onSetRunning: (p) => running = p,
       isAborted: () => aborted,
     );
 
-    if (aborted) throw StateError('Aborted');
+    final src = File(p.join(args.downloadPath, relPath));
+    final dst = File(p.join(romDir.path, p.basename(relPath)));
 
-    // Move downloaded file into ROM folder as ROMName/ROMFile
-    final downloadedFullPath =
-        p.join(FileSystemHelper.downloadsPath, selectedRelPath);
-    final targetPath = p.join(romFolder.path, romFileName);
-
-    final src = File(downloadedFullPath);
-    if (!await src.exists()) {
-      // Sometimes aria2c writes without the leading "./"
-      final alt = File(p.join(
-          cacheDir.path, selectedRelPath.replaceFirst(RegExp(r'^\./'), '')));
-      if (await alt.exists()) {
-        await alt.rename(targetPath);
-      } else {
-        throw StateError('Downloaded file not found at "$downloadedFullPath".');
+    await src.rename(dst.path);
+    //delete anything that its not the dst file in case of residual data of the torrent
+    final dir = Directory(args.downloadPath);
+    await for (var entity in dir.list()) {
+      if (entity.path != dst.path) {
+        try {
+          if (entity is File) {
+            await entity.delete();
+          } else if (entity is Directory) {
+            await entity.delete(recursive: true);
+          }
+        } catch (e) {
+          print("Error deleting extra file: " + e.toString());
+        }
       }
-    } else {
-      await src.rename(targetPath);
     }
-
-    mainSend.send({
+    main.send({
       'type': 'done',
-      'outputFilePath': targetPath,
-      'selectedIndex': selectedIndex,
+      'outputFilePath': dst.path,
+      'selectedIndex': args.fileIndex,
       'selectedTorrentPath': torrentPath,
     });
   } catch (e) {
-    mainSend.send({'type': 'error', 'message': e.toString()});
+    fail(e);
   } finally {
-    try {
-      running?.kill(ProcessSignal.sigkill);
-    } catch (_) {}
+    running?.kill(ProcessSignal.sigkill);
     control.close();
   }
 }
 
-String _hash20(String input) {
-  final bytes = utf8.encode(input);
-  final hex = sha1.convert(bytes).toString();
-  return hex.substring(0, 20);
-}
+/// ============================================================================
+/// Torrent helpers
+/// ============================================================================
 
-/// If cached torrent exists, use it. Otherwise run metadata-only and rename output to cachedTorrentPath.
-Future<String> _ensureTorrentFromMagnet({
+Future<String> _resolveTorrent({
   String aria2cPath,
-  String magnet,
-  Directory cacheDir,
-  String cachedTorrentPath,
+  String uri,
   void Function(String) onLog,
-  void Function(String) onProgressLine,
-  void Function(Process) onSetRunning,
+  void Function(String) onProgress,
+  void Function(Process) onRunning,
   bool Function() isAborted,
 }) async {
-  final cached = File(cachedTorrentPath);
-  if (await cached.exists()) {
-    onLog('Using cached torrent: $cachedTorrentPath');
-    return cachedTorrentPath;
+  if (uri.endsWith('.torrent')) return uri;
+  if (!uri.contains('magnet:')) {
+    throw StateError('Invalid torrent URI');
   }
 
-  // Clean possible old torrents with same id file name
-  await cacheDir.create(recursive: true);
+  final cache = Directory(FileSystemHelper.torrentsCache)
+    ..createSync(recursive: true);
 
-  // Run aria2c to fetch metadata and save .torrent
-  final args = <String>[
-    '--bt-metadata-only=true',
-    '--bt-save-metadata=true',
-    '--seed-time=0',
-    magnet,
-  ];
+  final path = p.join(cache.path, '${StringHelper.hash20(uri)}.torrent');
+  if (await File(path).exists()) return path;
 
-  onLog('Generating torrent metadata via aria2c...');
   final proc = await Process.start(
     aria2cPath,
-    args,
-    workingDirectory: cacheDir.path,
-    runInShell: false,
+    [
+      '--bt-metadata-only=true',
+      '--bt-save-metadata=true',
+      '--seed-time=0',
+      uri
+    ],
+    workingDirectory: cache.path,
   );
-  onSetRunning(proc);
 
-  // aria2c writes progress-like lines to stdout (and sometimes stderr)
-  proc.stdout
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .listen((line) {
-    if (line.contains('[#')) onProgressLine(line);
-    onLog(line);
-  });
-  proc.stderr
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .listen((line) {
-    if (line.contains('[#')) onProgressLine(line);
-    onLog(line);
-  });
+  onRunning(proc);
+  ProcessHelper.pipeProcessOutput(
+    process: proc,
+    onLog: onLog,
+    onProgress: onProgress,
+  );
 
-  final exit = await proc.exitCode;
-  if (isAborted()) throw StateError('Aborted');
-  if (exit != 0)
-    throw StateError('aria2c failed to download metadata (exitCode=$exit)');
+  await ProcessHelper.ensureExitOk(proc, isAborted, 'Metadata download failed');
 
-  // aria2c usually saves "<infohash>.torrent" in working dir; pick newest .torrent and rename
-  final torrents = cacheDir
+  final torrent = cache
       .listSync()
       .whereType<File>()
-      .where((f) => f.path.toLowerCase().endsWith('.torrent'))
-      .toList()
-    ..sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+      .firstWhere((f) => f.path.endsWith('.torrent'));
 
-  if (torrents.isEmpty) {
-    throw StateError('Torrent file not found after metadata download.');
-  }
-
-  final newest = torrents.first;
-  await newest.rename(cachedTorrentPath);
-  onLog('Saved torrent to: $cachedTorrentPath');
-  return cachedTorrentPath;
+  await torrent.rename(path);
+  return path;
 }
 
-/// Runs `aria2c --show-files <torrent>` and returns a map of index -> relative path.
+/// ============================================================================
+/// aria2 helpers
+/// ============================================================================
+
 Future<Map<int, String>> _showFiles({
   String aria2cPath,
   String torrentPath,
@@ -433,47 +334,26 @@ Future<Map<int, String>> _showFiles({
     aria2cPath,
     ['--show-files', torrentPath],
     workingDirectory: cwd,
-    runInShell: false,
   );
+
   onSetRunning(proc);
 
-  final out = StringBuffer();
-  proc.stdout.transform(utf8.decoder).listen(out.write);
-  proc.stderr.transform(utf8.decoder).listen((s) {
-    // aria2c sometimes prints extra info here; keep it for debugging
-    out.write(s);
-  });
+  final buffer = StringBuffer();
+  proc.stdout.transform(utf8.decoder).listen(buffer.write);
+  proc.stderr.transform(utf8.decoder).listen(buffer.write);
 
-  final exit = await proc.exitCode;
-  if (isAborted()) throw StateError('Aborted');
-  if (exit != 0)
-    throw StateError('aria2c --show-files failed (exitCode=$exit)');
+  await ProcessHelper.ensureExitOk(proc, isAborted, '--show-files failed');
 
-  final text = out.toString();
-  onLog(text);
+  final reg = RegExp(r'^\s*(\d+)\|\s*(.+)$', multiLine: true);
+  final matches = reg.allMatches(buffer.toString());
 
-  // Parse lines like: 5891|./TopRoms Collection/.../file.iso
-  final reg = RegExp(r'^\s*(\d+)\|\s*(.+)\s*$', multiLine: true);
-  final matches = reg.allMatches(text);
-
-  final map = <int, String>{};
-  for (final m in matches) {
-    final idx = int.parse(m.group(1));
-    var path = m.group(2);
-
-    // Keep as-is but normalize a bit (aria2 can prefix ./)
-    path = path.trim();
-    map[idx] = path;
+  if (matches.isEmpty) {
+    throw StateError('No files found in torrent');
   }
 
-  if (map.isEmpty) {
-    throw StateError('No files parsed from --show-files output.');
-  }
-
-  return map;
+  return {for (final m in matches) int.parse(m.group(1)): m.group(2).trim()};
 }
 
-/// Download selected file index from torrent.
 Future<void> _downloadSelectedFile({
   String aria2cPath,
   String torrentPath,
@@ -484,73 +364,40 @@ Future<void> _downloadSelectedFile({
   void Function(Process) onSetRunning,
   bool Function() isAborted,
 }) async {
-  final args = <String>[
-    '--select-file=$selectIndex',
-    '--seed-time=0',
-    '--file-allocation=none',
-    torrentPath,
-  ];
-
-  print(args);
-
-  onLog('Downloading selectIndex=$selectIndex ...');
   final proc = await Process.start(
     aria2cPath,
-    args,
+    [
+      '--select-file=$selectIndex',
+      '--seed-time=0',
+      '--file-allocation=none',
+      torrentPath,
+    ],
     workingDirectory: cwd,
-    runInShell: false,
   );
+
   onSetRunning(proc);
+  ProcessHelper.pipeProcessOutput(
+    process: proc,
+    onLog: onLog,
+    onProgress: onProgressLine,
+  );
 
-  proc.stdout
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .listen((line) {
-    if (line.contains('[#')) onProgressLine(line);
-    onLog(line);
-  });
-  proc.stderr
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .listen((line) {
-    if (line.contains('[#')) onProgressLine(line);
-    onLog(line);
-  });
-
-  final exit = await proc.exitCode;
-  if (isAborted()) throw StateError('Aborted');
-  if (exit != 0) throw StateError('aria2c download failed (exitCode=$exit)');
+  await ProcessHelper.ensureExitOk(proc, isAborted, 'Download failed');
 }
 
-/// Parses progress lines like:
-/// [#87b486 811MiB/823MiB(98%) CN:44 SD:6 DL:37MiB UL:4.6MiB(44MiB)]
-/// Also tries to capture ETA if it appears.
+/// ============================================================================
+/// Progress parser
+/// ============================================================================
+
 Aria2Progress _parseProgress(String line) {
-  // Percent is inside (...) right after done/total.
-  final percent = RegExp(r'\((\d+%)\)').firstMatch(line)?.group(1);
-
-  // done/total before (xx%)
-  final dt =
-      RegExp(r'\[#\w+\s+([0-9A-Za-z.]+)\/([0-9A-Za-z.]+)\(').firstMatch(line);
-  final done = dt?.group(1);
-  final total = dt?.group(2);
-
-  // SD, DL, UL
-  final seeds = RegExp(r'\bSD:(\d+)\b').firstMatch(line)?.group(1);
-  final dl = RegExp(r'\bDL:([0-9A-Za-z.]+)\b').firstMatch(line)?.group(1);
-  final ul = RegExp(r'\bUL:([0-9A-Za-z.]+)\b').firstMatch(line)?.group(1);
-
-  // ETA patterns vary; try common ones
-  final eta = RegExp(r'\bETA:([0-9A-Za-z:]+)\b').firstMatch(line)?.group(1);
-
   return Aria2Progress(
     rawLine: line,
-    percent: percent,
-    downloaded: done,
-    total: total,
-    dlSpeed: dl,
-    ulSpeed: ul,
-    seeds: seeds,
-    eta: eta,
+    percent: RegExp(r'\((\d+%)\)').firstMatch(line)?.group(1),
+    downloaded: RegExp(r'\[#\w+\s+([^\s/]+)').firstMatch(line)?.group(1),
+    total: RegExp(r'/([^\s(]+)\(').firstMatch(line)?.group(1),
+    dlSpeed: RegExp(r'\bDL:([^\s]+)').firstMatch(line)?.group(1),
+    ulSpeed: RegExp(r'\bUL:([^\s]+)').firstMatch(line)?.group(1),
+    seeds: RegExp(r'\bSD:(\d+)').firstMatch(line)?.group(1),
+    eta: RegExp(r'\bETA:([^\s]+)').firstMatch(line)?.group(1),
   );
 }

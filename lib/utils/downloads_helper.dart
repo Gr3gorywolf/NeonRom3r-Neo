@@ -51,12 +51,9 @@ class DownloadsHelper {
     }
 
     final handle = await Aria2DownloadManager.startDownload(
-      romName: rom.title,
+      rom: rom,
+      source: sourceRom,
       aria2cPath: FileSystemHelper.aria2cPath + "/aria2c",
-      uri: sourceRom.uris[0],
-      filePathInTorrent: sourceRom.filePath,
-      selectIndex: sourceRom.fileIndex,
-      // OR selectIndex: 5907,
     );
     final sub = handle.events.listen((e) {
       if (e is Aria2ProgressEvent) {
@@ -70,7 +67,7 @@ class DownloadsHelper {
         print(s);
       } else if (e is Aria2LogEvent) {
         // Optional: raw logs
-        print(e.line);
+        //print(e.line);
       } else if (e is Aria2ErrorEvent) {
         print('ERROR: ${e.message}');
       } else if (e is Aria2DoneEvent) {
