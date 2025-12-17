@@ -9,8 +9,8 @@ const sourcesFile = "download-sources.json";
 class DownloadSourcesHelper {
   static DownloadSourceWithDownloads parseDownloadSourceNames(
       DownloadSourceWithDownloads input) {
-    input.downloads = input.downloads.map((e) {
-      e.title_clean = RomsHelper.normalizeRomTitle(e.title);
+    input.downloads = input.downloads!.map((e) {
+      e.title_clean = RomsHelper.normalizeRomTitle(e.title!);
 
       return e;
     }).toList();

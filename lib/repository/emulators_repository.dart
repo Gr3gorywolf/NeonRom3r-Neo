@@ -10,7 +10,8 @@ class EmulatorsRepository {
   Future<Map<Console, List<Emulator>>> fetchEmulators() async {
     Map<Console, List<Emulator>> emulatorsMap = {};
     var client = new http.Client();
-    var res = await client.get("${Constants.apiBasePath}/Data/Emulators.json");
+    var res = await client
+        .get(Uri.parse("${Constants.apiBasePath}/Data/Emulators.json"));
     if (res.statusCode == 200) {
       Map<String, dynamic> body = json.decode(res.body);
       for (var romK in body.keys) {

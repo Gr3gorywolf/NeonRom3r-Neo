@@ -1,13 +1,13 @@
 import 'package:neonrom3r/models/rom_info.dart';
 
 class RomDownload {
-  String filePath;
-  String name;
-  String portrait;
-  String downloadLink;
-  String console;
-  String size;
-  static RomDownload fromRomInfo(RomInfo romInfo, String downloadPath) {
+  String? filePath;
+  String? name;
+  String? portrait;
+  String? downloadLink;
+  String? console;
+  String? size;
+  static RomDownload fromRomInfo(RomInfo romInfo, String? downloadPath) {
     return RomDownload(
         console: romInfo.console,
         downloadLink: romInfo.downloadLink,

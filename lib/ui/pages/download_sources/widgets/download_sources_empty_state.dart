@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DownloadSourcesEmptyState extends StatelessWidget {
   final VoidCallback onAdd;
 
-  const DownloadSourcesEmptyState({@required this.onAdd});
+  const DownloadSourcesEmptyState({required this.onAdd});
 
   @override
   Widget build(BuildContext context) {

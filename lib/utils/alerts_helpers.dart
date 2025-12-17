@@ -71,14 +71,14 @@ class AlertsHelpers {
               },
             ),
             actions: [
-              FlatButton(
+              TextButton(
                   textColor: Colors.red,
                   onPressed: () {
                     Navigator.pop(ctx);
                     completer.complete(null);
                   },
                   child: Text("Cancel")),
-              FlatButton(
+              TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     completer.complete(value);
@@ -92,11 +92,11 @@ class AlertsHelpers {
   }*/
 
   static showAlert(BuildContext ctx, String title, String text,
-      {Function callback = null,
-      Function onClose = null,
+      {Function? callback = null,
+      Function? onClose = null,
       bool cancelable = false,
       String acceptTitle = "Ok",
-      FlatButton additionalAction = null}) {
+      TextButton? additionalAction = null}) {
     showDialog(
         context: ctx,
         barrierDismissible: cancelable,
@@ -110,8 +110,9 @@ class AlertsHelpers {
             content: Text(text, style: TextStyle(color: Colors.green)),
             actions: [
               if (cancelable || onClose != null)
-                FlatButton(
-                  textColor: Colors.red,
+                TextButton(
+                    style: TextButton.styleFrom(
+                        textStyle: TextStyle(color: Colors.red)),
                     onPressed: () {
                       Navigator.pop(ctx);
                       if (onClose != null) {
@@ -132,7 +133,7 @@ class AlertsHelpers {
                     ),
                   ],
                 ),
-              FlatButton(
+              TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     if (callback != null) {

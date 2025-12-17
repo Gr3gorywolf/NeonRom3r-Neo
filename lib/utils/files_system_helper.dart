@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FileSystemHelper {
@@ -45,12 +44,12 @@ class FileSystemHelper {
   static _initRootPath() async {
     var rootPath = "";
     if (Platform.isAndroid) {
-      try {
-        var storageInfo = await PathProviderEx.getStorageInfo();
-        if (storageInfo.length > 0) {
-          rootPath = storageInfo[0].rootDir;
-        }
-      } on PlatformException catch (er) {}
+      // try {
+      //   var storageInfo = await PathProviderEx.getStorageInfo();
+      //   if (storageInfo.length > 0) {
+      //     rootPath = storageInfo[0].rootDir;
+      //   }
+      // } on PlatformException catch (er) {}
     } else if (isDesktop) {
       rootPath = Directory.current.path;
     }
@@ -62,11 +61,11 @@ class FileSystemHelper {
   static initPaths() async {
     if (Platform.isAndroid) {
       var status = await Permission.storage.status;
-      if (status.isUndetermined || status.isDenied) {
+      if (status.isRestricted || status.isDenied) {
         Map<Permission, PermissionStatus> statuses = await [
           Permission.storage,
         ].request();
-        var status = statuses[Permission.storage];
+        var status = statuses[Permission.storage]!;
         if (!status.isGranted) {
           return;
         }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:material_segmented_control/material_segmented_control.dart';
 import 'package:neonrom3r/models/rom_download.dart';
+import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/downloads/widgets/downloaded_roms_consoles.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
@@ -54,10 +55,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   selectionIndex: _currentSelection,
                   borderColor: Colors.green,
                   selectedColor: Colors.green,
-                  unselectedColor: Colors.grey[900],
+                  unselectedColor: Colors.grey[900]!,
                   borderRadius: 8.0,
                   horizontalPadding: EdgeInsets.only(top: 15, bottom: 5),
-                  onSegmentChosen: (index) {
+                  onSegmentChosen: (dynamic index) {
                     setState(() {
                       _currentSelection = index;
                     });
@@ -65,12 +66,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 ),
                 Expanded(
                   child: _currentSelection == 2
-                      ? DownloadedRomsConsoles(_downloadedRoms)
+                      ? DownloadedRomsConsoles(
+                          _downloadedRoms as List<RomDownload>)
                       : RomList(
                           isLoading: false,
                           showConsole: true,
                           roms: _downloadedRoms
-                              .map((e) => e.toRomInfo())
+                              .map(((e) => e.toRomInfo()))
                               .toList()
                               .reversed
                               .take(50)

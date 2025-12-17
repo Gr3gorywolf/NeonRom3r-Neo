@@ -5,18 +5,18 @@ import 'package:neonrom3r/utils/assets_helper.dart';
 import 'package:neonrom3r/utils/consoles_helper.dart';
 
 class ConsoleList extends StatefulWidget {
-  final Function(Console) onConsoleSelected;
-  Console selectedConsole;
-  List<Console> consoles;
+  Function(Console) onConsoleSelected;
+  Console? selectedConsole;
+  List<Console>? consoles;
   ConsoleList(
-      {@required this.onConsoleSelected, this.selectedConsole, this.consoles});
+      {required this.onConsoleSelected, this.selectedConsole, this.consoles});
 
   @override
   _ConsoleListState createState() => _ConsoleListState();
 }
 
 class _ConsoleListState extends State<ConsoleList> {
-  var _consoles = ConsolesHelper.getConsoles();
+  List<Console>? _consoles = ConsolesHelper.getConsoles();
   @override
   void initState() {
     super.initState();
@@ -25,9 +25,9 @@ class _ConsoleListState extends State<ConsoleList> {
     }
   }
 
-  Color getItemBackgroundColor(Console console) {
+  Color? getItemBackgroundColor(Console console) {
     if (widget.selectedConsole != null) {
-      if (console.slug == widget.selectedConsole.slug) {
+      if (console.slug == widget.selectedConsole!.slug) {
         return Colors.green;
       }
     }
@@ -36,19 +36,22 @@ class _ConsoleListState extends State<ConsoleList> {
 
   @override
   Widget build(BuildContext context) {
+    final scrollController = ScrollController();
     return Center(
       child: Container(
           height: 50,
           margin: EdgeInsets.fromLTRB(15, 7, 15, 7),
           child: Scrollbar(
+            controller: scrollController,
             child: ListView.builder(
-                itemCount: _consoles.length,
+                controller: scrollController,
+                itemCount: _consoles!.length,
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  var _currentConsole = this._consoles[index];
+                  var _currentConsole = this._consoles![index];
                   return FadeInDown(
-                    delay: Duration(milliseconds: 50 * index),
+                    delay: Duration(milliseconds: 50 * index as int),
                     child: GestureDetector(
                       onTap: () => widget.onConsoleSelected(_currentConsole),
                       child: Container(
@@ -61,13 +64,13 @@ class _ConsoleListState extends State<ConsoleList> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  AssetsHelper.getIcon(_currentConsole.slug,
+                                  AssetsHelper.getIcon(_currentConsole.slug!,
                                       size: 20),
                                   SizedBox(
                                     width: 5,
                                   ),
                                   Text(
-                                    _currentConsole.slug,
+                                    _currentConsole.slug!,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(color: Colors.white),
                                   )

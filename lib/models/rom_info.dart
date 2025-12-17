@@ -1,13 +1,13 @@
 class RomInfo {
-  String title;
-  String portrait;
-  String logo;
-  String titleImage;
-  List<String> gameplayCovers;
-  String size;
-  String region;
-  String console;
-  String downloadLink;
+  String? title;
+  String? portrait;
+  String? logo;
+  String? titleImage;
+  List<String>? gameplayCovers;
+  String? size;
+  String? region;
+  String? console;
+  String? downloadLink;
 
   RomInfo(
       {this.title,

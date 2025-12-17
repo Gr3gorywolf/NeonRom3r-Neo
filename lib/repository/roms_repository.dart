@@ -15,7 +15,7 @@ class RomsRepository {
     //If is catched tries to retrieve the cache file
     var signature = await CacheHelper.getCacheSignature(console.slug);
     if (signature != null) {
-      var res = await client.head(baseUrl);
+      var res = await client.head(Uri.parse(baseUrl));
       if (signature == res.headers['content-length']) {
         var file = CacheHelper.retrieveCacheFile("${console.slug}.json");
         if (file != null) {
@@ -26,7 +26,7 @@ class RomsRepository {
         }
       }
     }
-    var res = await client.get(baseUrl);
+    var res = await client.get(Uri.parse(baseUrl));
     var headers = res.headers;
     if (res.statusCode == 200 && res.body != null) {
       CacheHelper.writeCacheFile("${console.slug}.json", res.body);
@@ -41,9 +41,9 @@ class RomsRepository {
     }
   }
 
-  Future<RomInfo> fetchRomDetails(String infoLink) async {
+  Future<RomInfo?> fetchRomDetails(String infoLink) async {
     var client = new http.Client();
-    var res = await client.get(infoLink);
+    var res = await client.get(Uri.parse(infoLink));
     if (res.statusCode == 200) {
       return RomInfo.fromJson(json.decode(res.body));
     } else {

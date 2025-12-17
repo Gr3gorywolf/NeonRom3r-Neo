@@ -48,13 +48,13 @@ class DownloadSourcesProvider extends ChangeNotifier {
   }
 
   List<DownloadSourceWithDownloads> findDownloadSources(RomInfo rom) {
-    final normalizedRomName = RomsHelper.normalizeRomTitle(rom.title);
+    final normalizedRomName = RomsHelper.normalizeRomTitle(rom.title!);
     final List<DownloadSourceWithDownloads> results = [];
 
     for (final source in _downloadSources) {
-      final matches = source.downloads.where((sourceRom) {
+      final matches = source.downloads!.where((sourceRom) {
         return StringHelper.hasMinConsecutiveMatch(
-                sourceRom.title_clean, normalizedRomName,
+                sourceRom.title_clean!, normalizedRomName,
                 minLength: normalizedRomName.length) &&
             sourceRom.console == rom.console;
       }).toList();

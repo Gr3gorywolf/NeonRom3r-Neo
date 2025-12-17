@@ -24,7 +24,7 @@ class DownloadedRomsConsoles extends StatelessWidget {
   List<RomDownload> getConsoleRoms(Console console) {
     return downloadedRoms
         .where((element) =>
-            ConsolesHelper.getConsoleFromName(element.console).slug ==
+            ConsolesHelper.getConsoleFromName(element.console)!.slug ==
             console.slug)
         .toList();
   }

@@ -21,9 +21,9 @@ class DownloadProvider extends ChangeNotifier {
     return Provider.of<DownloadProvider>(ctx);
   }
 
-  final Map<String, _ActiveAria2Download> _aria2cDownloadProcesses = {};
+  final Map<String?, _ActiveAria2Download> _aria2cDownloadProcesses = {};
   final List<DownloadInfo> _activeDownloadInfos = [];
-  List<RomDownload> _downloadHistory = [];
+  List<RomDownload?> _downloadHistory = [];
 
   List<DownloadInfo> get activeDownloadInfos => _activeDownloadInfos;
   List<RomDownload> get downloadsRegistry {
@@ -31,9 +31,12 @@ class DownloadProvider extends ChangeNotifier {
         _activeDownloadInfos.map((e) => e.download).toList();
     var downloadHistory = _downloadHistory
         .where((d) => !downloadingRoms
-            .any((dr) => dr.name == d.name && dr.console == d.console))
+            .any((dr) => dr!.name == d!.name && dr.console == d.console))
         .toList();
-    return [...downloadHistory, ...downloadingRoms];
+    return [...downloadHistory, ...downloadingRoms]
+        .where((element) => element != null)
+        .cast<RomDownload>()
+        .toList();
   }
 
   /// ========================================================================
@@ -41,22 +44,22 @@ class DownloadProvider extends ChangeNotifier {
   /// ========================================================================
 
   bool isRomDownloading(RomInfo rom) {
-    return activeDownloadInfos.any((d) => d.download.isRomInfoEqual(rom));
+    return activeDownloadInfos.any((d) => d.download!.isRomInfoEqual(rom));
   }
 
-  DownloadInfo getDownloadInfo(RomInfo rom) {
+  DownloadInfo? getDownloadInfo(RomInfo? rom) {
     try {
       return _activeDownloadInfos
-          .where((e) => e.download.isRomInfoEqual(rom) && !e.isCompleted)
+          .where((e) => e.download!.isRomInfoEqual(rom!) && !e.isCompleted)
           .first;
     } catch (_) {
       return null;
     }
   }
 
-  RomDownload getDownloadedRomInfo(RomInfo rom) {
+  RomDownload? getDownloadedRomInfo(RomInfo rom) {
     try {
-      return _downloadHistory.where((e) => e.isRomInfoEqual(rom)).first;
+      return _downloadHistory.where((e) => e!.isRomInfoEqual(rom)).first;
     } catch (_) {
       return null;
     }
@@ -65,8 +68,8 @@ class DownloadProvider extends ChangeNotifier {
   bool isRomReadyToPlay(RomInfo rom) {
     final downloaded = getDownloadedRomInfo(rom);
     if (downloaded == null) return false;
-    return Directory(downloaded.filePath).existsSync() ||
-        File(downloaded.filePath).existsSync();
+    return Directory(downloaded.filePath!).existsSync() ||
+        File(downloaded.filePath!).existsSync();
   }
 
   /// ========================================================================
@@ -96,7 +99,7 @@ class DownloadProvider extends ChangeNotifier {
     );
 
     _activeDownloadInfos.add(info);
-    final sub = handle.events.listen((event) {
+    final sub = handle.events!.listen((event) {
       _handleAria2Event(
         event,
         rom,
@@ -118,8 +121,11 @@ class DownloadProvider extends ChangeNotifier {
 
   abortDownload(DownloadInfo info) {
     final active = _aria2cDownloadProcesses[info.downloadId];
+    print(active);
     if (active != null) {
-      active.handle.abort();
+      _activeDownloadInfos
+          .removeWhere((element) => element.downloadId == info.downloadId);
+      active.handle!.abort!();
       _disposeActive(info.downloadId);
       notifyListeners();
     }
@@ -162,7 +168,7 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadPercent = 100;
       info.downloadInfo = 'Download completed';
       print("Download completed: ${event.outputFilePath}");
-      info.download.filePath = event.outputFilePath;
+      info.download!.filePath = event.outputFilePath;
       _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
       _registerCompletedDownload(info.download, rom);
 
@@ -208,24 +214,24 @@ class DownloadProvider extends ChangeNotifier {
     return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 
-  Future initDownloads() {
+  void initDownloads() {
     _downloadHistory = DownloadsHelper().getDownloadedRoms();
     print(
         "Download registry initialized with ${_downloadHistory.length} items");
   }
 
-  void _registerCompletedDownload(RomDownload download, RomInfo rom) {
+  void _registerCompletedDownload(RomDownload? download, RomInfo rom) {
     _downloadHistory = DownloadsHelper().getDownloadedRoms();
 
-    final exists = _downloadHistory.any((e) => e.isRomInfoEqual(rom));
+    final exists = _downloadHistory.any((e) => e!.isRomInfoEqual(rom));
 
     if (!exists) {
       _downloadHistory.add(download);
-      DownloadsHelper().registerRomDownload(rom, download.filePath);
+      DownloadsHelper().registerRomDownload(rom, download!.filePath);
     }
   }
 
-  void _disposeActive(String id) {
+  void _disposeActive(String? id) {
     final active = _aria2cDownloadProcesses.remove(id);
     active?.sub?.cancel();
   }
@@ -236,10 +242,10 @@ class DownloadProvider extends ChangeNotifier {
 /// ============================================================================
 
 class _ActiveAria2Download {
-  RomInfo rom;
-  DownloadSourceRom source;
-  Aria2DownloadHandle handle;
-  StreamSubscription sub;
+  RomInfo? rom;
+  DownloadSourceRom? source;
+  Aria2DownloadHandle? handle;
+  StreamSubscription? sub;
 
   _ActiveAria2Download({
     this.rom,

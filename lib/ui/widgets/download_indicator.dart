@@ -15,8 +15,8 @@ class DownloadIndicator extends StatelessWidget {
     var _isDownloading = _provider.isRomDownloading(rom);
     var _isReadyToPlay = _provider.isRomReadyToPlay(rom);
     if (_isDownloading) {
-      var _downloadInfo = _provider.getDownloadInfo(rom);
-      return DownloadSpinner(_downloadInfo.downloadPercent.toDouble());
+      var _downloadInfo = _provider.getDownloadInfo(rom)!;
+      return DownloadSpinner(_downloadInfo.downloadPercent!.toDouble());
     } else if (_isReadyToPlay) {
       return FadeIn(
         duration: Duration(milliseconds: 1200),

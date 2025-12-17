@@ -9,11 +9,17 @@ class AssetsHelper {
     );
   }
 
-    static getIcon(String name, {double size = 24}) {
+  static getIcon(String name, {double size = 24}) {
     return Image.asset(
       "assets/icons/$name.png",
       height: size,
       width: size,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(
+          Icons.error,
+          size: size,
+        );
+      },
     );
   }
 }

@@ -16,7 +16,7 @@ class EmulatorListItem extends StatefulWidget {
 class _EmulatorListItemState extends State<EmulatorListItem> {
   bool isFetchingAvailability = false;
   bool isEmulatorAvailable = false;
-  Timer _timer;
+  late Timer _timer;
   @override
   void initState() {
     super.initState();
@@ -33,7 +33,7 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
   }
 
   checkAvailability() async {
-    var result = await DeviceApps.isAppInstalled(widget.emulator.packageName);
+    var result = await DeviceApps.isAppInstalled(widget.emulator.packageName!);
     setState(() {
       isEmulatorAvailable = result;
     });
@@ -41,7 +41,7 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
 
   String get emulatorTag {
     var compatibility =
-        widget.emulator.isCompatible ? "Compatible" : "Incompatible";
+        widget.emulator.isCompatible! ? "Compatible" : "Incompatible";
     var availability = isEmulatorAvailable ? "Installed" : "Not installed";
     return "$compatibility - $availability";
   }
@@ -55,21 +55,21 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
                   data: widget.emulator.downloadLink, action: "action_view")
               .launch();
         } else {
-         DeviceApps.openApp(widget.emulator.packageName);
+         DeviceApps.openApp(widget.emulator.packageName!);
         }
       },
       contentPadding: EdgeInsets.all(5),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(5),
         child: Image.network(
-          widget.emulator.image,
+          widget.emulator.image!,
           height: 50,
           width: 50,
           fit: BoxFit.cover,
         ),
       ),
       title: Text(
-        widget.emulator.name,
+        widget.emulator.name!,
         style: TextStyle(color: Colors.white),
       ),
       subtitle: Column(

@@ -1,5 +1,4 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:any_widget_marquee/any_widget_marquee.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
@@ -31,13 +30,13 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   }
 
   shareFile() {
-    var downloadedRom = _downloadProvider.getDownloadedRomInfo(widget.rom);
-    Share.shareFiles([downloadedRom.filePath],
+    var downloadedRom = _downloadProvider.getDownloadedRomInfo(widget.rom)!;
+    Share.shareFiles([downloadedRom.filePath!],
         text: "${widget.rom.title}\n shared and downloaded from NeonRom3r");
   }
 
   shareLink() {
-    var normalizedLink = Uri.encodeFull(widget.rom.downloadLink).toString();
+    var normalizedLink = Uri.encodeFull(widget.rom.downloadLink!).toString();
     Share.share(
         "Download link for the rom: ${widget.rom.title}\n ${normalizedLink}\n shared from NeonRom3r");
   }
@@ -53,14 +52,14 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   }
 
   buildShareFileAction() {
-    return FlatButton(onPressed: shareFile, child: Text("Rom file"));
+    return TextButton(onPressed: shareFile, child: Text("Rom file"));
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: Colors.grey[900]!,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0))),
       child: Padding(
@@ -88,7 +87,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.rom.title,
+                          widget.rom.title!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

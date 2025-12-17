@@ -16,18 +16,18 @@ class ConsoleEmulatorsPage extends StatefulWidget {
 
 class _ConsoleEmulatorsPageState extends State<ConsoleEmulatorsPage> {
   String _searchQuery = "";
-  SearchBar searchBar;
+  SearchBar? searchBar;
   bool _isLoading = false;
   AppBar get defaultAppbar {
     return AppBar(
-      title: Text(widget.console.name + " Emulators"),
-      actions: [searchBar.getSearchAction(context)],
+      title: Text(widget.console.name! + " Emulators"),
+      actions: [searchBar!.getSearchAction(context)],
     );
   }
 
   List<Emulator> get filteredEmulators {
     return widget.emulators
-        .where((element) => element.name
+        .where((element) => element.name!
             .toLowerCase()
             .contains(this._searchQuery.toLowerCase()))
         .toList();
@@ -68,7 +68,7 @@ class _ConsoleEmulatorsPageState extends State<ConsoleEmulatorsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: searchBar.build(context),
+      appBar: searchBar!.build(context),
       body: ListView.separated(
           padding: EdgeInsets.all(10),
           separatorBuilder: (context, index) {

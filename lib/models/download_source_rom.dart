@@ -1,12 +1,12 @@
 class DownloadSourceRom {
-  String fileSize;
-  String title_clean;
-  List<String> uris;
-  String title;
-  String filePath;
-  int fileIndex;
-  String uploadDate;
-  String console;
+  String? fileSize;
+  String? title_clean;
+  List<String>? uris;
+  String? title;
+  String? filePath;
+  int? fileIndex;
+  String? uploadDate;
+  String? console;
 
   DownloadSourceRom(
       {this.fileSize,

@@ -6,7 +6,6 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:neonrom3r/models/aria2c.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
-import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
@@ -35,9 +34,9 @@ class DownloadsHelper {
     }
   }
 
-  String _getFileNameFromHeaders(Map<String, String> headers) {
+  String? _getFileNameFromHeaders(Map<String, String> headers) {
     if (headers.keys.contains('content-disposition')) {
-      var fileNameArray = headers['content-disposition'].split('filename="');
+      var fileNameArray = headers['content-disposition']!.split('filename="');
       if (fileNameArray.length > 0) {
         fileNameArray = fileNameArray[1].split('";');
         return fileNameArray[0];
@@ -65,13 +64,13 @@ class DownloadsHelper {
   void catchRomPortrait(RomInfo romInfo) async {
     var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.title}.png';
     if (!File(portraitName).existsSync()) {
-      http.get(romInfo.portrait).then((response) {
+      http.get(Uri.parse(romInfo.portrait ?? '')).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
       });
     }
   }
 
-  List<RomDownload> getDownloadedRoms() {
+  List<RomDownload?> getDownloadedRoms() {
     var registryData = "[]";
     File registryFile = File(FileSystemHelper.downloadRegistryFile);
     if (registryFile.existsSync()) {
@@ -80,22 +79,22 @@ class DownloadsHelper {
       return [];
     }
     var registryObject = json.decode(registryData);
-    List<RomDownload> downloads = [];
+    List<RomDownload?> downloads = [];
     for (var down in registryObject) {
       downloads.add(RomDownload.fromJson(down));
     }
     return downloads;
   }
 
-  void registerRomDownload(RomInfo downloadedRom, String downloadedPath) {
+  void registerRomDownload(RomInfo downloadedRom, String? downloadedPath) {
     File registryFile = File(FileSystemHelper.downloadRegistryFile);
     var downloads = getDownloadedRoms();
     var downloadIndex = downloads
-        .indexWhere((element) => element.isRomInfoEqual(downloadedRom));
+        .indexWhere((element) => element!.isRomInfoEqual(downloadedRom));
     if (downloadIndex == -1) {
       downloads.add(RomDownload.fromRomInfo(downloadedRom, downloadedPath));
     } else {
-      downloads[downloadIndex].filePath = downloadedPath;
+      downloads[downloadIndex]!.filePath = downloadedPath;
     }
     var jsonData = json.encode(downloads);
     registryFile.writeAsStringSync(jsonData);

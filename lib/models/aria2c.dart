@@ -1,13 +1,13 @@
 /// Progress parsed from aria2c lines.
 class Aria2Progress {
-  final String percent; // e.g. "98%"
-  final String downloaded; // e.g. "811MiB"
-  final String total; // e.g. "823MiB"
-  final String dlSpeed; // e.g. "37MiB"
-  final String ulSpeed; // e.g. "4.6MiB"
-  final String seeds; // SD:<n>
-  final String eta; // if present in output
-  final String rawLine;
+  final String? percent; // e.g. "98%"
+  final String? downloaded; // e.g. "811MiB"
+  final String? total; // e.g. "823MiB"
+  final String? dlSpeed; // e.g. "37MiB"
+  final String? ulSpeed; // e.g. "4.6MiB"
+  final String? seeds; // SD:<n>
+  final String? eta; // if present in output
+  final String? rawLine;
 
   Aria2Progress({
     this.rawLine,
@@ -45,14 +45,14 @@ class Aria2ProgressEvent extends Aria2Event {
 }
 
 class Aria2LogEvent extends Aria2Event {
-  final String line;
+  final String? line;
   const Aria2LogEvent(this.line);
 }
 
 class Aria2DoneEvent extends Aria2Event {
-  final String outputFilePath;
-  final int selectedIndex;
-  final String selectedTorrentPath;
+  final String? outputFilePath;
+  final int? selectedIndex;
+  final String? selectedTorrentPath;
   const Aria2DoneEvent({
     this.outputFilePath,
     this.selectedIndex,
@@ -61,7 +61,7 @@ class Aria2DoneEvent extends Aria2Event {
 }
 
 class Aria2ErrorEvent extends Aria2Event {
-  final String message;
+  final String? message;
   const Aria2ErrorEvent(this.message);
 }
 
@@ -73,9 +73,9 @@ class Aria2DownloadHandle {
   final void Function() abort;
 
   Aria2DownloadHandle({
-    this.id,
-    this.events,
-    this.done,
-    this.abort,
+    required this.id,
+    required this.events,
+    required this.done,
+    required this.abort,
   });
 }

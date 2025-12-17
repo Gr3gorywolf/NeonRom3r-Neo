@@ -1,7 +1,7 @@
 class EmulatorIntent {
-  String consoleSlug;
-  bool shouldUncompress;
-  List<Intents> intents;
+  String? consoleSlug;
+  bool? shouldUncompress;
+  List<Intents>? intents;
 
   EmulatorIntent({this.consoleSlug, this.shouldUncompress, this.intents});
 
@@ -11,7 +11,7 @@ class EmulatorIntent {
     if (json['intents'] != null) {
       intents = [];
       json['intents'].forEach((v) {
-        intents.add(new Intents.fromJson(v));
+        intents!.add(new Intents.fromJson(v));
       });
     }
   }
@@ -21,17 +21,17 @@ class EmulatorIntent {
     data['console_slug'] = this.consoleSlug;
     data['should_uncompress'] = this.shouldUncompress;
     if (this.intents != null) {
-      data['intents'] = this.intents.map((v) => v.toJson()).toList();
+      data['intents'] = this.intents!.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
 class Intents {
-  String package;
-  String activity;
-  String type;
-  String action;
+  String? package;
+  String? activity;
+  String? type;
+  String? action;
 
   Intents({this.package, this.activity, this.type, this.action});
 

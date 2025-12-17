@@ -3,15 +3,15 @@ import 'dart:io';
 
 class ProcessHelper {
   static void pipeProcessOutput({
-    Process process,
-    void Function(String) onLog,
-    void Function(String) onProgress,
+    required Process process,
+    void Function(String)? onLog,
+    void Function(String)? onProgress,
   }) {
     void handle(String line) {
       if (onProgress != null && line.contains('[#')) {
         onProgress(line);
       }
-      onLog(line);
+      onLog!(line);
     }
 
     process.stdout

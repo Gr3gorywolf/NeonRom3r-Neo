@@ -14,7 +14,7 @@ class RomDetailsDialog extends StatefulWidget {
   }
 
   RomInfo rom;
-  RomDetailsDialog({@required this.rom});
+  RomDetailsDialog({required this.rom});
   @override
   _RomDetailsDialogState createState() => _RomDetailsDialogState();
 }

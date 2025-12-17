@@ -24,16 +24,16 @@ class RomsHelper {
   static Future openDownloadedRom(RomDownload download) async {
     var intents = _intents;
     var console = ConsolesHelper.getConsoleFromName(download.console);
-    EmulatorIntent emulatorIntent = null;
+    EmulatorIntent? emulatorIntent = null;
     for (var intent in intents) {
-      if (intent.consoleSlug == console.slug) {
+      if (intent.consoleSlug == console!.slug) {
         emulatorIntent = intent;
         break;
       }
     }
     if (emulatorIntent != null) {
-      for (var intent in emulatorIntent.intents) {
-        if (await DeviceApps.isAppInstalled(intent.package)) {
+      for (var intent in emulatorIntent.intents!) {
+        if (await DeviceApps.isAppInstalled(intent.package!)) {
           await _launchIntent(intent, download.filePath);
         }
       }
@@ -41,10 +41,10 @@ class RomsHelper {
     print(download);
   }
 
-  static Future _launchIntent(Intents intent, String romPath) async {
-    String action = null;
+  static Future _launchIntent(Intents intent, String? romPath) async {
+    String? action = null;
     if (intent.action != null) {
-      if (intent.action.endsWith("VIEW")) {
+      if (intent.action!.endsWith("VIEW")) {
         action = "action_view";
       }
     }

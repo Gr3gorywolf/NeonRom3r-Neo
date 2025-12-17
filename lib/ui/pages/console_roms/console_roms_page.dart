@@ -7,7 +7,7 @@ import 'package:neonrom3r/ui/widgets/rom_list.dart';
 
 class ConsoleRomsPage extends StatefulWidget {
   Console console;
-  List<RomInfo> infos;
+  List<RomInfo>? infos;
   ConsoleRomsPage(this.console, {this.infos});
   @override
   _ConsoleRomsPageState createState() => _ConsoleRomsPageState();
@@ -15,19 +15,19 @@ class ConsoleRomsPage extends StatefulWidget {
 
 class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   String _searchQuery = "";
-  SearchBar searchBar;
-  List<RomInfo> _roms = [];
+  SearchBar? searchBar;
+  List<RomInfo>? _roms = [];
   bool _isLoading = false;
   AppBar get defaultAppbar {
     return AppBar(
-      title: Text(widget.console.name + " Roms"),
-      actions: [searchBar.getSearchAction(context)],
+      title: Text(widget.console.name! + " Roms"),
+      actions: [searchBar!.getSearchAction(context)],
     );
   }
 
   List<RomInfo> get filteredRoms {
-    return _roms
-        .where((element) => element.title
+    return _roms!
+        .where((element) => element.title!
             .toLowerCase()
             .contains(this._searchQuery.toLowerCase()))
         .toList();
@@ -84,7 +84,7 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: searchBar.build(context),
+      appBar: searchBar!.build(context),
       body: RomList(isLoading: this._isLoading, roms: filteredRoms),
     );
   }

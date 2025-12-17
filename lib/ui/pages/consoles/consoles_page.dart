@@ -11,8 +11,9 @@ class _ConsolesPageState extends State<ConsolesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Consoles")),
-      body: ConsoleList()
-    );
+        appBar: AppBar(title: Text("Consoles")),
+        body: ConsoleList(
+          onConsoleSelected: (_) => {},
+        ));
   }
 }

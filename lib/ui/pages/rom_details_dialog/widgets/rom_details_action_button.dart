@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:neonrom3r/models/download_info.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
@@ -8,6 +9,7 @@ import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_so
 import 'package:neonrom3r/utils/alerts_helpers.dart';
 import 'package:neonrom3r/utils/downloads_helper.dart';
 import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 
 class RomDetailsActionButton extends StatefulWidget {
@@ -32,26 +34,27 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
       return;
     }
     DownloadsHelper().downloadRom(context, this.widget.rom, romSource);
-    Toast.show("Download started...", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    Toast.show("Download started...",
+        duration: Toast.lengthLong, gravity: Toast.bottom);
   }
 
   handlePlay() async {
     var downloaded = DownloadsHelper().getDownloadedRoms();
     var rom = downloaded.firstWhere(
-        (element) => element.downloadLink == widget.rom.downloadLink);
-    Toast.show("Launching rom...", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        (element) => element!.downloadLink == widget.rom.downloadLink)!;
+    Toast.show("Launching rom...",
+        duration: Toast.lengthLong, gravity: Toast.bottom);
     await RomsHelper.openDownloadedRom(rom);
-    Toast.show("Rom launched", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    Toast.show("Rom launched",
+        duration: Toast.lengthLong, gravity: Toast.bottom);
   }
 
-  handleCancelDownload(String downloadId) {
+  handleCancelDownload(DownloadInfo downloadInfo) {
     AlertsHelpers.showAlert(
         context, "Warning", "You are sure you want to cancel this download?",
         acceptTitle: "Yes", callback: () {
-      FlutterDownloader.cancel(taskId: downloadId);
+      Provider.of<DownloadProvider>(context, listen: false)
+          .abortDownload(downloadInfo);
     }, cancelable: true);
   }
 
@@ -61,11 +64,11 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
     var _isDownloading = _provider.isRomDownloading(widget.rom);
     var _isReadyToPlay = _provider.isRomReadyToPlay(widget.rom);
     if (_isDownloading) {
-      var _downloadInfo = _provider.getDownloadInfo(widget.rom);
-      var _percent = _downloadInfo.downloadPercent.toDouble();
+      var _downloadInfo = _provider.getDownloadInfo(widget.rom)!;
+      var _percent = _downloadInfo.downloadPercent!.toDouble();
 
       return InkWell(
-        onTap: () => handleCancelDownload(_downloadInfo.downloadId),
+        onTap: () => handleCancelDownload(_downloadInfo),
         child: Container(
           width: 36,
           height: 36,

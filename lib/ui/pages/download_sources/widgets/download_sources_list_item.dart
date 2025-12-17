@@ -7,9 +7,9 @@ class DownloadSourceListItem extends StatelessWidget {
   final VoidCallback onDelete;
 
   const DownloadSourceListItem({
-    @required this.source,
-    @required this.onEdit,
-    @required this.onDelete,
+    required this.source,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -17,8 +17,8 @@ class DownloadSourceListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        title: Text(source.sourceInfo.title),
-        subtitle: Text('${source.downloads.length} roms available'),
+        title: Text(source.sourceInfo!.title!),
+        subtitle: Text('${source.downloads!.length} roms available'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

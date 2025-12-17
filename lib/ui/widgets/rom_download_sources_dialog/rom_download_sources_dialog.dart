@@ -9,8 +9,8 @@ class RomDownloadSourcesDialog extends StatelessWidget {
   final RomInfo rom;
 
   const RomDownloadSourcesDialog({
-    Key key,
-    @required this.rom,
+    Key? key,
+    required this.rom,
   }) : super(key: key);
 
   // ---------------- NORMALIZACIÓN ----------------
@@ -44,10 +44,10 @@ class RomDownloadSourcesDialog extends StatelessWidget {
         provider.findDownloadSources(rom);
     final List<_Result> filteredResults = [];
     for (final source in results) {
-      for (final sourceDownload in source.downloads) {
+      for (final sourceDownload in source.downloads!) {
         filteredResults.add(_Result(
           rom: sourceDownload,
-          sourceTitle: source.sourceInfo.title,
+          sourceTitle: source.sourceInfo!.title,
         ));
       }
     }
@@ -71,7 +71,7 @@ class RomDownloadSourcesDialog extends StatelessWidget {
                   return ListTile(
                     leading: const Icon(Icons.gamepad),
                     title: Text(
-                      item.rom.title,
+                      item.rom.title!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -101,10 +101,10 @@ class RomDownloadSourcesDialog extends StatelessWidget {
 
 class _Result {
   final DownloadSourceRom rom;
-  final String sourceTitle;
+  final String? sourceTitle;
 
   _Result({
-    @required this.rom,
-    @required this.sourceTitle,
+    required this.rom,
+    required this.sourceTitle,
   });
 }

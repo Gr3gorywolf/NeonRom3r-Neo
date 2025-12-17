@@ -27,19 +27,19 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
               icon: Icon(Icons.games),
-              title: Text("Roms"),
+              label: "Roms",
               backgroundColor: Colors.green),
           BottomNavigationBarItem(
               icon: AssetsHelper.getIcon("arcade"),
-              title: Text("Emulators"),
+              label: "Emulators",
               backgroundColor: Colors.green),
           BottomNavigationBarItem(
               icon: Icon(Icons.download_sharp),
-              title: Text("Downloads"),
+              label: "Downloads",
               backgroundColor: Colors.green),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              title: Text("Settings"),
+              label: "Settings",
               backgroundColor: Colors.green)
         ],
         onTap: (int index) {

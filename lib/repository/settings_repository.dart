@@ -8,8 +8,8 @@ class SettingsRepository {
   Future<List<EmulatorIntent>> fetchIntentsSettings() async {
     List<EmulatorIntent> emulatorsIntents = [];
     var client = new http.Client();
-    var res = await client
-        .get("${Constants.apiBasePath}/Configs/EmulatorIntents.json");
+    var res = await client.get(
+        Uri.parse("${Constants.apiBasePath}/Configs/EmulatorIntents.json"));
     if (res.statusCode == 200) {
       for (var rom in json.decode(res.body)) {
         emulatorsIntents.add(EmulatorIntent.fromJson(rom));

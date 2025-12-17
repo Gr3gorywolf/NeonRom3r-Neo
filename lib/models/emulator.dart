@@ -1,9 +1,9 @@
 class Emulator {
-  String name;
-  String image;
-  String downloadLink;
-  String packageName;
-  bool isCompatible;
+  String? name;
+  String? image;
+  String? downloadLink;
+  String? packageName;
+  bool? isCompatible;
 
   Emulator(
       {this.name,

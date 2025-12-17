@@ -20,7 +20,7 @@ class UnselectedPlaceholder extends StatelessWidget {
             ),
             Text(
               "Please select a console from list below",
-              style: TextStyle(fontSize: 16, color: Colors.green[900]),
+              style: TextStyle(fontSize: 16, color: Colors.green[900]!),
             )
           ],
         ),

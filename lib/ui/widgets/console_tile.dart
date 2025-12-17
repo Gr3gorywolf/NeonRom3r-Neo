@@ -4,7 +4,7 @@ import 'package:neonrom3r/utils/assets_helper.dart';
 
 class ConsoleTile extends StatelessWidget {
   Console console;
-  int romsCount;
+  int? romsCount;
   ConsoleTile(this.console, {this.romsCount});
   @override
   Widget build(BuildContext context) {
@@ -19,12 +19,12 @@ class ConsoleTile extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AssetsHelper.getIcon(console.slug, size: 40),
+              AssetsHelper.getIcon(console.slug!, size: 40),
               SizedBox(
                 height: 5,
               ),
               Text(
-                console.name,
+                console.name!,
                 style: TextStyle(color: Colors.white),
                 textAlign: TextAlign.center,
               ),

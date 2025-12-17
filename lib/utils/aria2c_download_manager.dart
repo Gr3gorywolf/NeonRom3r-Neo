@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:neonrom3r/models/aria2c.dart';
@@ -18,12 +19,12 @@ import 'files_system_helper.dart';
 /// Internal Classes
 /// ============================================================================
 class IsolateActiveJob {
-  final String id;
-  final Isolate isolate;
-  final ReceivePort receivePort;
-  final StreamSubscription sub;
-  final StreamController<Aria2Event> controller;
-  SendPort controlPort;
+  final String? id;
+  final Isolate? isolate;
+  final ReceivePort? receivePort;
+  final StreamSubscription? sub;
+  final StreamController<Aria2Event>? controller;
+  SendPort? controlPort;
 
   IsolateActiveJob({
     this.id,
@@ -35,12 +36,12 @@ class IsolateActiveJob {
 }
 
 class IsolateArgs {
-  final SendPort sendPort;
-  final String aria2cPath;
-  final String uri;
-  final int fileIndex;
-  final String filePath;
-  final String downloadPath;
+  final SendPort? sendPort;
+  final String? aria2cPath;
+  final String? uri;
+  final int? fileIndex;
+  final String? filePath;
+  final String? downloadPath;
 
   IsolateArgs({
     this.sendPort,
@@ -71,12 +72,12 @@ class Aria2DownloadManager {
   /// - [RomInfo]   → metadata / folder name
   /// - [DownloadSourceRom] → torrent source & file index
   static Future<Aria2DownloadHandle> startDownload({
-    RomInfo rom,
-    DownloadSourceRom source,
-    String aria2cPath,
+    required RomInfo rom,
+    required DownloadSourceRom source,
+    String? aria2cPath,
   }) async {
-    final uri = source.uris.first;
-    final id = StringHelper.hash20(rom.title + rom.console);
+    final uri = source.uris!.first;
+    final id = StringHelper.hash20(rom.title! + rom.console!);
 
     if (_jobs.containsKey(id)) {
       throw StateError('Download already running for id=$id');
@@ -85,7 +86,8 @@ class Aria2DownloadManager {
     final receivePort = ReceivePort();
     final controller = StreamController<Aria2Event>.broadcast();
     final doneCompleter = Completer<Aria2DoneEvent>();
-
+    final downloadPath =
+        p.join(FileSystemHelper.downloadsPath, rom.console, rom.title);
     final isolate = await Isolate.spawn<IsolateArgs>(
       _downloadIsolateMain,
       IsolateArgs(
@@ -94,13 +96,12 @@ class Aria2DownloadManager {
         uri: uri,
         fileIndex: source.fileIndex,
         filePath: source.filePath,
-        downloadPath:
-            p.join(FileSystemHelper.downloadsPath, rom.console, rom.title),
+        downloadPath: downloadPath,
       ),
       debugName: 'aria2c-$id',
     );
 
-    SendPort controlPort;
+    SendPort? controlPort;
 
     final sub = receivePort.listen((msg) {
       if (msg is! Map) return;
@@ -152,12 +153,17 @@ class Aria2DownloadManager {
 
       job.controlPort?.send({'cmd': 'abort'});
       Future.delayed(const Duration(milliseconds: 300), () {
-        job.isolate.kill(priority: Isolate.immediate);
+        job.isolate!.kill(priority: Isolate.immediate);
       });
 
-      job.receivePort.close();
-      job.sub.cancel();
-      job.controller.close();
+      job.receivePort!.close();
+      job.sub!.cancel();
+      job.controller!.close();
+      // remove all files from download path
+      final dir = Directory(downloadPath);
+      if (dir.existsSync()) {
+        dir.deleteSync(recursive: true);
+      }
     }
 
     _jobs[id] = IsolateActiveJob(
@@ -180,9 +186,9 @@ class Aria2DownloadManager {
     final job = _jobs.remove(id);
     if (job == null) return;
 
-    job.receivePort.close();
-    job.sub.cancel();
-    job.controller.close();
+    job.receivePort!.close();
+    job.sub!.cancel();
+    job.controller!.close();
   }
 }
 
@@ -191,12 +197,12 @@ class Aria2DownloadManager {
 /// ============================================================================
 
 Future<void> _downloadIsolateMain(IsolateArgs args) async {
-  final main = args.sendPort;
+  final main = args.sendPort!;
   final control = ReceivePort();
   main.send({'type': 'controlPort', 'port': control.sendPort});
 
   bool aborted = false;
-  Process running;
+  Process? running;
 
   control.listen((msg) {
     if (msg is Map && msg['cmd'] == 'abort') {
@@ -210,16 +216,16 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
   void fail(Object e) => main.send({'type': 'error', 'message': e.toString()});
 
   try {
-    final uriType = _detectUriType(args.uri);
-    final romDir = Directory(args.downloadPath)..createSync(recursive: true);
+    final uriType = _detectUriType(args.uri!);
+    final romDir = Directory(args.downloadPath!)..createSync(recursive: true);
 
     // =======================================================================
     // DIRECT FILE DOWNLOAD (no torrent, no magnet)
     // =======================================================================
     if (uriType == _UriType.direct) {
       final proc = await Process.start(
-        args.aria2cPath,
-        [args.uri],
+        args.aria2cPath!,
+        [args.uri!],
         workingDirectory: romDir.path,
       );
 
@@ -233,7 +239,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       await ProcessHelper.ensureExitOk(
           proc, () => aborted, 'Direct download failed');
 
-      final fileName = p.basename(args.uri);
+      final fileName = p.basename(args.uri!);
       final outputPath = p.join(romDir.path, fileName);
 
       main.send({
@@ -250,7 +256,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
     final torrentPath = await _resolveTorrent(
       aria2cPath: args.aria2cPath,
-      uri: args.uri,
+      uri: args.uri!,
       onLog: log,
       onProgress: progress,
       onRunning: (p) => running = p,
@@ -258,7 +264,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     );
 
     final files = await _showFiles(
-      aria2cPath: args.aria2cPath,
+      aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       cwd: FileSystemHelper.torrentsCache,
       onLog: log,
@@ -269,16 +275,15 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     var fileIndex = args.fileIndex;
     if (fileIndex == null && args.filePath != null) {
       fileIndex = files.entries
-          .firstWhere(
+          .firstWhereOrNull(
             (e) => e.value == args.filePath,
-            orElse: () => null,
           )
           ?.key;
     }
-    final relPath = fileIndex != null ? files[args.fileIndex] : null;
+    final relPath = fileIndex != null ? files[args.fileIndex!] : null;
 
     await _downloadSelectedFile(
-      aria2cPath: args.aria2cPath,
+      aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       selectIndex: fileIndex,
       cwd: args.downloadPath,
@@ -287,16 +292,16 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       onSetRunning: (p) => running = p,
       isAborted: () => aborted,
     );
-    String outputPath = args.downloadPath;
+    String? outputPath = args.downloadPath;
     if (relPath != null) {
       outputPath = p.join(romDir.path, p.basename(relPath));
-      final src = File(p.join(args.downloadPath, relPath));
+      final src = File(p.join(args.downloadPath!, relPath));
       final dst = File(outputPath);
 
       await src.rename(dst.path);
 
       // Cleanup residual torrent files
-      final dir = Directory(args.downloadPath);
+      final dir = Directory(args.downloadPath!);
       await for (var entity in dir.list()) {
         if (entity.path != dst.path) {
           try {
@@ -331,12 +336,12 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
 /// ============================================================================
 
 Future<String> _resolveTorrent({
-  String aria2cPath,
-  String uri,
-  void Function(String) onLog,
-  void Function(String) onProgress,
-  void Function(Process) onRunning,
-  bool Function() isAborted,
+  String? aria2cPath,
+  required String uri,
+  void Function(String)? onLog,
+  void Function(String)? onProgress,
+  void Function(Process)? onRunning,
+  bool Function()? isAborted,
 }) async {
   final cache = Directory(FileSystemHelper.torrentsCache)
     ..createSync(recursive: true);
@@ -350,7 +355,7 @@ Future<String> _resolveTorrent({
       return targetPath;
     }
 
-    onLog('Downloading torrent via HTTP: $uri');
+    onLog!('Downloading torrent via HTTP: $uri');
 
     final client = HttpClient();
     final request = await client.getUrl(Uri.parse(uri));
@@ -367,7 +372,7 @@ Future<String> _resolveTorrent({
 
     try {
       await for (final chunk in response) {
-        if (isAborted()) {
+        if (isAborted!()) {
           await sink.close();
           await file.delete();
           throw StateError('Aborted');
@@ -392,7 +397,7 @@ Future<String> _resolveTorrent({
   if (await File(path).exists()) return path;
 
   final proc = await Process.start(
-    aria2cPath,
+    aria2cPath!,
     [
       '--bt-metadata-only=true',
       '--bt-save-metadata=true',
@@ -402,14 +407,15 @@ Future<String> _resolveTorrent({
     workingDirectory: cache.path,
   );
 
-  onRunning(proc);
+  onRunning!(proc);
   ProcessHelper.pipeProcessOutput(
     process: proc,
     onLog: onLog,
     onProgress: onProgress,
   );
 
-  await ProcessHelper.ensureExitOk(proc, isAborted, 'Metadata download failed');
+  await ProcessHelper.ensureExitOk(
+      proc, isAborted!, 'Metadata download failed');
 
   final torrent = cache
       .listSync()
@@ -425,12 +431,12 @@ Future<String> _resolveTorrent({
 /// ============================================================================
 
 Future<Map<int, String>> _showFiles({
-  String aria2cPath,
-  String torrentPath,
-  String cwd,
-  void Function(String) onLog,
-  void Function(Process) onSetRunning,
-  bool Function() isAborted,
+  required String aria2cPath,
+  required String torrentPath,
+  String? cwd,
+  void Function(String)? onLog,
+  required void Function(Process) onSetRunning,
+  required bool Function() isAborted,
 }) async {
   final proc = await Process.start(
     aria2cPath,
@@ -453,18 +459,18 @@ Future<Map<int, String>> _showFiles({
     throw StateError('No files found in torrent');
   }
 
-  return {for (final m in matches) int.parse(m.group(1)): m.group(2).trim()};
+  return {for (final m in matches) int.parse(m.group(1)!): m.group(2)!.trim()};
 }
 
 Future<void> _downloadSelectedFile({
-  String aria2cPath,
-  String torrentPath,
-  int selectIndex,
-  String cwd,
-  void Function(String) onLog,
-  void Function(String) onProgressLine,
-  void Function(Process) onSetRunning,
-  bool Function() isAborted,
+  required String aria2cPath,
+  required String torrentPath,
+  int? selectIndex,
+  String? cwd,
+  void Function(String)? onLog,
+  void Function(String)? onProgressLine,
+  required void Function(Process) onSetRunning,
+  required bool Function() isAborted,
 }) async {
   final proc = await Process.start(
     aria2cPath,

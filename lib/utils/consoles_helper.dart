@@ -121,7 +121,7 @@ class ConsolesHelper {
     ];
   }
 
-  static Console getConsoleFromName(String name) {
+  static Console? getConsoleFromName(String? name) {
     var consoles = getConsoles();
     var results = consoles.where((element) =>
         element.altName == name ||
