@@ -77,7 +77,7 @@ class Aria2DownloadManager {
     String? aria2cPath,
   }) async {
     final uri = source.uris!.first;
-    final id = StringHelper.hash20(rom.title! + rom.console!);
+    final id = StringHelper.hash20(rom.name! + rom.console!);
 
     if (_jobs.containsKey(id)) {
       throw StateError('Download already running for id=$id');
@@ -87,7 +87,7 @@ class Aria2DownloadManager {
     final controller = StreamController<Aria2Event>.broadcast();
     final doneCompleter = Completer<Aria2DoneEvent>();
     final downloadPath =
-        p.join(FileSystemHelper.downloadsPath, rom.console, rom.title);
+        p.join(FileSystemHelper.downloadsPath, rom.console, rom.name);
     final isolate = await Isolate.spawn<IsolateArgs>(
       _downloadIsolateMain,
       IsolateArgs(

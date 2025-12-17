@@ -62,7 +62,7 @@ class DownloadsHelper {
   }
 
   void catchRomPortrait(RomInfo romInfo) async {
-    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.title}.png';
+    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.name}.png';
     if (!File(portraitName).existsSync()) {
       http.get(Uri.parse(romInfo.portrait ?? '')).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
@@ -111,12 +111,11 @@ class DownloadsHelper {
         if (oldDownload['path'] != null) {
           registerRomDownload(
               RomInfo(
-                  console: oldDownload['consola'],
-                  downloadLink: oldDownload['linkdescarga'],
-                  title: oldDownload['nombre'],
-                  portrait: oldDownload['portadalink'],
-                  region: "--",
-                  size: "--"),
+                console: oldDownload['consola'],
+                name: oldDownload['nombre'],
+                slug: RomsHelper.normalizeRomTitle(oldDownload['nombre']),
+                portrait: oldDownload['portadalink'],
+              ),
               oldDownload['path']);
         }
       }

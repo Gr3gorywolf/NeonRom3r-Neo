@@ -19,7 +19,7 @@ class RomsRepository {
       if (signature == res.headers['content-length']) {
         var file = CacheHelper.retrieveCacheFile("${console.slug}.json");
         if (file != null) {
-          for (var rom in json.decode(file)) {
+          for (var rom in json.decode(file)['games']) {
             roms.add(RomInfo.fromJson(rom));
           }
           return roms;
@@ -32,7 +32,7 @@ class RomsRepository {
       CacheHelper.writeCacheFile("${console.slug}.json", res.body);
       await CacheHelper.setCacheSignature(
           console.slug, res.headers['content-length']);
-      for (var rom in json.decode(res.body)) {
+      for (var rom in json.decode(res.body)['games']) {
         roms.add(RomInfo.fromJson(rom));
       }
       return roms;

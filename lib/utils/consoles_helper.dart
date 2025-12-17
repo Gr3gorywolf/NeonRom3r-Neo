@@ -29,13 +29,12 @@ class ConsolesHelper {
           name: "Nintendo 64", altName: "Nintendo - Nintendo 64", slug: "n64"),
       Console(name: "GameCube", altName: "Nintendo - GameCube", slug: "gc"),
       Console(name: "Wii", altName: "Nintendo - Wii", slug: "wii"),
-      Console(name: "Wii U", altName: "Nintendo - Wii U", slug: "wiiu"),
       Console(
           name: "Nintendo DS", altName: "Nintendo - Nintendo DS", slug: "nds"),
       Console(
           name: "Nintendo 3DS",
           altName: "Nintendo - Nintendo 3DS",
-          slug: "n3ds"),
+          slug: "3ds"),
       Console(
           name: "Virtual Boy", altName: "Nintendo - Virtual Boy", slug: "vb"),
 
@@ -59,34 +58,15 @@ class ConsolesHelper {
       // Sega
       // =========================
       Console(
-          name: "Master System", altName: "Sega - Master System", slug: "sms"),
-      Console(
           name: "Mega Drive / Genesis",
           altName: "Sega - Mega Drive - Genesis",
           slug: "genesis"),
-      Console(name: "Sega CD", altName: "Sega - Sega CD", slug: "segacd"),
       Console(name: "Sega 32X", altName: "Sega - 32X", slug: "sega32x"),
       Console(name: "Sega Saturn", altName: "Sega - Saturn", slug: "saturn"),
       Console(
           name: "Dreamcast", altName: "Sega - Dreamcast", slug: "dreamcast"),
       Console(name: "Game Gear", altName: "Sega - Game Gear", slug: "gamegear"),
 
-      // =========================
-      // Atari
-      // =========================
-      Console(name: "Atari 2600", altName: "Atari - 2600", slug: "atari2600"),
-      Console(name: "Atari 5200", altName: "Atari - 5200", slug: "atari5200"),
-      Console(name: "Atari 7800", altName: "Atari - 7800", slug: "atari7800"),
-      Console(name: "Atari Jaguar", altName: "Atari - Jaguar", slug: "jaguar"),
-      Console(name: "Atari Lynx", altName: "Atari - Lynx", slug: "lynx"),
-      // =========================
-      // NEC / PC Engine
-      // =========================
-      Console(name: "PC Engine", altName: "NEC - PC Engine", slug: "pce"),
-      Console(
-          name: "PC Engine CD", altName: "NEC - PC Engine CD", slug: "pcecd"),
-      Console(
-          name: "SuperGrafx", altName: "NEC - SuperGrafx", slug: "supergrafx"),
       // =========================
       // SNK
       // =========================
@@ -116,8 +96,6 @@ class ConsolesHelper {
           altName: "Bandai - WonderSwan Color",
           slug: "wonderswancolor"),
       Console(name: "Vectrex", altName: "GCE - Vectrex", slug: "vectrex"),
-      Console(
-          name: "Odyssey²", altName: "Magnavox - Odyssey2", slug: "odyssey2"),
     ];
   }
 

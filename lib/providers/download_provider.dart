@@ -84,7 +84,7 @@ class DownloadProvider extends ChangeNotifier {
     final downloadId = handle.id;
 
     final romDownload = RomDownload(
-      name: rom.title,
+      name: rom.name,
       portrait: rom.portrait,
       downloadLink: downloadId,
       console: rom.console,

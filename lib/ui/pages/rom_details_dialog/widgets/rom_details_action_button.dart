@@ -40,11 +40,6 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
 
   handlePlay() async {
     var downloaded = DownloadsHelper().getDownloadedRoms();
-    var rom = downloaded.firstWhere(
-        (element) => element!.downloadLink == widget.rom.downloadLink)!;
-    Toast.show("Launching rom...",
-        duration: Toast.lengthLong, gravity: Toast.bottom);
-    await RomsHelper.openDownloadedRom(rom);
     Toast.show("Rom launched",
         duration: Toast.lengthLong, gravity: Toast.bottom);
   }

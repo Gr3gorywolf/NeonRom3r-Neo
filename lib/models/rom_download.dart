@@ -1,4 +1,5 @@
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/roms_helper.dart';
 
 class RomDownload {
   String? filePath;
@@ -10,20 +11,18 @@ class RomDownload {
   static RomDownload fromRomInfo(RomInfo romInfo, String? downloadPath) {
     return RomDownload(
         console: romInfo.console,
-        downloadLink: romInfo.downloadLink,
-        name: romInfo.title,
+        name: romInfo.name,
         portrait: romInfo.portrait,
-        size: romInfo.size,
         filePath: downloadPath);
   }
 
   RomInfo toRomInfo() {
     return RomInfo(
-        console: this.console,
-        downloadLink: this.downloadLink,
-        title: this.name,
-        portrait: this.portrait,
-        size: this.size);
+      console: this.console ?? "",
+      slug: RomsHelper.normalizeRomTitle(this.name ?? ""),
+      name: this.name ?? "",
+      portrait: this.portrait,
+    );
   }
 
   RomDownload(
@@ -35,7 +34,7 @@ class RomDownload {
       this.size});
 
   bool isRomInfoEqual(RomInfo romInfo) {
-    return this.name == romInfo.title && this.console == romInfo.console;
+    return this.name == romInfo.name && this.console == romInfo.console;
   }
 
   RomDownload.fromJson(Map<String, dynamic> json) {

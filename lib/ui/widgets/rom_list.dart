@@ -68,7 +68,7 @@ class RomListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
           child: RomThumbnail(this.romItem!)),
       title: Text(
-        romItem!.title!,
+        romItem!.name!,
         style: TextStyle(color: Colors.white),
       ),
       subtitle: Column(

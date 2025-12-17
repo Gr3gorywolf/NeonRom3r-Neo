@@ -16,7 +16,7 @@ class RomThumbnail extends StatelessWidget {
   RomThumbnail(this.info, {this.height = 50, this.width = 50});
 
   File? get catchedImage {
-    var path = "${FileSystemHelper.portraitsPath}/${this.info.title}.png";
+    var path = "${FileSystemHelper.portraitsPath}/${this.info.name}.png";
     if (File(path).existsSync()) {
       return File(path);
     } else {
@@ -28,11 +28,9 @@ class RomThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     return catchedImage == null
         ? Image.network(
-            info.portrait!,
+            info?.portrait ?? "",
             errorBuilder: (context, obj, trace) {
-              return AssetsHelper.getIcon(
-                  ConsolesHelper.getConsoleFromName(info.console)!.slug!,
-                  size: width);
+              return AssetsHelper.getIcon(info.console, size: width);
             },
             loadingBuilder: (child, widget, progress) {
               if (progress == null) return widget;

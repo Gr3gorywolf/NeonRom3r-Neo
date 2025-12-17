@@ -1,47 +1,49 @@
 class RomInfo {
-  String? title;
+  String slug = "";
+  String? detailsUrl;
+  String name = "";
   String? portrait;
   String? logo;
+  String? releaseDate;
   String? titleImage;
   List<String>? gameplayCovers;
-  String? size;
-  String? region;
-  String? console;
-  String? downloadLink;
+  String console = "";
 
-  RomInfo(
-      {this.title,
-      this.portrait,
-      this.size,
-      this.region,
-      this.console,
-      this.downloadLink});
+  RomInfo({
+    required this.slug,
+    this.detailsUrl,
+    required this.name,
+    this.portrait,
+    this.logo,
+    this.titleImage,
+    this.releaseDate,
+    this.gameplayCovers,
+    required this.console,
+  });
 
   RomInfo.fromJson(Map<String, dynamic> json) {
-    title = json['title'];
+    name = json['name'];
     portrait = json['portrait'];
     logo = json['logo'];
     titleImage = json['titleImage'];
     gameplayCovers = json['gameplayCovers'] != null
         ? List<String>.from(json['gameplayCovers'])
         : null;
-    size = json['size'];
-    region = json['region'];
     console = json['console'];
-    downloadLink = json['downloadLink'];
+    slug = json['slug'];
+    detailsUrl = json['detailsUrl'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['title'] = this.title;
+    data['name'] = this.name;
     data['portrait'] = this.portrait;
-    data['size'] = this.size;
-    data['region'] = this.region;
     data['logo'] = this.logo;
     data['titleImage'] = this.titleImage;
     data['gameplayCovers'] = this.gameplayCovers;
     data['console'] = this.console;
-    data['downloadLink'] = this.downloadLink;
+    data['slug'] = this.slug;
+    data['detailsUrl'] = this.detailsUrl;
     return data;
   }
 }

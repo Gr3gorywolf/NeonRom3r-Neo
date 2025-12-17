@@ -32,14 +32,10 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   shareFile() {
     var downloadedRom = _downloadProvider.getDownloadedRomInfo(widget.rom)!;
     Share.shareFiles([downloadedRom.filePath!],
-        text: "${widget.rom.title}\n shared and downloaded from NeonRom3r");
+        text: "${widget.rom.name}\n shared and downloaded from NeonRom3r");
   }
 
-  shareLink() {
-    var normalizedLink = Uri.encodeFull(widget.rom.downloadLink!).toString();
-    Share.share(
-        "Download link for the rom: ${widget.rom.title}\n ${normalizedLink}\n shared from NeonRom3r");
-  }
+  shareLink() {}
 
   handleShare() {
     bool isRomDownloaded = _downloadProvider.isRomReadyToPlay(widget.rom);
@@ -87,7 +83,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.rom.title!,
+                          widget.rom.name!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

@@ -48,7 +48,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
   }
 
   List<DownloadSourceWithDownloads> findDownloadSources(RomInfo rom) {
-    final normalizedRomName = RomsHelper.normalizeRomTitle(rom.title!);
+    final normalizedRomName = RomsHelper.normalizeRomTitle(rom.name!);
     final List<DownloadSourceWithDownloads> results = [];
 
     for (final source in _downloadSources) {
