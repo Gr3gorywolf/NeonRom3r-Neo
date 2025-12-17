@@ -44,7 +44,7 @@ class RomsPage_State extends State<RomsPage> {
                         builder: (BuildContext context) =>
                             ConsoleRomsPage(_console)));
                   },
-                  child: FadeInUp(delay: Duration(milliseconds: 50 * index),child: ConsoleTile(_console)));
+                  child: ConsoleTile(_console));
             }),
           ),
         ));

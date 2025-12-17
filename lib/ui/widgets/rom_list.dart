@@ -36,12 +36,10 @@ class RomList extends StatelessWidget {
                 },
                 itemCount: this.roms!.length,
                 itemBuilder: (ctx, index) {
-                  return FadeIn(
-                      duration: Duration(seconds: 2),
-                      child: RomListItem(
-                        romItem: this.roms![index],
-                        showConsole: showConsole,
-                      ));
+                  return RomListItem(
+                    romItem: this.roms![index],
+                    showConsole: showConsole,
+                  );
                 }),
           ));
   }

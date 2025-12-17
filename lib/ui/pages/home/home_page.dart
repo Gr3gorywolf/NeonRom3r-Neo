@@ -24,23 +24,24 @@ class _HomePageState extends State<HomePage> {
       body: routes[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.games),
-              label: "Roms",
-              backgroundColor: Colors.green),
+            icon: Icon(Icons.games),
+            label: "Roms",
+          ),
           BottomNavigationBarItem(
-              icon: AssetsHelper.getIcon("arcade"),
-              label: "Emulators",
-              backgroundColor: Colors.green),
+            icon: AssetsHelper.getIcon("arcade"),
+            label: "Emulators",
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.download_sharp),
-              label: "Downloads",
-              backgroundColor: Colors.green),
+            icon: Icon(Icons.download_sharp),
+            label: "Downloads",
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: "Settings",
-              backgroundColor: Colors.green)
+            icon: Icon(Icons.settings),
+            label: "Settings",
+          )
         ],
         onTap: (int index) {
           setState(() {
