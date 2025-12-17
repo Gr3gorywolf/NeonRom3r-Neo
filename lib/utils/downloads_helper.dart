@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:neonrom3r/models/aria2c.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neonrom3r/models/rom_download.dart';
@@ -14,6 +15,7 @@ import 'package:neonrom3r/utils/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:neonrom3r/utils/files_system_helper.dart';
 import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:provider/provider.dart';
 
 import 'aria2c_download_manager.dart';
 
@@ -44,7 +46,8 @@ class DownloadsHelper {
     return null;
   }
 
-  downloadRom(RomInfo rom, DownloadSourceRom sourceRom) async {
+  downloadRom(
+      BuildContext context, RomInfo rom, DownloadSourceRom sourceRom) async {
     var downloadsPath = FileSystemHelper.downloadsPath + "/" + rom.console;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
@@ -55,25 +58,8 @@ class DownloadsHelper {
       source: sourceRom,
       aria2cPath: FileSystemHelper.aria2cPath + "/aria2c",
     );
-    final sub = handle.events.listen((e) {
-      if (e is Aria2ProgressEvent) {
-        // Here’s the string you asked for (pct, up/down speeds, seeds, eta when present):
-        final p = e.progress;
-        final s = 'pct=${p.percent ?? "-"} '
-            'dl=${p.dlSpeed ?? "-"} '
-            'ul=${p.ulSpeed ?? "-"} '
-            'sd=${p.seeds ?? "-"} '
-            'eta=${p.eta ?? "-"}';
-        print(s);
-      } else if (e is Aria2LogEvent) {
-        // Optional: raw logs
-        //print(e.line);
-      } else if (e is Aria2ErrorEvent) {
-        print('ERROR: ${e.message}');
-      } else if (e is Aria2DoneEvent) {
-        print('DONE: ${e.outputFilePath}');
-      }
-    });
+    Provider.of<DownloadProvider>(context, listen: false)
+        .addRomDownloadToQueue(rom, sourceRom, handle);
   }
 
   void catchRomPortrait(RomInfo romInfo) async {
@@ -104,8 +90,8 @@ class DownloadsHelper {
   void registerRomDownload(RomInfo downloadedRom, String downloadedPath) {
     File registryFile = File(FileSystemHelper.downloadRegistryFile);
     var downloads = getDownloadedRoms();
-    var downloadIndex = downloads.indexWhere(
-        (element) => element.downloadLink == downloadedRom.downloadLink);
+    var downloadIndex = downloads
+        .indexWhere((element) => element.isRomInfoEqual(downloadedRom));
     if (downloadIndex == -1) {
       downloads.add(RomDownload.fromRomInfo(downloadedRom, downloadedPath));
     } else {

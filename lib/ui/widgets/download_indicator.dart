@@ -20,7 +20,7 @@ class DownloadIndicator extends StatelessWidget {
     } else if (_isReadyToPlay) {
       return FadeIn(
         duration: Duration(milliseconds: 1200),
-              child: Icon(
+        child: Icon(
           Icons.download_done_sharp,
           color: Colors.green,
           size: 30,

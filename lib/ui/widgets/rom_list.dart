@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:neonrom3r/ui/widgets/download_indicator.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
@@ -50,6 +51,8 @@ class RomListItem extends StatelessWidget {
   RomListItem({this.romItem, this.showConsole = false});
   @override
   Widget build(BuildContext context) {
+    var _provider = DownloadProvider.of(context);
+    var _downloadInfo = _provider.getDownloadInfo(romItem);
     return ListTile(
       onTap: () {
         showModalBottomSheet(
@@ -59,7 +62,7 @@ class RomListItem extends StatelessWidget {
                   rom: romItem,
                 ));
       },
-      contentPadding: EdgeInsets.all(5),
+      contentPadding: EdgeInsets.all(2),
       leading: ClipRRect(
           borderRadius: BorderRadius.circular(5),
           child: RomThumbnail(this.romItem)),
@@ -77,7 +80,11 @@ class RomListItem extends StatelessWidget {
               style: TextStyle(color: Colors.white70),
             ),
           SizedBox(
-            height: 2,
+            height: 6,
+          ),
+          Text(
+            _downloadInfo?.downloadInfo ?? "",
+            style: TextStyle(color: Colors.green, fontSize: 10),
           ),
         ],
       ),

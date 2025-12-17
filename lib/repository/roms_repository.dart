@@ -18,15 +18,17 @@ class RomsRepository {
       var res = await client.head(baseUrl);
       if (signature == res.headers['content-length']) {
         var file = CacheHelper.retrieveCacheFile("${console.slug}.json");
-        for (var rom in json.decode(file)) {
-          roms.add(RomInfo.fromJson(rom));
+        if (file != null) {
+          for (var rom in json.decode(file)) {
+            roms.add(RomInfo.fromJson(rom));
+          }
+          return roms;
         }
-        return roms;
       }
     }
     var res = await client.get(baseUrl);
     var headers = res.headers;
-    if (res.statusCode == 200) {
+    if (res.statusCode == 200 && res.body != null) {
       CacheHelper.writeCacheFile("${console.slug}.json", res.body);
       await CacheHelper.setCacheSignature(
           console.slug, res.headers['content-length']);

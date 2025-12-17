@@ -31,7 +31,7 @@ class _RomDetailsActionButtonState extends State<RomDetailsActionButton> {
     if (romSource == null) {
       return;
     }
-    DownloadsHelper().downloadRom(this.widget.rom, romSource);
+    DownloadsHelper().downloadRom(context, this.widget.rom, romSource);
     Toast.show("Download started...", context,
         duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
   }

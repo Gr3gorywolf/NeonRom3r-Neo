@@ -39,6 +39,7 @@ class IsolateArgs {
   final String aria2cPath;
   final String uri;
   final int fileIndex;
+  final String filePath;
   final String downloadPath;
 
   IsolateArgs({
@@ -46,8 +47,17 @@ class IsolateArgs {
     this.aria2cPath,
     this.uri,
     this.fileIndex,
+    this.filePath,
     this.downloadPath,
   });
+}
+
+enum _UriType { magnet, torrent, direct }
+
+_UriType _detectUriType(String uri) {
+  if (uri.contains('magnet:')) return _UriType.magnet;
+  if (uri.toLowerCase().endsWith('.torrent')) return _UriType.torrent;
+  return _UriType.direct;
 }
 
 /// ============================================================================
@@ -66,7 +76,7 @@ class Aria2DownloadManager {
     String aria2cPath,
   }) async {
     final uri = source.uris.first;
-    final id = StringHelper.hash20(uri + rom.title);
+    final id = StringHelper.hash20(rom.title + rom.console);
 
     if (_jobs.containsKey(id)) {
       throw StateError('Download already running for id=$id');
@@ -83,6 +93,7 @@ class Aria2DownloadManager {
         aria2cPath: aria2cPath,
         uri: uri,
         fileIndex: source.fileIndex,
+        filePath: source.filePath,
         downloadPath:
             p.join(FileSystemHelper.downloadsPath, rom.console, rom.title),
       ),
@@ -199,6 +210,44 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
   void fail(Object e) => main.send({'type': 'error', 'message': e.toString()});
 
   try {
+    final uriType = _detectUriType(args.uri);
+    final romDir = Directory(args.downloadPath)..createSync(recursive: true);
+
+    // =======================================================================
+    // DIRECT FILE DOWNLOAD (no torrent, no magnet)
+    // =======================================================================
+    if (uriType == _UriType.direct) {
+      final proc = await Process.start(
+        args.aria2cPath,
+        [args.uri],
+        workingDirectory: romDir.path,
+      );
+
+      running = proc;
+      ProcessHelper.pipeProcessOutput(
+        process: proc,
+        onLog: log,
+        onProgress: progress,
+      );
+
+      await ProcessHelper.ensureExitOk(
+          proc, () => aborted, 'Direct download failed');
+
+      final fileName = p.basename(args.uri);
+      final outputPath = p.join(romDir.path, fileName);
+
+      main.send({
+        'type': 'done',
+        'outputFilePath': outputPath,
+        'selectedIndex': null,
+        'selectedTorrentPath': null,
+      });
+      return;
+    }
+
+    // =======================================================================
+    // TORRENT / MAGNET FLOW
+    // =======================================================================
     final torrentPath = await _resolveTorrent(
       aria2cPath: args.aria2cPath,
       uri: args.uri,
@@ -217,44 +266,55 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       isAborted: () => aborted,
     );
 
-    final relPath = files[args.fileIndex] ??
-        (throw StateError('File index not found in torrent'));
-
-    final romDir = Directory(args.downloadPath)..createSync(recursive: true);
+    var fileIndex = args.fileIndex;
+    if (fileIndex == null && args.filePath != null) {
+      fileIndex = files.entries
+          .firstWhere(
+            (e) => e.value == args.filePath,
+            orElse: () => null,
+          )
+          ?.key;
+    }
+    final relPath = fileIndex != null ? files[args.fileIndex] : null;
 
     await _downloadSelectedFile(
       aria2cPath: args.aria2cPath,
       torrentPath: torrentPath,
-      selectIndex: args.fileIndex,
+      selectIndex: fileIndex,
       cwd: args.downloadPath,
       onLog: log,
       onProgressLine: progress,
       onSetRunning: (p) => running = p,
       isAborted: () => aborted,
     );
+    String outputPath = args.downloadPath;
+    if (relPath != null) {
+      outputPath = p.join(romDir.path, p.basename(relPath));
+      final src = File(p.join(args.downloadPath, relPath));
+      final dst = File(outputPath);
 
-    final src = File(p.join(args.downloadPath, relPath));
-    final dst = File(p.join(romDir.path, p.basename(relPath)));
+      await src.rename(dst.path);
 
-    await src.rename(dst.path);
-    //delete anything that its not the dst file in case of residual data of the torrent
-    final dir = Directory(args.downloadPath);
-    await for (var entity in dir.list()) {
-      if (entity.path != dst.path) {
-        try {
-          if (entity is File) {
-            await entity.delete();
-          } else if (entity is Directory) {
-            await entity.delete(recursive: true);
+      // Cleanup residual torrent files
+      final dir = Directory(args.downloadPath);
+      await for (var entity in dir.list()) {
+        if (entity.path != dst.path) {
+          try {
+            if (entity is File) {
+              await entity.delete();
+            } else if (entity is Directory) {
+              await entity.delete(recursive: true);
+            }
+          } catch (e) {
+            print('Error deleting extra file: $e');
           }
-        } catch (e) {
-          print("Error deleting extra file: " + e.toString());
         }
       }
     }
+
     main.send({
       'type': 'done',
-      'outputFilePath': dst.path,
+      'outputFilePath': outputPath,
       'selectedIndex': args.fileIndex,
       'selectedTorrentPath': torrentPath,
     });
@@ -278,13 +338,55 @@ Future<String> _resolveTorrent({
   void Function(Process) onRunning,
   bool Function() isAborted,
 }) async {
-  if (uri.endsWith('.torrent')) return uri;
+  final cache = Directory(FileSystemHelper.torrentsCache)
+    ..createSync(recursive: true);
+
+  // CASE 1: Remote or local .torrent → download to cache
+  if (uri.toLowerCase().endsWith('.torrent')) {
+    final targetPath = p.join(cache.path, p.basename(uri));
+
+    // Skip download if already cached
+    if (await File(targetPath).exists()) {
+      return targetPath;
+    }
+
+    onLog('Downloading torrent via HTTP: $uri');
+
+    final client = HttpClient();
+    final request = await client.getUrl(Uri.parse(uri));
+    final response = await request.close();
+
+    if (response.statusCode != HttpStatus.ok) {
+      throw StateError(
+        'Failed to download torrent (HTTP ${response.statusCode})',
+      );
+    }
+
+    final file = File(targetPath);
+    final sink = file.openWrite();
+
+    try {
+      await for (final chunk in response) {
+        if (isAborted()) {
+          await sink.close();
+          await file.delete();
+          throw StateError('Aborted');
+        }
+        sink.add(chunk);
+      }
+    } finally {
+      await sink.close();
+      client.close();
+    }
+
+    onLog('Torrent saved to cache: $targetPath');
+    return targetPath;
+  }
+
+  // CASE 2: Magnet → generate torrent
   if (!uri.contains('magnet:')) {
     throw StateError('Invalid torrent URI');
   }
-
-  final cache = Directory(FileSystemHelper.torrentsCache)
-    ..createSync(recursive: true);
 
   final path = p.join(cache.path, '${StringHelper.hash20(uri)}.torrent');
   if (await File(path).exists()) return path;
@@ -295,7 +397,7 @@ Future<String> _resolveTorrent({
       '--bt-metadata-only=true',
       '--bt-save-metadata=true',
       '--seed-time=0',
-      uri
+      uri,
     ],
     workingDirectory: cache.path,
   );
@@ -367,7 +469,7 @@ Future<void> _downloadSelectedFile({
   final proc = await Process.start(
     aria2cPath,
     [
-      '--select-file=$selectIndex',
+      ...(selectIndex == null ? [] : ['--select-file=$selectIndex']),
       '--seed-time=0',
       '--file-allocation=none',
       torrentPath,

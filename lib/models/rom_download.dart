@@ -6,7 +6,6 @@ class RomDownload {
   String portrait;
   String downloadLink;
   String console;
-  String region;
   String size;
   static RomDownload fromRomInfo(RomInfo romInfo, String downloadPath) {
     return RomDownload(
@@ -14,7 +13,6 @@ class RomDownload {
         downloadLink: romInfo.downloadLink,
         name: romInfo.title,
         portrait: romInfo.portrait,
-        region: romInfo.region,
         size: romInfo.size,
         filePath: downloadPath);
   }
@@ -25,7 +23,6 @@ class RomDownload {
         downloadLink: this.downloadLink,
         title: this.name,
         portrait: this.portrait,
-        region: this.region,
         size: this.size);
   }
 
@@ -35,8 +32,11 @@ class RomDownload {
       this.portrait,
       this.downloadLink,
       this.console,
-      this.region,
       this.size});
+
+  bool isRomInfoEqual(RomInfo romInfo) {
+    return this.name == romInfo.title && this.console == romInfo.console;
+  }
 
   RomDownload.fromJson(Map<String, dynamic> json) {
     filePath = json['FilePath'];
@@ -44,7 +44,6 @@ class RomDownload {
     portrait = json['Portrait'];
     downloadLink = json['DownloadLink'];
     console = json['Console'];
-    region = json['Region'];
     size = json['Size'];
   }
 
@@ -55,7 +54,6 @@ class RomDownload {
     data['Portrait'] = this.portrait;
     data['DownloadLink'] = this.downloadLink;
     data['Console'] = this.console;
-    data['Region'] = this.region;
     data['Size'] = this.size;
     return data;
   }

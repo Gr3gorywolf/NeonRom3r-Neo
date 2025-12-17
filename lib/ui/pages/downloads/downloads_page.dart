@@ -31,10 +31,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   @override
   Widget build(BuildContext context) {
-    _downloadedRoms = DownloadProvider.of(context)
-        .downloadsRegistry
-        .where((element) => File(element.filePath).existsSync())
-        .toList();
+    var provider = DownloadProvider.of(context);
+    _downloadedRoms = provider.downloadsRegistry.toList();
     return Scaffold(
       appBar: AppBar(
         title: Text("Downloads"),
@@ -45,13 +43,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 MaterialSegmentedControl(
                   children: {
                     0: Padding(
-                      child: Text('All'),
+                      child: Text('History'),
                       padding: EdgeInsets.only(left: 6, right: 6),
                     ),
                     2: Padding(
-                      child: Text('History'),
+                      child: Text('All'),
                       padding: EdgeInsets.only(left: 6, right: 6),
-                    )
+                    ),
                   },
                   selectionIndex: _currentSelection,
                   borderColor: Colors.green,
@@ -66,7 +64,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   },
                 ),
                 Expanded(
-                  child: _currentSelection == 0
+                  child: _currentSelection == 2
                       ? DownloadedRomsConsoles(_downloadedRoms)
                       : RomList(
                           isLoading: false,

@@ -26,14 +26,13 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   }
 
   initApp() async {
+    await FileSystemHelper.initPaths();
     if (Platform.isAndroid) {
       await initPlugins();
       await RomsHelper.catchEmulatorsIntents();
       await DownloadsHelper().importOldRoms();
-      Provider.of<DownloadProvider>(context, listen: false)
-          .initDownloadsListener();
     }
-    await FileSystemHelper.initPaths();
+    await Provider.of<DownloadProvider>(context, listen: false).initDownloads();
     await Provider.of<DownloadSourcesProvider>(context, listen: false)
         .initDownloadSources();
     Future.delayed(Duration(milliseconds: 2000)).then((value) =>
