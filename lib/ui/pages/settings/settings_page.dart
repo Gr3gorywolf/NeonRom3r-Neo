@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/ui/pages/console_sources/console_sources_page.dart';
 import 'package:neonrom3r/ui/pages/download_sources/download_sources_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -20,6 +21,14 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => DownloadSourcesPage(),
+                ));
+              },
+            ),
+            ListTile(
+              title: Text("Console Sources"),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ConsoleSourcesPage(),
                 ));
               },
             )

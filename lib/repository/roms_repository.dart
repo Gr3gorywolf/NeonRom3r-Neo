@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:neonrom3r/models/console.dart';
@@ -6,10 +7,22 @@ import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/utils/cache_helper.dart';
 import 'package:neonrom3r/utils/constants.dart';
+import 'package:neonrom3r/utils/files_system_helper.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {
     List<RomInfo> roms = [];
+    if (console.fromLocalSource != null && console.fromLocalSource == true) {
+      File consoleFile = File(
+          FileSystemHelper.consoleSourcesPath + "/" + console.slug + ".json");
+      if (await consoleFile.exists()) {
+        String jsonString = await consoleFile.readAsString();
+        for (var rom in json.decode(jsonString)['games']) {
+          roms.add(RomInfo.fromJson(rom));
+        }
+        return roms;
+      }
+    }
     var baseUrl = "${Constants.apiBasePath}/Data/Roms/${console.slug}.json";
     var client = new http.Client();
     //If is catched tries to retrieve the cache file

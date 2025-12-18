@@ -36,6 +36,10 @@ class FileSystemHelper {
     return cachePath + "/torrents";
   }
 
+  static get consoleSourcesPath {
+    return cachePath + "/console-sources";
+  }
+
   static get emulatorIntentsFile {
     return cachePath + "/emulatorIntents.json";
   }
@@ -73,7 +77,13 @@ class FileSystemHelper {
     }
     await _initRootPath();
 
-    var paths = [downloadsPath, cachePath, portraitsPath, torrentsCache];
+    var paths = [
+      downloadsPath,
+      cachePath,
+      portraitsPath,
+      torrentsCache,
+      consoleSourcesPath
+    ];
     for (var path in paths) {
       if (!await Directory(path).exists()) {
         await Directory(path).create(recursive: true);

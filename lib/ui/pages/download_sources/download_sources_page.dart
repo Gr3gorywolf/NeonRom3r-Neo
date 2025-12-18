@@ -51,7 +51,7 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
   void _openEditor() {
     showDialog(
       context: context,
-      builder: (_) => DownloadSourceAddDialog(),
+      builder: (_) => DownloadSourcesAddDialog(),
     );
   }
 }

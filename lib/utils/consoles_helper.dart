@@ -1,10 +1,54 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/models/console_source.dart';
 import 'package:neonrom3r/models/emulator.dart';
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/files_system_helper.dart';
 
 class ConsolesHelper {
+  static List<Console> consolesFromSources = [];
+
+  static Future deleteConsoleSource(Console console) async {
+    consolesFromSources.removeWhere((element) => element.slug == console.slug);
+    File sourceFile =
+        FileSystemHelper.consoleSourcesPath + "/" + console.slug + ".json";
+    if (await sourceFile.exists()) {
+      await sourceFile.delete();
+    }
+  }
+
+  static Future addConsoleSource(ConsoleSource source) async {
+    consolesFromSources.add(source.console);
+    String jsonString = json.encode(source.toJson());
+    File consoleFile = File(FileSystemHelper.consoleSourcesPath +
+        "/" +
+        source.console.slug +
+        ".json");
+    await consoleFile.writeAsString(jsonString);
+  }
+
+  static Future loadConsoleSources() async {
+    consolesFromSources = [];
+    Directory consoleSourcesDir =
+        Directory(FileSystemHelper.consoleSourcesPath);
+    if (await consoleSourcesDir.exists()) {
+      var consoleFiles = consoleSourcesDir.listSync();
+      for (var file in consoleFiles) {
+        if (file.path.endsWith(".json")) {
+          String jsonString = await File(file.path).readAsString();
+          var consoleSource = ConsoleSource.fromJson(json.decode(jsonString));
+          consolesFromSources.add(consoleSource.console);
+        }
+      }
+    }
+  }
+
   static List<Console> getConsoles() {
     return [
+      ...consolesFromSources,
       // =========================
       // Nintendo
       // =========================

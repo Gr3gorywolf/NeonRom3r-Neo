@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/download_source.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/repository/download_sources_repository.dart';
 import 'package:neonrom3r/utils/download_sources_helper.dart';
 import 'package:provider/src/provider.dart';
 
-class DownloadSourcesAddDialog extends StatefulWidget {
+import '../../../../models/console_source.dart';
+import '../../../../repository/console_sources_repository.dart';
+
+class ConsoleSourceAddDialog extends StatefulWidget {
   String sourceUrl = '';
   bool isFetchingSource = false;
+  Function(ConsoleSource) onSave;
+  ConsoleSourceAddDialog({required this.onSave});
 
   @override
-  State<DownloadSourcesAddDialog> createState() =>
-      _DownloadSourcesAddDialogState();
+  State<ConsoleSourceAddDialog> createState() => _ConsoleSourceAddDialogState();
 }
 
-class _DownloadSourcesAddDialogState extends State<DownloadSourcesAddDialog> {
+class _ConsoleSourceAddDialogState extends State<ConsoleSourceAddDialog> {
   final _controller = TextEditingController();
   Future handleAddSource() async {
     setState(() {
@@ -23,12 +28,10 @@ class _DownloadSourcesAddDialogState extends State<DownloadSourcesAddDialog> {
 
     try {
       final source =
-          await DownloadSourcesRepository().fetchSource(widget.sourceUrl);
+          await ConsoleSourcesRepository().fetchSource(widget.sourceUrl);
 
       if (source != null) {
-        print(source.toJson());
-        final provider = context.read<DownloadSourcesProvider>();
-        provider.addDownloadSource(source);
+        widget.onSave(source);
         Navigator.pop(context);
       } else {
         // Handle error: source could not be fetched
@@ -49,11 +52,11 @@ class _DownloadSourcesAddDialogState extends State<DownloadSourcesAddDialog> {
     final provider = context.read<DownloadSourcesProvider>();
 
     return AlertDialog(
-      title: Text('New source'),
+      title: Text('New console source'),
       content: TextField(
         onChanged: (value) => widget.sourceUrl = value,
         decoration: const InputDecoration(
-          labelText: 'Source title',
+          labelText: 'Console source URL',
         ),
       ),
       actions: [
