@@ -1,4 +1,6 @@
-class RomInfo {
+import 'package:neonrom3r/utils/filter_helpers.dart';
+
+class RomInfo implements GenericFilterSubject {
   String slug = "";
   String? detailsUrl;
   String name = "";

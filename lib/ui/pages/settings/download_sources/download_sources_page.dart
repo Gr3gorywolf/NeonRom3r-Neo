@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_add_dialog.dart';
-import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_empty_state.dart';
-import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_list_item.dart';
+import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_add_dialog.dart';
+import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
+import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/models/download_source.dart';

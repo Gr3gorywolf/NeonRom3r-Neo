@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/repository/roms_repository.dart';
-import 'package:neonrom3r/ui/pages/settings/console_roms/console_roms_page.dart';
+import 'package:neonrom3r/ui/pages/console_roms/console_roms_page.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:neonrom3r/ui/widgets/console_card.dart';
 import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';

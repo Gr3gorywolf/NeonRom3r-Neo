@@ -1,7 +1,8 @@
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/utils/filter_helpers.dart';
 import 'package:neonrom3r/utils/roms_helper.dart';
 
-class RomDownload {
+class RomDownload implements GenericFilterSubject {
   String? filePath;
   String? name;
   String? portrait;
@@ -38,22 +39,22 @@ class RomDownload {
   }
 
   RomDownload.fromJson(Map<String, dynamic> json) {
-    filePath = json['FilePath'];
-    name = json['Name'];
-    portrait = json['Portrait'];
-    downloadLink = json['DownloadLink'];
-    console = json['Console'];
-    size = json['Size'];
+    filePath = json['filePath'];
+    name = json['name'];
+    portrait = json['portrait'];
+    downloadLink = json['downloadLink'];
+    console = json['console'];
+    size = json['size'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['FilePath'] = this.filePath;
-    data['Name'] = this.name;
-    data['Portrait'] = this.portrait;
-    data['DownloadLink'] = this.downloadLink;
-    data['Console'] = this.console;
-    data['Size'] = this.size;
+    data['filePath'] = this.filePath;
+    data['name'] = this.name;
+    data['portrait'] = this.portrait;
+    data['downloadLink'] = this.downloadLink;
+    data['console'] = this.console;
+    data['size'] = this.size;
     return data;
   }
 }
