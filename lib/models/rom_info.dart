@@ -32,6 +32,7 @@ class RomInfo {
     console = json['console'];
     slug = json['slug'];
     detailsUrl = json['detailsUrl'];
+    releaseDate = json['releaseDate'];
   }
 
   Map<String, dynamic> toJson() {
@@ -44,6 +45,7 @@ class RomInfo {
     data['console'] = this.console;
     data['slug'] = this.slug;
     data['detailsUrl'] = this.detailsUrl;
+    data['releaseDate'] = this.releaseDate;
     return data;
   }
 }

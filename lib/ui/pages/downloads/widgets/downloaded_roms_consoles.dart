@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
-import 'package:neonrom3r/ui/pages/console_roms/console_roms_page.dart';
-import 'package:neonrom3r/ui/widgets/console_tile.dart';
+import 'package:neonrom3r/ui/pages/settings/console_roms/console_roms_page.dart';
+import 'package:neonrom3r/ui/widgets/console_card.dart';
 import 'package:neonrom3r/utils/assets_helper.dart';
 import 'package:neonrom3r/utils/consoles_helper.dart';
 
@@ -53,7 +53,7 @@ class DownloadedRomsConsoles extends StatelessWidget {
             },
             child: FadeInUp(
               delay: Duration(milliseconds: 50 * index),
-              child: ConsoleTile(
+              child: ConsoleCard(
                 _console,
                 romsCount: _downloadCount,
               ),

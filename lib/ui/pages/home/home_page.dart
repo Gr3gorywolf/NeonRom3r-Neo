@@ -1,54 +1,59 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
-import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
-import 'package:neonrom3r/ui/pages/roms/roms_page.dart';
-import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
-import 'package:neonrom3r/utils/assets_helper.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/repository/roms_repository.dart';
+import 'package:neonrom3r/ui/pages/settings/console_roms/console_roms_page.dart';
+import 'package:neonrom3r/ui/widgets/console_list.dart';
+import 'package:neonrom3r/ui/widgets/console_card.dart';
+import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
+import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:neonrom3r/ui/widgets/rom_list.dart';
+import 'package:neonrom3r/ui/widgets/unselected_placeholder.dart';
+import 'package:animate_do/animate_do.dart';
+import 'package:neonrom3r/utils/consoles_helper.dart';
 
 class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePage_State createState() => HomePage_State();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
+class HomePage_State extends State<HomePage> {
+  List<Console> _consoles = ConsolesHelper.getConsoles();
+
   @override
-  Widget build(BuildContext context) {
-    List<Widget> routes = [
-      RomsPage(),
-      EmulatorsPage(),
-      DownloadsPage(),
-      SettingsPage()
-    ];
+  Widget build(BuildContext bldContext) {
     return Scaffold(
-      body: routes[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        showUnselectedLabels: true,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.games),
-            label: "Roms",
+        appBar: AppBar(
+          title: Text("Home"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Consoles",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.secondary),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: ConsoleList(
+                  consoles: _consoles,
+                  onConsoleSelected: (Console console) {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            ConsoleRomsPage(console)));
+                  },
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: AssetsHelper.getIcon("arcade"),
-            label: "Emulators",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.download_sharp),
-            label: "Downloads",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
-          )
-        ],
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
-    );
+        ));
   }
 }

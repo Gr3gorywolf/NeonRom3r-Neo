@@ -4,7 +4,7 @@ import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/emulator.dart';
 import 'package:neonrom3r/repository/emulators_repository.dart';
 import 'package:neonrom3r/ui/pages/emulators/console_emulators_page.dart';
-import 'package:neonrom3r/ui/widgets/console_tile.dart';
+import 'package:neonrom3r/ui/widgets/console_card.dart';
 
 class EmulatorsPage extends StatefulWidget {
   @override
@@ -60,7 +60,7 @@ class _EmulatorsPageState extends State<EmulatorsPage> {
                     },
                     child: FadeInUp(
                         delay: Duration(milliseconds: 50 * index),
-                        child: ConsoleTile(_emulators.keys.toList()[index])));
+                        child: ConsoleCard(_emulators.keys.toList()[index])));
               }),
             ),
     );

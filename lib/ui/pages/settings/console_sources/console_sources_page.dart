@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/console_source.dart';
-import 'package:neonrom3r/ui/pages/console_sources/widgets/console_sources_add_dialog.dart';
-import 'package:neonrom3r/ui/pages/console_sources/widgets/console_sources_list_item.dart';
+import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_add_dialog.dart';
+import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_list_item.dart';
 import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_add_dialog.dart';
 import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_empty_state.dart';
 import 'package:neonrom3r/ui/pages/download_sources/widgets/download_sources_list_item.dart';

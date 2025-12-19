@@ -8,7 +8,7 @@ import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/downloads/widgets/downloaded_roms_consoles.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:neonrom3r/ui/widgets/no_downloads_placeholder.dart';
-import 'package:neonrom3r/ui/pages/roms/roms_page.dart';
+import 'package:neonrom3r/ui/pages/home/home_page.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/utils/downloads_helper.dart';
 

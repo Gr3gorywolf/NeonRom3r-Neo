@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/main.dart';
+import 'package:neonrom3r/utils/alerts_helpers.dart';
 import 'package:neonrom3r/utils/aria2c_download_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +17,7 @@ import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/utils/downloads_helper.dart';
 import 'package:neonrom3r/utils/files_system_helper.dart';
 import 'package:neonrom3r/utils/string_helper.dart';
+import 'package:toast/toast.dart';
 
 class DownloadProvider extends ChangeNotifier {
   static DownloadProvider of(BuildContext ctx) {
@@ -180,7 +183,10 @@ class DownloadProvider extends ChangeNotifier {
     if (event is Aria2ErrorEvent) {
       info.downloadInfo = 'Error: ${event.message}';
       _disposeActive(handle.id);
-      notifyListeners();
+      Future.delayed(Duration(seconds: 2), () {
+        _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
+        notifyListeners();
+      });
     }
   }
 

@@ -6,8 +6,8 @@ import 'package:neonrom3r/repository/download_sources_repository.dart';
 import 'package:neonrom3r/utils/download_sources_helper.dart';
 import 'package:provider/src/provider.dart';
 
-import '../../../../models/console_source.dart';
-import '../../../../repository/console_sources_repository.dart';
+import '../../../../../models/console_source.dart';
+import '../../../../../repository/console_sources_repository.dart';
 
 class ConsoleSourceAddDialog extends StatefulWidget {
   String sourceUrl = '';

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/foundation.dart';
@@ -6,90 +7,92 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
-import 'package:neonrom3r/ui/widgets/download_indicator.dart';
+import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
+import 'package:neonrom3r/ui/widgets/rom_list_item.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
+import 'package:neonrom3r/ui/widgets/view_mode_toggle.dart';
 import 'package:neonrom3r/utils/consoles_helper.dart';
 import 'package:neonrom3r/utils/constants.dart';
 import 'package:neonrom3r/utils/files_system_helper.dart';
 
-class RomList extends StatelessWidget {
+class RomList extends StatefulWidget {
   bool? isLoading = false;
   List<RomInfo>? roms;
   bool showConsole;
   RomList({this.isLoading, this.roms, this.showConsole = false});
+
   @override
-  Widget build(BuildContext context) {
-    final scrollController = ScrollController();
-    return (this.isLoading!
-        ? Center(child: CircularProgressIndicator())
-        : Scrollbar(
-            controller: scrollController,
-            isAlwaysShown: kIsWeb,
-            child: ListView.separated(
-                controller: scrollController,
-                padding: EdgeInsets.all(10),
-                separatorBuilder: (context, index) {
-                  return Divider(
-                    thickness: 0.2,
-                    color: Colors.white,
-                  );
-                },
-                itemCount: this.roms!.length,
-                itemBuilder: (ctx, index) {
-                  return RomListItem(
-                    romItem: this.roms![index],
-                    showConsole: showConsole,
-                  );
-                }),
-          ));
-  }
+  State<RomList> createState() => _RomListState();
 }
 
-class RomListItem extends StatelessWidget {
-  final RomInfo? romItem;
-  bool showConsole;
+class _RomListState extends State<RomList> {
+  ViewModeToggleMode _viewMode = ViewModeToggleMode.list;
 
-  RomListItem({this.romItem, this.showConsole = false});
   @override
   Widget build(BuildContext context) {
-    var _provider = DownloadProvider.of(context);
-    var _downloadInfo = _provider.getDownloadInfo(romItem);
-    return ListTile(
-      onTap: () {
-        showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => RomDetailsDialog(
-                  rom: romItem!,
-                ));
-      },
-      contentPadding: EdgeInsets.all(2),
-      leading: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: RomThumbnail(this.romItem!)),
-      title: Text(
-        romItem!.name!,
-        style: TextStyle(color: Colors.white),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (showConsole)
-            Text(
-              ConsolesHelper.getConsoleFromName(romItem!.console)!.name!,
-              style: TextStyle(color: Colors.white70),
+    var gridAxisCount =
+        max(1, (MediaQuery.of(context).size.width / 220).floor());
+    if (widget.isLoading == true) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ViewModeToggle(
+                  value: _viewMode,
+                  onChanged: (value) {
+                    setState(() => _viewMode = value);
+                  },
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+              ],
             ),
-          SizedBox(
-            height: 6,
           ),
-          Text(
-            _downloadInfo?.downloadInfo ?? "",
-            style: TextStyle(color: Colors.green, fontSize: 10),
-          ),
+          if (_viewMode == ViewModeToggleMode.list)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final rom = widget.roms![index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: RomListItem(
+                      romItem: rom,
+                      showConsole: widget.showConsole,
+                      itemType: RomListItemType.listItem,
+                    ),
+                  );
+                },
+                childCount: widget.roms!.length,
+              ),
+            ),
+          if (_viewMode == ViewModeToggleMode.grid)
+            SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final rom = widget.roms![index];
+                    return RomListItem(
+                        romItem: rom,
+                        showConsole: widget.showConsole,
+                        itemType: RomListItemType.card);
+                  },
+                  childCount: widget.roms!.length,
+                ),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridAxisCount,
+                  mainAxisExtent: 410,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                )),
         ],
       ),
-      trailing: DownloadIndicator(romItem!),
     );
   }
 }

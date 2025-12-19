@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/pages/console_sources/console_sources_page.dart';
+import 'package:neonrom3r/ui/pages/settings/console_sources/console_sources_page.dart';
 import 'package:neonrom3r/ui/pages/download_sources/download_sources_page.dart';
 
 class SettingsPage extends StatefulWidget {

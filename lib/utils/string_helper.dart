@@ -21,6 +21,11 @@ class StringHelper {
     return false;
   }
 
+  static String removeInvalidPathCharacters(String input) {
+    final invalidChars = RegExp(r'[<>:"/\\|?*\x00-\x1F]');
+    return input.replaceAll(invalidChars, '_');
+  }
+
   static String hash20(String input) =>
       sha1.convert(utf8.encode(input)).toString().substring(0, 20);
 }

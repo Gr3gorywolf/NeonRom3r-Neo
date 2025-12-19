@@ -86,8 +86,8 @@ class Aria2DownloadManager {
     final receivePort = ReceivePort();
     final controller = StreamController<Aria2Event>.broadcast();
     final doneCompleter = Completer<Aria2DoneEvent>();
-    final downloadPath =
-        p.join(FileSystemHelper.downloadsPath, rom.console, rom.name);
+    final downloadPath = p.join(FileSystemHelper.downloadsPath, rom.console,
+        StringHelper.removeInvalidPathCharacters(rom.name!));
     final isolate = await Isolate.spawn<IsolateArgs>(
       _downloadIsolateMain,
       IsolateArgs(

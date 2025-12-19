@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/ui/widgets/console_tile.dart';
+import 'package:neonrom3r/ui/widgets/console_card.dart';
 import 'package:neonrom3r/utils/animation_helper.dart';
 import 'package:neonrom3r/utils/assets_helper.dart';
 import 'package:neonrom3r/utils/consoles_helper.dart';

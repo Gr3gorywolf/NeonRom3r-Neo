@@ -1,8 +1,10 @@
-import 'package:animate_do/animate_do.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/utils/assets_helper.dart';
 import 'package:neonrom3r/utils/consoles_helper.dart';
+
+import 'console_card.dart';
 
 class ConsoleList extends StatefulWidget {
   Function(Console) onConsoleSelected;
@@ -37,48 +39,20 @@ class _ConsoleListState extends State<ConsoleList> {
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
-    return Center(
-      child: Container(
-          height: 50,
-          margin: EdgeInsets.fromLTRB(15, 7, 15, 7),
-          child: Scrollbar(
-            controller: scrollController,
-            child: ListView.builder(
-                controller: scrollController,
-                itemCount: _consoles!.length,
-                scrollDirection: Axis.horizontal,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  var _currentConsole = this._consoles![index];
-                  return GestureDetector(
-                    onTap: () => widget.onConsoleSelected(_currentConsole),
-                    child: Container(
-                      child: Card(
-                          color: this.getItemBackgroundColor(_currentConsole),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(50)),
-                            margin: EdgeInsets.all(7),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                AssetsHelper.getIcon(_currentConsole.slug!,
-                                    size: 20),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                Text(
-                                  _currentConsole.slug!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.white),
-                                )
-                              ],
-                            ),
-                          )),
-                    ),
-                  );
-                }),
-          )),
+    var axisCount = max(1, (MediaQuery.of(context).size.width / 220).floor());
+    return GridView.count(
+      crossAxisCount: axisCount,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      children: List.generate(widget.consoles!.length, (index) {
+        var _console = widget.consoles![index];
+        return ConsoleCard(
+          _console,
+          onTap: () {
+            widget.onConsoleSelected(_console);
+          },
+        );
+      }),
     );
   }
 }
