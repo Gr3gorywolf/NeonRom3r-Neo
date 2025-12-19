@@ -19,15 +19,20 @@ class RomList extends StatefulWidget {
   bool? isLoading = false;
   List<RomInfo>? roms;
   bool showConsole;
-  RomList({this.isLoading, this.roms, this.showConsole = false});
+  ViewModeToggleMode viewMode;
+  Function(ViewModeToggleMode)? onViewModeChanged;
+  RomList(
+      {this.isLoading,
+      this.roms,
+      this.showConsole = false,
+      this.viewMode = ViewModeToggleMode.list,
+      this.onViewModeChanged});
 
   @override
   State<RomList> createState() => _RomListState();
 }
 
 class _RomListState extends State<RomList> {
-  ViewModeToggleMode _viewMode = ViewModeToggleMode.list;
-
   @override
   Widget build(BuildContext context) {
     var gridAxisCount =
@@ -45,9 +50,12 @@ class _RomListState extends State<RomList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ViewModeToggle(
-                  value: _viewMode,
+                  value: widget.viewMode,
                   onChanged: (value) {
-                    setState(() => _viewMode = value);
+                    setState(() => widget.viewMode = value);
+                    if (widget.onViewModeChanged != null) {
+                      widget.onViewModeChanged!(value);
+                    }
                   },
                 ),
                 SizedBox(
@@ -56,7 +64,7 @@ class _RomListState extends State<RomList> {
               ],
             ),
           ),
-          if (_viewMode == ViewModeToggleMode.list)
+          if (widget.viewMode == ViewModeToggleMode.list)
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -73,7 +81,7 @@ class _RomListState extends State<RomList> {
                 childCount: widget.roms!.length,
               ),
             ),
-          if (_viewMode == ViewModeToggleMode.grid)
+          if (widget.viewMode == ViewModeToggleMode.grid)
             SliverGrid(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {

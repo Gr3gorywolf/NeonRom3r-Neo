@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/providers/app_provider.dart';
+import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/repository/roms_repository.dart';
 import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
+import 'package:provider/provider.dart';
 
 class ConsoleRomsPage extends StatefulWidget {
   Console console;
@@ -83,9 +86,17 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var appProvider = Provider.of<AppProvider>(context);
     return Scaffold(
       appBar: searchBar!.build(context),
-      body: RomList(isLoading: this._isLoading, roms: filteredRoms),
+      body: RomList(
+        isLoading: this._isLoading,
+        roms: filteredRoms,
+        viewMode: appProvider.consoleRomsItemType,
+        onViewModeChanged: (mode) {
+          appProvider.setConsoleRomsItemType(mode);
+        },
+      ),
     );
   }
 }
