@@ -53,13 +53,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
             filterValues = values;
           });
         },
-        initialValues: ToolbarValue(
-            filters: [],
-            search: '',
-            sortBy: ToolBarSortByElement(
-                label: 'Name',
-                field: 'name',
-                value: ToolBarSortByType.ascending)),
+        initialValues: ToolbarValue(filters: [], search: ''),
         settings: ToolbarSettings(title: "Downloads", sorts: [
           ToolBarSortByElement(
               label: 'Name', field: 'name', value: ToolBarSortByType.ascending),
