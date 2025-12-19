@@ -238,9 +238,7 @@ class RomListItem extends StatelessWidget {
                     ),
                     ...(_downloadInfo != null
                         ? [
-                            SizedBox(
-                              height: 10,
-                            ),
+                            Spacer(),
                             LinearProgressIndicator(
                               backgroundColor: Colors.grey[800],
                               value: (_downloadInfo.downloadPercent ?? 0) / 100,
