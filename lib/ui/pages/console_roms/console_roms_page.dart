@@ -22,7 +22,6 @@ class ConsoleRomsPage extends StatefulWidget {
 
 class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   String _searchQuery = "";
-  SearchBar? searchBar;
   List<RomInfo>? _roms = [];
   bool _isLoading = false;
   ToolbarValue? filterValues = null;

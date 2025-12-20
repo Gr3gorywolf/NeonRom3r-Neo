@@ -16,12 +16,10 @@ class ConsoleEmulatorsPage extends StatefulWidget {
 
 class _ConsoleEmulatorsPageState extends State<ConsoleEmulatorsPage> {
   String _searchQuery = "";
-  SearchBar? searchBar;
   bool _isLoading = false;
   AppBar get defaultAppbar {
     return AppBar(
       title: Text(widget.console.name! + " Emulators"),
-      actions: [searchBar!.getSearchAction(context)],
     );
   }
 
@@ -39,36 +37,10 @@ class _ConsoleEmulatorsPageState extends State<ConsoleEmulatorsPage> {
     super.initState();
   }
 
-  _ConsoleEmulatorsPageState() {
-    searchBar = new SearchBar(
-        setState: setState,
-        inBar: true,
-        closeOnSubmit: false,
-        clearOnSubmit: false,
-        onSubmitted: (search) {
-          setState(() {
-            this._searchQuery = search;
-          });
-        },
-        onCleared: () {
-          setState(() {
-            this._searchQuery = "";
-          });
-        },
-        onClosed: () {
-          setState(() {
-            this._searchQuery = "";
-          });
-        },
-        buildDefaultAppBar: (context) {
-          return defaultAppbar;
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: searchBar!.build(context),
+      appBar: defaultAppbar,
       body: ListView.separated(
           padding: EdgeInsets.all(10),
           separatorBuilder: (context, index) {

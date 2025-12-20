@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 const Color grayBorderColor = Color(0xFF25292a);
 
@@ -16,6 +17,17 @@ ThemeData appTheme = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
     scaffoldBackgroundColor: backgroundColor,
+    extensions: [
+      SkeletonizerConfigData(
+          containersColor: Colors.grey[900]!,
+          ignoreContainers: false,
+          enableSwitchAnimation: true,
+          justifyMultiLineText: true,
+          effect: PulseEffect(
+              duration: Duration(milliseconds: 1500),
+              from: Colors.grey[800]!,
+              to: Colors.grey[700]!)),
+    ],
     colorScheme: const ColorScheme.dark(
         primary: primaryGreen,
         secondary: secondaryGreen,
