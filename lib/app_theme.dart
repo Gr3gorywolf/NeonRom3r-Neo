@@ -95,6 +95,16 @@ ThemeData appTheme = ThemeData(
       foregroundColor: Colors.black,
       shape: StadiumBorder(),
     ),
+    badgeTheme: BadgeThemeData(
+      backgroundColor: primaryGreen,
+      textColor: Colors.black,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      largeSize: 26,
+      smallSize: 20,
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryGreen,

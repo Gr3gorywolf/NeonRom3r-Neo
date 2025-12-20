@@ -13,27 +13,6 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     required this.rom,
   }) : super(key: key);
 
-  // ---------------- NORMALIZACIÓN ----------------
-
-  String _normalize(String input) {
-    var value = input.toLowerCase();
-
-    value = value.replaceAll(RegExp(r'\(.*?\)'), '');
-    value = value.replaceAll(RegExp(r'\[.*?\]'), '');
-    value = value.replaceAll(RegExp(r'[-+_]'), ' ');
-    value = value.replaceAll(RegExp(r'[^a-z0-9\s]'), '');
-    value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return value;
-  }
-
-  bool _matches(String rom, String query) {
-    final r = _normalize(rom);
-    final q = _normalize(query);
-
-    return r.contains(q) || q.contains(r);
-  }
-
   // ---------------- BUILD ----------------
 
   @override
@@ -55,7 +34,7 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text('Available downloads'),
       content: SizedBox(
-        width: double.maxFinite,
+        width: 420,
         height: 420,
         child: results.isEmpty
             ? const Center(
@@ -96,8 +75,6 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     );
   }
 }
-
-// ---------------- INTERNAL RESULT ----------------
 
 class _Result {
   final DownloadSourceRom rom;

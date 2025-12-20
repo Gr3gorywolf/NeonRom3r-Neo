@@ -21,7 +21,6 @@ environment:
   sdk: '>=3.0.0'
 
 dependencies:
-  http: ^0.13.5
   animate_do: ^3.0.2
   provider: ^6.1.5+1
   flutter_search_bar: ^3.0.0
@@ -32,6 +31,8 @@ dependencies:
   android_intent: ^2.0.2
   material_segmented_control: ^3.1.2
   shared_preferences: ^2.0.15
+  http: ^1.2.0
+  html: ^0.15.4
   share: ^2.0.4
   flutter:
     sdk: flutter

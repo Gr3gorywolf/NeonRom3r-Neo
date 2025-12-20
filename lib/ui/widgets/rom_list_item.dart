@@ -28,6 +28,8 @@ class RomListItem extends StatelessWidget {
         _isRomDownloaded != null ? "Last played: " : "Not installed";
 
     navigateToDetails() {
+      // MaterialPageRoute route = MaterialPageRoute(
+      //     builder: (context) => RomDetailsPage(rom: romItem));
       showModalBottomSheet(
           context: context,
           isScrollControlled: true,
