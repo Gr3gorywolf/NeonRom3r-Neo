@@ -111,7 +111,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
           opacity: 0.7,
           child: Text(
             widget.rom.releaseDate?.isEmpty ?? true
-                ? "1994"
+                ? "---"
                 : widget.rom.releaseDate!,
             style: Theme.of(context).textTheme.bodySmall,
           ),
