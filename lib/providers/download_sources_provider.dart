@@ -26,7 +26,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
   Future<void> initDownloadSources() async {
     if (_initialized) return;
 
-    final file = CacheHelper.retrieveCacheFile(sourcesFile);
+    final file = await CacheHelper.retrieveCacheFile(sourcesFile);
     if (file == null) {
       _initialized = true;
       return;

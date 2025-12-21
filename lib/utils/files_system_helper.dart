@@ -7,6 +7,7 @@ class FileSystemHelper {
   static String _rootPath = "";
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
   //getters
   static get rootPath {
     return _rootPath;
@@ -22,6 +23,10 @@ class FileSystemHelper {
 
   static get portraitsPath {
     return cachePath + "/portraits";
+  }
+
+  static get detailsCachePath {
+    return cachePath + "/details-caches";
   }
 
   static get downloadRegistryFile {
@@ -82,7 +87,8 @@ class FileSystemHelper {
       cachePath,
       portraitsPath,
       torrentsCache,
-      consoleSourcesPath
+      consoleSourcesPath,
+      detailsCachePath
     ];
     for (var path in paths) {
       if (!await Directory(path).exists()) {

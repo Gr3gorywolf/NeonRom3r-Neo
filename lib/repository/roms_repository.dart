@@ -26,11 +26,11 @@ class RomsRepository {
     var baseUrl = "${Constants.apiBasePath}/Data/Roms/${console.slug}.json";
     var client = new http.Client();
     //If is catched tries to retrieve the cache file
-    var signature = await CacheHelper.getCacheSignature(console.slug);
+    var signature = await CacheHelper.getCacheSignature(console?.slug ?? "");
     if (signature != null) {
       var res = await client.head(Uri.parse(baseUrl));
       if (signature == res.headers['content-length']) {
-        var file = CacheHelper.retrieveCacheFile("${console.slug}.json");
+        var file = await CacheHelper.retrieveCacheFile("${console.slug}.json");
         if (file != null) {
           for (var rom in json.decode(file)['games']) {
             roms.add(RomInfo.fromJson(rom));
@@ -42,9 +42,9 @@ class RomsRepository {
     var res = await client.get(Uri.parse(baseUrl));
     var headers = res.headers;
     if (res.statusCode == 200 && res.body != null) {
-      CacheHelper.writeCacheFile("${console.slug}.json", res.body);
+      await CacheHelper.writeCacheFile("${console.slug}.json", res.body);
       await CacheHelper.setCacheSignature(
-          console.slug, res.headers['content-length']);
+          console.slug ?? "", res.headers['content-length'] ?? "");
       for (var rom in json.decode(res.body)['games']) {
         roms.add(RomInfo.fromJson(rom));
       }

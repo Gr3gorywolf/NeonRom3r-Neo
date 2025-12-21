@@ -30,4 +30,22 @@ class TgdbGameDetail {
     required this.titleScreens,
     required this.screenshots,
   });
+
+  factory TgdbGameDetail.fromJson(Map<String, dynamic> json) {
+    return TgdbGameDetail(
+      title: json['title'] ?? "",
+      description: json['description'] ?? "",
+      titleScreens: List<String>.from(json['title_screens'] ?? []),
+      screenshots: List<String>.from(json['screenshots'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'title_screens': titleScreens,
+      'screenshots': screenshots,
+    };
+  }
 }

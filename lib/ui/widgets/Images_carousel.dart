@@ -1,6 +1,8 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/ui/widgets/image_lightbox.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ImagesCarousel extends StatefulWidget {
   final List<String> images;
@@ -122,10 +124,35 @@ class _ImagesCarouselState extends State<ImagesCarousel> {
                 padding: const EdgeInsets.all(8),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    widget.images[index],
-                    width: widget.imageWidth,
-                    fit: BoxFit.cover,
+                  child: GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (_) => ImageLightbox(
+                          images: widget.images,
+                          initialIndex: index,
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: widget.images[index],
+                      child: Image.network(
+                        widget.images[index],
+                        width: widget.imageWidth,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Skeletonizer(
+                            enabled: true,
+                            child: Bone(
+                              height: widget.height,
+                              width: widget.imageWidth,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               );
