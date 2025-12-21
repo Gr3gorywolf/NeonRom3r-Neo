@@ -72,7 +72,7 @@ class DownloadService {
 
   List<RomDownload?> getDownloadedRoms() {
     var registryData = "[]";
-    File registryFile = File(FileSystemService.downloadRegistryFile);
+    File registryFile = File(FileSystemService.downloadRegistryFilePath);
     if (registryFile.existsSync()) {
       registryData = registryFile.readAsStringSync();
     } else {
@@ -87,7 +87,7 @@ class DownloadService {
   }
 
   void registerRomDownload(RomInfo downloadedRom, String? downloadedPath) {
-    File registryFile = File(FileSystemService.downloadRegistryFile);
+    File registryFile = File(FileSystemService.downloadRegistryFilePath);
     var downloads = getDownloadedRoms();
     var downloadIndex = downloads
         .indexWhere((element) => element!.isRomInfoEqual(downloadedRom));

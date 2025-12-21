@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
-import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/services/download_sources_service.dart';
 import 'package:neonrom3r/services/rom_service.dart';
@@ -11,96 +10,102 @@ import 'package:provider/provider.dart';
 import 'package:neonrom3r/models/download_source.dart';
 import 'package:neonrom3r/services/cache_service.dart';
 
-const sourcesFile = "download-sources.json";
-
 class DownloadSourcesProvider extends ChangeNotifier {
   static DownloadSourcesProvider of(BuildContext ctx) {
     return Provider.of<DownloadSourcesProvider>(ctx);
   }
 
   List<DownloadSourceWithDownloads> _downloadSources = [];
-  List<DownloadSourceWithDownloads> get downloadSources => _downloadSources;
+  final Map<String, List<DownloadSource>> _romSources = {};
 
   bool _initialized = false;
+
+  List<DownloadSourceWithDownloads> get downloadSources => _downloadSources;
   bool get initialized => _initialized;
-  Future<void> initDownloadSources() async {
+
+  Future<void> initialize() async {
     if (_initialized) return;
-
-    final file = await CacheService.retrieveCacheFile(sourcesFile);
-    if (file == null) {
-      _initialized = true;
-      return;
-    }
-
-    setDownloadSources((json.decode(file) as List)
-        .map((e) => DownloadSourceWithDownloads.fromJson(e))
-        .toList());
-
+    _downloadSources = await DownloadSourcesService.getDownloadSources();
     _initialized = true;
     notifyListeners();
   }
 
-  Future<void> saveDownloadSources() async {
-    final jsonData = json.encode(
-      _downloadSources.map((e) => e.toJson()).toList(),
-    );
-    await CacheService.writeCacheFile(sourcesFile, jsonData);
+  List<DownloadSourceRom> _findMatches(
+    DownloadSourceWithDownloads source,
+    RomInfo rom,
+  ) {
+    final normalizedRomName = RomService.normalizeRomTitle(rom.name);
+
+    return source.downloads
+        .where(
+          (sourceRom) =>
+              sourceRom.console == rom.console &&
+              StringHelper.hasMinConsecutiveMatch(
+                sourceRom.title_clean!,
+                normalizedRomName,
+                minLength: normalizedRomName.length,
+              ),
+        )
+        .toList();
   }
 
-  List<DownloadSourceWithDownloads> findDownloadSources(RomInfo rom) {
-    final normalizedRomName = RomService.normalizeRomTitle(rom.name!);
-    final List<DownloadSourceWithDownloads> results = [];
+  // -------------------------
+  // PUBLIC QUERIES
+  // -------------------------
+  List<DownloadSourceWithDownloads> findRomSourcesWithDownloads(RomInfo rom) {
+    return _downloadSources
+        .map((source) {
+          final matches = _findMatches(source, rom);
+          if (matches.isEmpty) return null;
+          return DownloadSourceWithDownloads(
+            sourceInfo: source.sourceInfo,
+            downloads: matches,
+          );
+        })
+        .whereType<DownloadSourceWithDownloads>()
+        .toList();
+  }
 
-    for (final source in _downloadSources) {
-      final matches = source.downloads!.where((sourceRom) {
-        return StringHelper.hasMinConsecutiveMatch(
-                sourceRom.title_clean!, normalizedRomName,
-                minLength: normalizedRomName.length) &&
-            sourceRom.console == rom.console;
-      }).toList();
+  List<DownloadSource> getRomSources(String romSlug) {
+    return _romSources[romSlug] ?? [];
+  }
 
-      if (matches.isNotEmpty) {
-        results.add(DownloadSourceWithDownloads(
-          sourceInfo: source.sourceInfo,
-          downloads: matches,
-        ));
+  void compileRomSources(List<RomInfo> roms) {
+    print("Compiling rom sources for ${roms.length} roms...");
+
+    for (final rom in roms) {
+      if (_romSources.containsKey(rom.slug)) continue;
+
+      for (final source in _downloadSources) {
+        final matches = _findMatches(source, rom);
+        if (matches.isEmpty) continue;
+
+        _romSources.putIfAbsent(rom.slug!, () => []).add(source.sourceInfo);
       }
     }
 
-    return results;
-  }
-
-  void setDownloadSources(List<DownloadSourceWithDownloads> sources) {
-    _downloadSources = sources
-        .map((e) => DownloadSourcesService.parseDownloadSourceNames(e))
-        .toList();
     notifyListeners();
-    saveDownloadSources();
+    print("Compiled rom sources for ${roms.length} roms...");
   }
 
+  // Mutations
   void addDownloadSource(DownloadSourceWithDownloads source) {
-    DownloadSourceWithDownloads parsedSource =
-        DownloadSourcesService.parseDownloadSourceNames(source);
-    if (downloadSources.contains(parsedSource)) {
-      downloadSources[downloadSources.indexOf(parsedSource)] = parsedSource;
-      notifyListeners();
-      saveDownloadSources();
-      return;
+    final parsed = DownloadSourcesService.parseDownloadSourceNames(source);
+
+    final index = _downloadSources.indexOf(parsed);
+    if (index != -1) {
+      _downloadSources[index] = parsed;
+    } else {
+      _downloadSources.add(parsed);
+      DownloadSourcesService.saveDownloadSource(parsed);
     }
-    _downloadSources.add(parsedSource);
+
     notifyListeners();
-    saveDownloadSources();
   }
 
   void removeDownloadSource(DownloadSourceWithDownloads source) {
     _downloadSources.remove(source);
+    DownloadSourcesService.deleteDownloadSource(source);
     notifyListeners();
-    saveDownloadSources();
-  }
-
-  void clear() {
-    _downloadSources.clear();
-    notifyListeners();
-    saveDownloadSources();
   }
 }

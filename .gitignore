@@ -45,3 +45,4 @@ app.*.map.json
 .romercache/
 aria2c/
 downloaded-roms/
+downloads/

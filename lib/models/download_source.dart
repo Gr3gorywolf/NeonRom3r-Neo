@@ -1,14 +1,13 @@
 import 'download_source_rom.dart';
 
 class DownloadSource {
-  String? title;
+  String title = "Unknown";
   int? romsCount;
   String? lastUpdated;
 
-  DownloadSource({this.title, this.romsCount, this.lastUpdated});
-
+  DownloadSource({required this.title, this.romsCount, this.lastUpdated});
   DownloadSource.fromJson(Map<String, dynamic> json) {
-    title = json['title'];
+    title = json['title'] ?? "";
     romsCount = json['roms_count'];
     lastUpdated = json['last_updated'];
   }
@@ -23,19 +22,19 @@ class DownloadSource {
 }
 
 class DownloadSourceWithDownloads {
-  DownloadSource? sourceInfo;
-  List<DownloadSourceRom>? downloads;
+  DownloadSource sourceInfo =
+      DownloadSource(title: "Unknown", romsCount: 0, lastUpdated: null);
+  List<DownloadSourceRom> downloads = [];
 
-  DownloadSourceWithDownloads({this.sourceInfo, this.downloads});
+  DownloadSourceWithDownloads(
+      {required this.sourceInfo, required this.downloads});
 
   DownloadSourceWithDownloads.fromJson(Map<String, dynamic> json) {
-    sourceInfo = json['sourceInfo'] != null
-        ? new DownloadSource.fromJson(json['sourceInfo'])
-        : null;
+    sourceInfo = DownloadSource.fromJson(json['sourceInfo']);
     if (json['downloads'] != null) {
       downloads = [];
       json['downloads'].forEach((v) {
-        downloads!.add(new DownloadSourceRom.fromJson(v));
+        downloads.add(new DownloadSourceRom.fromJson(v));
       });
     }
   }

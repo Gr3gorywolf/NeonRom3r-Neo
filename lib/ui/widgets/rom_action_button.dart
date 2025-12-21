@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/download_info.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
 import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
 import 'package:neonrom3r/services/download_service.dart';
@@ -22,8 +23,12 @@ class RomActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var _provider = DownloadProvider.of(context);
+    var _download_sources_provider =
+        Provider.of<DownloadSourcesProvider>(context);
     var _isDownloading = _provider.isRomDownloading(rom);
     var _isReadyToPlay = _provider.isRomReadyToPlay(rom);
+    var _has_download_sources =
+        _download_sources_provider.getRomSources(rom.slug).isNotEmpty;
 
     double horizontalPadding;
     double verticalPadding;
@@ -31,8 +36,8 @@ class RomActionButton extends StatelessWidget {
     double fontSize;
     double spacing;
 
-    var icon = Icons.file_download_outlined;
-    var text = "Download";
+    var icon = Icons.cloud_off_rounded;
+    var text = "No downloads";
 
     handleCancelDownload() {
       AlertsService.showAlert(
@@ -82,6 +87,10 @@ class RomActionButton extends StatelessWidget {
         spacing = 3;
         break;
     }
+    if (_has_download_sources) {
+      icon = Icons.cloud_download;
+      text = "Download";
+    }
     if (_isDownloading) {
       icon = Icons.stop;
       text = "Cancel";
@@ -94,23 +103,25 @@ class RomActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: verticalPadding)),
-        onPressed: () => {
-              if (_isDownloading)
-                {handleCancelDownload()}
-              else if (_isReadyToPlay)
-                {
-                  RomService.openDownloadedRom(
-                      _provider.getDownloadedRomInfo(rom)!),
-                  Toast.show("Rom launched",
-                      duration: Toast.lengthLong, gravity: Toast.bottom)
+        onPressed: _has_download_sources
+            ? () => {
+                  if (_isDownloading)
+                    {handleCancelDownload()}
+                  else if (_isReadyToPlay)
+                    {
+                      RomService.openDownloadedRom(
+                          _provider.getDownloadedRomInfo(rom)!),
+                      Toast.show("Rom launched",
+                          duration: Toast.lengthLong, gravity: Toast.bottom)
+                    }
+                  else
+                    {
+                      handleShowDownload(),
+                      Toast.show("Download started...",
+                          duration: Toast.lengthLong, gravity: Toast.bottom)
+                    }
                 }
-              else
-                {
-                  handleShowDownload(),
-                  Toast.show("Download started...",
-                      duration: Toast.lengthLong, gravity: Toast.bottom)
-                }
-            },
+            : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

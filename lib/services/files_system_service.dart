@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FileSystemService {
   static String _rootPath = "";
+  static String _appDocPath = "";
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -14,11 +16,11 @@ class FileSystemService {
   }
 
   static get cachePath {
-    return _rootPath + "/.romercache";
+    return _appDocPath + "/cache";
   }
 
   static get downloadsPath {
-    return _rootPath + "/downloaded-roms";
+    return _rootPath + "/downloads";
   }
 
   static get portraitsPath {
@@ -29,39 +31,39 @@ class FileSystemService {
     return cachePath + "/fetch-cache";
   }
 
-  static get downloadRegistryFile {
-    return cachePath + "/downloads-neo.json";
-  }
-
   static get aria2cPath {
     return _rootPath + "/aria2c";
   }
 
-  static get torrentsCache {
+  static get torrentsCachePath {
     return cachePath + "/torrents";
   }
 
-  static get consoleSourcesPath {
-    return cachePath + "/console-sources";
+  static get downloadSourcesPath {
+    return _appDocPath + "/download-sources";
   }
 
-  static get emulatorIntentsFile {
-    return cachePath + "/emulatorIntents.json";
+  static get consoleSourcesPath {
+    return _appDocPath + "/console-sources";
+  }
+
+  static get databaseFilePath {
+    return _appDocPath + "/database.db";
+  }
+
+  static get downloadRegistryFilePath {
+    return cachePath + "/downloads-neo.json";
+  }
+
+  static get emulatorIntentsFilePath {
+    return _appDocPath + "/emulatorIntents.json";
   }
 
   //root-path initializer
   static _initRootPath() async {
     var rootPath = "";
-    if (Platform.isAndroid) {
-      // try {
-      //   var storageInfo = await PathProviderEx.getStorageInfo();
-      //   if (storageInfo.length > 0) {
-      //     rootPath = storageInfo[0].rootDir;
-      //   }
-      // } on PlatformException catch (er) {}
-    } else if (isDesktop) {
-      rootPath = Directory.current.path;
-    }
+    rootPath = Directory.current.path;
+    _appDocPath = (await getApplicationSupportDirectory()).path;
     print("Root path initialized to: " + rootPath);
     _rootPath = rootPath;
   }
@@ -86,7 +88,8 @@ class FileSystemService {
       downloadsPath,
       cachePath,
       portraitsPath,
-      torrentsCache,
+      torrentsCachePath,
+      downloadSourcesPath,
       consoleSourcesPath,
       fetchCachePath
     ];

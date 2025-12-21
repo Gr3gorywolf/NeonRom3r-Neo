@@ -10,14 +10,22 @@ import 'package:neonrom3r/services/console_service.dart';
 import 'package:neonrom3r/services/files_system_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class RomThumbnail extends StatelessWidget {
+class RomThumbnail extends StatefulWidget {
   RomInfo info;
   double height;
   double width;
-  RomThumbnail(this.info, {this.height = 50, this.width = 50});
+  Duration? timeout;
+  RomThumbnail(this.info, {this.height = 50, this.width = 50, this.timeout});
 
+  @override
+  State<RomThumbnail> createState() => _RomThumbnailState();
+}
+
+class _RomThumbnailState extends State<RomThumbnail> {
+  var timeoutEnded = false;
   File? get catchedImage {
-    var path = "${FileSystemService.portraitsPath}/${this.info.name}.png";
+    var path =
+        "${FileSystemService.portraitsPath}/${this.widget.info.name}.png";
     if (File(path).existsSync()) {
       return File(path);
     } else {
@@ -26,19 +34,40 @@ class RomThumbnail extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    if (widget.timeout != null) {
+      Future.delayed(widget.timeout!, () {
+        if (this.mounted) {
+          setState(() {
+            timeoutEnded = true;
+          });
+        }
+      });
+    } else {
+      timeoutEnded = true;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!timeoutEnded) {
+      return Skeletonizer.zone(
+        enabled: true,
+        child: Bone(height: double.infinity, width: double.infinity),
+      );
+    }
     return Image.network(
-      info?.portrait ?? "",
+      widget.info?.portrait ?? "",
       errorBuilder: (context, obj, trace) {
         if (catchedImage != null) {
           return Image.file(
             catchedImage!,
-            height: this.height,
-            width: this.width,
+            height: this.widget.height,
+            width: this.widget.width,
             fit: BoxFit.cover,
           );
         }
-        return AssetsService.getIcon(info.console, size: width);
+        return AssetsService.getIcon(widget.info.console, size: widget.width);
       },
       loadingBuilder: (child, widget, progress) {
         if (progress == null) return widget;
@@ -47,8 +76,8 @@ class RomThumbnail extends StatelessWidget {
           child: Bone(height: double.infinity, width: double.infinity),
         );
       },
-      height: this.height,
-      width: this.width,
+      height: this.widget.height,
+      width: this.widget.width,
       fit: BoxFit.cover,
     );
   }

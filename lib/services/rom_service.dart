@@ -11,7 +11,7 @@ import 'package:neonrom3r/services/files_system_service.dart';
 
 class RomService {
   static List<EmulatorIntent> get _intents {
-    var file = File(FileSystemService.emulatorIntentsFile);
+    var file = File(FileSystemService.emulatorIntentsFilePath);
     List<EmulatorIntent> intents = [];
     if (file.existsSync()) {
       for (var json in json.decode(file.readAsStringSync())) {
@@ -60,7 +60,7 @@ class RomService {
   static Future catchEmulatorsIntents() async {
     try {
       var intents = await SettingsRepository().fetchIntentsSettings();
-      new File(FileSystemService.emulatorIntentsFile).writeAsStringSync(
+      new File(FileSystemService.emulatorIntentsFilePath).writeAsStringSync(
           json.encode(intents.map((e) => e.toJson()).toList()));
     } catch (err) {}
   }

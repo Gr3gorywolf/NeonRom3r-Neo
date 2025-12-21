@@ -4,6 +4,7 @@ import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/models/toolbar_elements.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/repository/roms_repository.dart';
 import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
@@ -48,6 +49,9 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
       _isLoading = true;
     });
     var roms = await new RomsRepository().fetchRoms(widget.console);
+    var downloadSourcesProvider =
+        Provider.of<DownloadSourcesProvider>(context, listen: false);
+    downloadSourcesProvider.compileRomSources(roms);
     setState(() {
       _roms = roms;
       _isLoading = false;

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/database/app_database.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:provider/provider.dart';
@@ -33,10 +34,11 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
       await RomService.catchEmulatorsIntents();
       DownloadService().importOldRoms();
     }
+    await initDb();
     await ConsoleService.loadConsoleSources();
     Provider.of<DownloadProvider>(context, listen: false).initDownloads();
     await Provider.of<DownloadSourcesProvider>(context, listen: false)
-        .initDownloadSources();
+        .initialize();
     Future.delayed(Duration(milliseconds: 2000)).then((value) =>
         {Provider.of<AppProvider>(context, listen: false).setAppLoaded(true)});
   }

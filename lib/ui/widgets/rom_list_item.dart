@@ -22,7 +22,10 @@ class RomListItem extends StatelessWidget {
     var _provider = DownloadProvider.of(context);
     var _downloadInfo = _provider.getDownloadInfo(romItem);
     var _isRomDownloaded = _provider.getDownloadedRomInfo(romItem);
-    var thumbnail = RomThumbnail(this.romItem!);
+    var thumbnail = RomThumbnail(
+      this.romItem!,
+      timeout: Duration(milliseconds: 60),
+    );
     var console = ConsoleService.getConsoleFromName(romItem!.console);
     var lastPlayed =
         _isRomDownloaded != null ? "Last played: " : "Not installed";

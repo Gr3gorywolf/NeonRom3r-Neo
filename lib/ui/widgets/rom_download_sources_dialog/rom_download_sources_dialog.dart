@@ -20,7 +20,7 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     final provider = context.watch<DownloadSourcesProvider>();
 
     final List<DownloadSourceWithDownloads> results =
-        provider.findDownloadSources(rom);
+        provider.findRomSourcesWithDownloads(rom);
     final List<_Result> filteredResults = [];
     for (final source in results) {
       for (final sourceDownload in source.downloads!) {
