@@ -11,8 +11,8 @@ import 'package:neonrom3r/ui/widgets/no_downloads_placeholder.dart';
 import 'package:neonrom3r/ui/pages/home/home_page.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/ui/widgets/toolbar.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
-import 'package:neonrom3r/utils/downloads_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/services/download_service.dart';
 import 'package:neonrom3r/utils/filter_helpers.dart';
 
 class DownloadsPage extends StatefulWidget {
@@ -59,7 +59,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
               label: 'Name', field: 'name', value: ToolBarSortByType.ascending),
         ], filters: [
           ToolBarFilterGroups(groupName: "Consoles", filters: [
-            ...ConsolesHelper.getConsoles()
+            ...ConsoleService.getConsoles()
                 .map((console) => ToolBarFilterElement(
                     label: console.name ?? "",
                     field: 'console',

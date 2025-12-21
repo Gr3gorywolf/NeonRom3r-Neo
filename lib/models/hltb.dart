@@ -1,4 +1,6 @@
-class HltbEntry {
+import 'package:neonrom3r/models/contracts/json_serializable.dart';
+
+class HltbEntry implements JsonSerializable {
   final String id;
   final String name;
   final String description;

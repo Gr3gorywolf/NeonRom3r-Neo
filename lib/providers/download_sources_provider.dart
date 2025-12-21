@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/utils/download_sources_helper.dart';
-import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:neonrom3r/services/download_sources_service.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 import 'package:neonrom3r/utils/string_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/models/download_source.dart';
-import 'package:neonrom3r/utils/cache_helper.dart';
+import 'package:neonrom3r/services/cache_service.dart';
 
 const sourcesFile = "download-sources.json";
 
@@ -26,7 +26,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
   Future<void> initDownloadSources() async {
     if (_initialized) return;
 
-    final file = await CacheHelper.retrieveCacheFile(sourcesFile);
+    final file = await CacheService.retrieveCacheFile(sourcesFile);
     if (file == null) {
       _initialized = true;
       return;
@@ -44,11 +44,11 @@ class DownloadSourcesProvider extends ChangeNotifier {
     final jsonData = json.encode(
       _downloadSources.map((e) => e.toJson()).toList(),
     );
-    await CacheHelper.writeCacheFile(sourcesFile, jsonData);
+    await CacheService.writeCacheFile(sourcesFile, jsonData);
   }
 
   List<DownloadSourceWithDownloads> findDownloadSources(RomInfo rom) {
-    final normalizedRomName = RomsHelper.normalizeRomTitle(rom.name!);
+    final normalizedRomName = RomService.normalizeRomTitle(rom.name!);
     final List<DownloadSourceWithDownloads> results = [];
 
     for (final source in _downloadSources) {
@@ -72,7 +72,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
 
   void setDownloadSources(List<DownloadSourceWithDownloads> sources) {
     _downloadSources = sources
-        .map((e) => DownloadSourcesHelper.parseDownloadSourceNames(e))
+        .map((e) => DownloadSourcesService.parseDownloadSourceNames(e))
         .toList();
     notifyListeners();
     saveDownloadSources();
@@ -80,7 +80,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
 
   void addDownloadSource(DownloadSourceWithDownloads source) {
     DownloadSourceWithDownloads parsedSource =
-        DownloadSourcesHelper.parseDownloadSourceNames(source);
+        DownloadSourcesService.parseDownloadSourceNames(source);
     if (downloadSources.contains(parsedSource)) {
       downloadSources[downloadSources.indexOf(parsedSource)] = parsedSource;
       notifyListeners();

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
 
 import 'console_card.dart';
 
@@ -18,7 +18,7 @@ class ConsoleList extends StatefulWidget {
 }
 
 class _ConsoleListState extends State<ConsoleList> {
-  List<Console>? _consoles = ConsolesHelper.getConsoles();
+  List<Console>? _consoles = ConsoleService.getConsoles();
   @override
   void initState() {
     super.initState();

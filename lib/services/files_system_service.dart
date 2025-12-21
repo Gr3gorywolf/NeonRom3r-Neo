@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class FileSystemHelper {
+class FileSystemService {
   static String _rootPath = "";
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -25,8 +25,8 @@ class FileSystemHelper {
     return cachePath + "/portraits";
   }
 
-  static get detailsCachePath {
-    return cachePath + "/details-caches";
+  static get fetchCachePath {
+    return cachePath + "/fetch-cache";
   }
 
   static get downloadRegistryFile {
@@ -88,7 +88,7 @@ class FileSystemHelper {
       portraitsPath,
       torrentsCache,
       consoleSourcesPath,
-      detailsCachePath
+      fetchCachePath
     ];
     for (var path in paths) {
       if (!await Directory(path).exists()) {

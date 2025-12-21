@@ -9,16 +9,16 @@ import 'package:neonrom3r/ui/widgets/Images_carousel.dart';
 import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
 import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/widgets/rom_details_action_button.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
-import 'package:neonrom3r/utils/alerts_helpers.dart';
-import 'package:neonrom3r/utils/downloads_helper.dart';
-import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:neonrom3r/services/alerts_service.dart';
+import 'package:neonrom3r/services/download_service.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toast/toast.dart';
 
@@ -94,7 +94,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
       children: [
         Badge(
           label: Text(
-            ConsolesHelper.getConsoleFromName(widget.rom.console)?.name ??
+            ConsoleService.getConsoleFromName(widget.rom.console)?.name ??
                 "Unknown Console",
             style: const TextStyle(color: Colors.black),
           ),

@@ -5,13 +5,13 @@ import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
 import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
-import 'package:neonrom3r/utils/downloads_helper.dart';
-import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:neonrom3r/services/download_service.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 
 import '../../models/download_source_rom.dart';
-import '../../utils/alerts_helpers.dart';
+import '../../services/alerts_service.dart';
 
 enum RomActionButtonSize { small, large, medium }
 
@@ -35,7 +35,7 @@ class RomActionButton extends StatelessWidget {
     var text = "Download";
 
     handleCancelDownload() {
-      AlertsHelpers.showAlert(
+      AlertsService.showAlert(
           context, "Warning", "You are sure you want to cancel this download?",
           acceptTitle: "Yes", callback: () {
         Provider.of<DownloadProvider>(context, listen: false)
@@ -53,7 +53,7 @@ class RomActionButton extends StatelessWidget {
       if (romSource == null) {
         return;
       }
-      DownloadsHelper().downloadRom(context, rom, romSource);
+      DownloadService().downloadRom(context, rom, romSource);
       Toast.show("Download started...",
           duration: Toast.lengthLong, gravity: Toast.bottom);
     }
@@ -99,7 +99,7 @@ class RomActionButton extends StatelessWidget {
                 {handleCancelDownload()}
               else if (_isReadyToPlay)
                 {
-                  RomsHelper.openDownloadedRom(
+                  RomService.openDownloadedRom(
                       _provider.getDownloadedRomInfo(rom)!),
                   Toast.show("Rom launched",
                       duration: Toast.lengthLong, gravity: Toast.bottom)

@@ -14,7 +14,7 @@ import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
 import 'package:neonrom3r/ui/pages/splashcreen/splashcreen_page.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:neonrom3r/utils/downloads_helper.dart';
+import 'package:neonrom3r/services/download_service.dart';
 
 import 'ui/pages/main_layout/main_layout.dart';
 

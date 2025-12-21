@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/utils/assets_helper.dart';
+import 'package:neonrom3r/services/assets_service.dart';
 
 class ConsoleCard extends StatelessWidget {
   Console console;
@@ -30,7 +30,7 @@ class ConsoleCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AssetsHelper.getIcon(console.slug!, size: 50, width: 110),
+                AssetsService.getIcon(console.slug!, size: 50, width: 110),
                 SizedBox(
                   height: 12,
                 ),

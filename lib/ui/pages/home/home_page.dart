@@ -11,7 +11,7 @@ import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/ui/widgets/unselected_placeholder.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,7 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePage_State extends State<HomePage> {
-  List<Console> _consoles = ConsolesHelper.getConsoles();
+  List<Console> _consoles = ConsoleService.getConsoles();
 
   @override
   Widget build(BuildContext bldContext) {

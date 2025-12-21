@@ -9,16 +9,16 @@ import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
-import 'package:neonrom3r/utils/constants.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/constants/app_constants.dart';
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/utils/files_system_helper.dart';
-import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 import 'package:provider/provider.dart';
 
-import 'aria2c_download_manager.dart';
+import 'aria2c/aria2c_download_manager.dart';
 
-class DownloadsHelper {
+class DownloadService {
   initDownloader() async {
     WidgetsFlutterBinding.ensureInitialized();
     await FlutterDownloader.initialize(debug: false);
@@ -47,7 +47,7 @@ class DownloadsHelper {
 
   downloadRom(
       BuildContext context, RomInfo rom, DownloadSourceRom sourceRom) async {
-    var downloadsPath = FileSystemHelper.downloadsPath + "/" + rom.console;
+    var downloadsPath = FileSystemService.downloadsPath + "/" + rom.console;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
     }
@@ -55,14 +55,14 @@ class DownloadsHelper {
     final handle = await Aria2DownloadManager.startDownload(
       rom: rom,
       source: sourceRom,
-      aria2cPath: FileSystemHelper.aria2cPath + "/aria2c",
+      aria2cPath: FileSystemService.aria2cPath + "/aria2c",
     );
     Provider.of<DownloadProvider>(context, listen: false)
         .addRomDownloadToQueue(rom, sourceRom, handle);
   }
 
   void catchRomPortrait(RomInfo romInfo) async {
-    var portraitName = '${FileSystemHelper.portraitsPath}/${romInfo.name}.png';
+    var portraitName = '${FileSystemService.portraitsPath}/${romInfo.name}.png';
     if (!File(portraitName).existsSync()) {
       http.get(Uri.parse(romInfo.portrait ?? '')).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
@@ -72,7 +72,7 @@ class DownloadsHelper {
 
   List<RomDownload?> getDownloadedRoms() {
     var registryData = "[]";
-    File registryFile = File(FileSystemHelper.downloadRegistryFile);
+    File registryFile = File(FileSystemService.downloadRegistryFile);
     if (registryFile.existsSync()) {
       registryData = registryFile.readAsStringSync();
     } else {
@@ -87,7 +87,7 @@ class DownloadsHelper {
   }
 
   void registerRomDownload(RomInfo downloadedRom, String? downloadedPath) {
-    File registryFile = File(FileSystemHelper.downloadRegistryFile);
+    File registryFile = File(FileSystemService.downloadRegistryFile);
     var downloads = getDownloadedRoms();
     var downloadIndex = downloads
         .indexWhere((element) => element!.isRomInfoEqual(downloadedRom));
@@ -103,7 +103,7 @@ class DownloadsHelper {
   //import the downloaded roms from the old version of neonrom3r
   void importOldRoms() async {
     var registryData = "[]";
-    File registryFile = File(FileSystemHelper.cachePath + "/downloads.json");
+    File registryFile = File(FileSystemService.cachePath + "/downloads.json");
     if (registryFile.existsSync()) {
       registryData = registryFile.readAsStringSync();
       var oldDownloads = json.decode(registryData);
@@ -113,7 +113,7 @@ class DownloadsHelper {
               RomInfo(
                 console: oldDownload['consola'],
                 name: oldDownload['nombre'],
-                slug: RomsHelper.normalizeRomTitle(oldDownload['nombre']),
+                slug: RomService.normalizeRomTitle(oldDownload['nombre']),
                 portrait: oldDownload['portadalink'],
               ),
               oldDownload['path']);

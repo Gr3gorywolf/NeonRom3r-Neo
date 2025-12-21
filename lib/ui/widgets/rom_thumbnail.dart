@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/ui/widgets/console_card.dart';
 import 'package:neonrom3r/utils/animation_helper.dart';
-import 'package:neonrom3r/utils/assets_helper.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
-import 'package:neonrom3r/utils/files_system_helper.dart';
+import 'package:neonrom3r/services/assets_service.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class RomThumbnail extends StatelessWidget {
@@ -17,7 +17,7 @@ class RomThumbnail extends StatelessWidget {
   RomThumbnail(this.info, {this.height = 50, this.width = 50});
 
   File? get catchedImage {
-    var path = "${FileSystemHelper.portraitsPath}/${this.info.name}.png";
+    var path = "${FileSystemService.portraitsPath}/${this.info.name}.png";
     if (File(path).existsSync()) {
       return File(path);
     } else {
@@ -38,7 +38,7 @@ class RomThumbnail extends StatelessWidget {
             fit: BoxFit.cover,
           );
         }
-        return AssetsHelper.getIcon(info.console, size: width);
+        return AssetsService.getIcon(info.console, size: width);
       },
       loadingBuilder: (child, widget, progress) {
         if (progress == null) return widget;

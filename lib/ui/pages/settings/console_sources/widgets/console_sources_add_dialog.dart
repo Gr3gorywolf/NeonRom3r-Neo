@@ -3,7 +3,7 @@ import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/download_source.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/repository/download_sources_repository.dart';
-import 'package:neonrom3r/utils/download_sources_helper.dart';
+import 'package:neonrom3r/services/download_sources_service.dart';
 import 'package:provider/src/provider.dart';
 
 import '../../../../../models/console_source.dart';

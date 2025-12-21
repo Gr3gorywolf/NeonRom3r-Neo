@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
 
-class AssetsHelper {
+class AssetsService {
   static getImage(String name, {double size = 24, double? width}) {
     return Image.asset(
       "assets/images/$name.png",
@@ -13,7 +13,7 @@ class AssetsHelper {
   static Image getIcon(String name, {double size = 24, double? width = 24}) {
     final double finalWidth = width ?? size;
     final String? fallbackUrl =
-        ConsolesHelper.getConsoleFromName(name)?.logoUrl;
+        ConsoleService.getConsoleFromName(name)?.logoUrl;
 
     Widget errorIcon() => Icon(Icons.error, size: size);
 

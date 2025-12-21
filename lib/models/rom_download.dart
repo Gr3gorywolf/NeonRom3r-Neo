@@ -1,8 +1,9 @@
+import 'package:neonrom3r/models/contracts/json_serializable.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/utils/filter_helpers.dart';
-import 'package:neonrom3r/utils/roms_helper.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 
-class RomDownload implements GenericFilterSubject {
+class RomDownload implements JsonSerializable {
   String? filePath;
   String? name;
   String? portrait;
@@ -20,7 +21,7 @@ class RomDownload implements GenericFilterSubject {
   RomInfo toRomInfo() {
     return RomInfo(
       console: this.console ?? "",
-      slug: RomsHelper.normalizeRomTitle(this.name ?? ""),
+      slug: RomService.normalizeRomTitle(this.name ?? ""),
       name: this.name ?? "",
       portrait: this.portrait,
     );

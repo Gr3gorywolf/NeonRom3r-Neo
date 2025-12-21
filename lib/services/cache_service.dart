@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:neonrom3r/utils/files_system_helper.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CacheHelper {
+class CacheService {
   static const _signaturePrefix = "cache-signature-";
   static const _expiryPrefix = "cache-expiry-";
 
@@ -21,7 +21,7 @@ class CacheHelper {
     String content, {
     Duration? ttl,
   }) async {
-    final file = File("${FileSystemHelper.cachePath}/$fileName");
+    final file = File("${FileSystemService.cachePath}/$fileName");
     await file.writeAsString(content);
 
     if (ttl != null) {
@@ -34,7 +34,7 @@ class CacheHelper {
 
   static Future<String?> retrieveCacheFile(String fileName) async {
     final prefs = await SharedPreferences.getInstance();
-    final file = File("${FileSystemHelper.cachePath}/$fileName");
+    final file = File("${FileSystemService.cachePath}/$fileName");
 
     if (!file.existsSync()) {
       _removeExpiry(fileName);
@@ -58,7 +58,7 @@ class CacheHelper {
 
   static Future<void> _invalidate(String fileName) async {
     final prefs = await SharedPreferences.getInstance();
-    final file = File("${FileSystemHelper.cachePath}/$fileName");
+    final file = File("${FileSystemService.cachePath}/$fileName");
 
     if (file.existsSync()) {
       await file.delete();

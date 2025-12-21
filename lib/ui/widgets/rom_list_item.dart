@@ -4,7 +4,7 @@ import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
 
 enum RomListItemType { card, listItem }
 
@@ -23,7 +23,7 @@ class RomListItem extends StatelessWidget {
     var _downloadInfo = _provider.getDownloadInfo(romItem);
     var _isRomDownloaded = _provider.getDownloadedRomInfo(romItem);
     var thumbnail = RomThumbnail(this.romItem!);
-    var console = ConsolesHelper.getConsoleFromName(romItem!.console);
+    var console = ConsoleService.getConsoleFromName(romItem!.console);
     var lastPlayed =
         _isRomDownloaded != null ? "Last played: " : "Not installed";
 

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
 import 'package:neonrom3r/models/tgdb.dart';
-import 'package:neonrom3r/scrapers/constants/tgdb_consoles_mapping.dart';
+import 'package:neonrom3r/services/scrapers/constants/tgdb_consoles_mapping.dart';
 
 class TheGamesDbScraper {
   static const String _baseUrl = 'https://thegamesdb.net';

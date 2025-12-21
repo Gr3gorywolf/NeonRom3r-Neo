@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
-class Constants {
+class AppConstants {
   static String apiBasePath =
       "https://raw.githubusercontent.com/Gr3gorywolf/NeonRom3r-RomsInfos/neo/";
 

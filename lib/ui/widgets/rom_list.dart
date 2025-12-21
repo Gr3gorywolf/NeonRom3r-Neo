@@ -11,9 +11,9 @@ import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
 import 'package:neonrom3r/ui/widgets/rom_list_item.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
 import 'package:neonrom3r/ui/widgets/view_mode_toggle.dart';
-import 'package:neonrom3r/utils/consoles_helper.dart';
-import 'package:neonrom3r/utils/constants.dart';
-import 'package:neonrom3r/utils/files_system_helper.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/constants/app_constants.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
 
 class RomList extends StatefulWidget {
   bool? isLoading = false;

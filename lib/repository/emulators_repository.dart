@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/emulator.dart';
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/utils/consoles_helper.dart';
-import 'package:neonrom3r/utils/constants.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/constants/app_constants.dart';
 
 class EmulatorsRepository {
   Future<Map<Console, List<Emulator>>> fetchEmulators() async {
     Map<Console, List<Emulator>> emulatorsMap = {};
     var client = new http.Client();
     var res = await client
-        .get(Uri.parse("${Constants.apiBasePath}/Data/Emulators.json"));
+        .get(Uri.parse("${AppConstants.apiBasePath}/Data/Emulators.json"));
     if (res.statusCode == 200) {
       Map<String, dynamic> body = json.decode(res.body);
       for (var romK in body.keys) {
@@ -19,7 +19,7 @@ class EmulatorsRepository {
         for (var rom in body[romK]) {
           _emulators.add(Emulator.fromJson(rom));
         }
-        var console = ConsolesHelper.getConsoleFromName(romK);
+        var console = ConsoleService.getConsoleFromName(romK);
         if (console != null) {
           emulatorsMap[console] = _emulators;
         }

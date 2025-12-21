@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class AlertsHelpers {
+class AlertsService {
   /* static showSnackbar(BuildContext ctx, String text,
       {String title = "Error",
       IconData icon = null,

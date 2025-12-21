@@ -5,7 +5,7 @@ import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
 import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
 import 'package:neonrom3r/ui/pages/home/home_page.dart';
 import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
-import 'package:neonrom3r/utils/assets_helper.dart';
+import 'package:neonrom3r/services/assets_service.dart';
 import 'package:neonrom3r/utils/screen_helpers.dart';
 
 class MainLayout extends StatefulWidget {
@@ -51,7 +51,7 @@ class _MainLayoutState extends State<MainLayout> {
             useIndicator: true,
             leading: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: AssetsHelper.getImage(
+                child: AssetsService.getImage(
                     isMediumScreen ? "logo" : "logolarge",
                     size: 50,
                     width: isMediumScreen ? 50 : 180)),

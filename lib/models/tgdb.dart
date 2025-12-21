@@ -1,3 +1,5 @@
+import 'package:neonrom3r/models/contracts/json_serializable.dart';
+
 class TgdbSearchResult {
   final int id;
   final String title;
@@ -18,7 +20,7 @@ class TgdbSearchResult {
   });
 }
 
-class TgdbGameDetail {
+class TgdbGameDetail implements JsonSerializable {
   final String title;
   final String description;
   final List<String> titleScreens;

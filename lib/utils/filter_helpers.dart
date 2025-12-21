@@ -1,12 +1,9 @@
+import 'package:neonrom3r/models/contracts/json_serializable.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/models/toolbar_elements.dart';
 
-abstract class GenericFilterSubject {
-  Map<String, dynamic> toJson();
-}
-
 class FilterHelpers {
-  static List<T> handleDynamicFilter<T extends GenericFilterSubject>(
+  static List<T> handleDynamicFilter<T extends JsonSerializable>(
       List<T> subjects, ToolbarValue filters,
       {nameField = 'name'}) {
     List<T> filteredSubjects = subjects;

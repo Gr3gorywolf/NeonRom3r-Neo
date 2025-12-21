@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/main.dart';
-import 'package:neonrom3r/utils/alerts_helpers.dart';
-import 'package:neonrom3r/utils/aria2c_download_manager.dart';
+import 'package:neonrom3r/services/alerts_service.dart';
+import 'package:neonrom3r/services/aria2c/aria2c_download_manager.dart';
 import 'package:provider/provider.dart';
 
 import 'package:neonrom3r/models/aria2c.dart';
@@ -14,8 +14,8 @@ import 'package:neonrom3r/models/download_info.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/utils/downloads_helper.dart';
-import 'package:neonrom3r/utils/files_system_helper.dart';
+import 'package:neonrom3r/services/download_service.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
 import 'package:neonrom3r/utils/string_helper.dart';
 import 'package:toast/toast.dart';
 
@@ -221,19 +221,19 @@ class DownloadProvider extends ChangeNotifier {
   }
 
   void initDownloads() {
-    _downloadHistory = DownloadsHelper().getDownloadedRoms();
+    _downloadHistory = DownloadService().getDownloadedRoms();
     print(
         "Download registry initialized with ${_downloadHistory.length} items");
   }
 
   void _registerCompletedDownload(RomDownload? download, RomInfo rom) {
-    _downloadHistory = DownloadsHelper().getDownloadedRoms();
+    _downloadHistory = DownloadService().getDownloadedRoms();
 
     final exists = _downloadHistory.any((e) => e!.isRomInfoEqual(rom));
 
     if (!exists) {
       _downloadHistory.add(download);
-      DownloadsHelper().registerRomDownload(rom, download!.filePath);
+      DownloadService().registerRomDownload(rom, download!.filePath);
     }
   }
 
