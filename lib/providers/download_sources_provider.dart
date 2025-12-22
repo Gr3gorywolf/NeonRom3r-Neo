@@ -86,18 +86,24 @@ class DownloadSourcesProvider extends ChangeNotifier {
   }
 
   // Mutations
-  void addDownloadSource(DownloadSourceWithDownloads source) {
+  Future<bool> addDownloadSource(DownloadSourceWithDownloads source) async {
     final parsed = DownloadSourcesService.parseDownloadSourceNames(source);
+
+    var validFile = await DownloadSourcesService.saveDownloadSource(parsed);
+    if (!validFile) {
+      return false;
+    }
 
     final index = _downloadSources.indexOf(parsed);
     if (index != -1) {
       _downloadSources[index] = parsed;
     } else {
       _downloadSources.add(parsed);
-      DownloadSourcesService.saveDownloadSource(parsed);
+      ;
     }
     _romSources.clear();
     notifyListeners();
+    return true;
   }
 
   void removeDownloadSource(DownloadSourceWithDownloads source) {

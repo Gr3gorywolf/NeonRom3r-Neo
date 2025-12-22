@@ -5,7 +5,6 @@ import 'package:neonrom3r/repository/console_sources_repository.dart';
 import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_add_dialog.dart';
 import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_list_item.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_add_dialog.dart';
 import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
 import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
 import 'package:neonrom3r/services/console_service.dart';

@@ -3,12 +3,10 @@ import 'package:neonrom3r/models/download_source.dart';
 
 class DownloadSourceListItem extends StatelessWidget {
   final DownloadSourceWithDownloads source;
-  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const DownloadSourceListItem({
     required this.source,
-    required this.onEdit,
     required this.onDelete,
   });
 
@@ -22,10 +20,6 @@ class DownloadSourceListItem extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: onEdit,
-            ),
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: onDelete,

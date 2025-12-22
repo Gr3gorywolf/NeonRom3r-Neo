@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_add_dialog.dart';
+import 'package:neonrom3r/repository/download_sources_repository.dart';
+import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
 import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,31 @@ class DownloadSourcesPage extends StatefulWidget {
 }
 
 class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
+  handleAddSource() async {
+    var result = await AlertsService.showPrompt(context, "Add Download Source",
+        message: "Enter the URL of the download source:",
+        inputPlaceholder: "Source URL");
+    if (result == null || result.isEmpty) {
+      return;
+    }
+    final source = await DownloadSourcesRepository().fetchSource(result);
+
+    if (source != null) {
+      print(source.toJson());
+      final provider = context.read<DownloadSourcesProvider>();
+      var success = await provider.addDownloadSource(source);
+      if (success) {
+        AlertsService.showSnackbar(context, "Source added successfully");
+      } else {
+        AlertsService.showErrorSnackbar(context,
+            exception: Exception("This source already exists"));
+      }
+    } else {
+      AlertsService.showErrorSnackbar(context,
+          exception: Exception("Could not fetch source"));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +51,7 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
           }
 
           if (provider.downloadSources.isEmpty) {
-            return DownloadSourcesEmptyState(onAdd: () => _openEditor());
+            return DownloadSourcesEmptyState(onAdd: handleAddSource);
           }
 
           return ListView.builder(
@@ -34,7 +60,6 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
               final source = provider.downloadSources[index];
               return DownloadSourceListItem(
                 source: source,
-                onEdit: () => {},
                 onDelete: () => provider.removeDownloadSource(source),
               );
             },
@@ -42,16 +67,9 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openEditor(),
+        onPressed: handleAddSource,
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  void _openEditor() {
-    showDialog(
-      context: context,
-      builder: (_) => DownloadSourcesAddDialog(),
     );
   }
 }
