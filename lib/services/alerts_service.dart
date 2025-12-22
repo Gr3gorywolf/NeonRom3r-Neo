@@ -1,14 +1,15 @@
 import 'dart:async';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AlertsService {
-  /* static showSnackbar(BuildContext ctx, String text,
-      {String title = "Error",
-      IconData icon = null,
-      int duration = 1,
+  static showSnackbar(BuildContext ctx, String message,
+      {String? title,
+      IconData? icon,
+      int duration = 2,
       FlushbarPosition position = FlushbarPosition.BOTTOM,
-      Function onTap}) {
+      Function? onTap}) {
     if (icon == null) {
       icon = Icons.info;
     }
@@ -18,27 +19,27 @@ class AlertsService {
       duration: Duration(seconds: duration),
       title: title,
       flushbarPosition: position,
-      message: text,
+      maxWidth: 600,
+      flushbarStyle: FlushbarStyle.FLOATING,
+      message: message,
       onTap: (bar) {
         if (onTap != null) onTap();
       },
+      shouldIconPulse: false,
       icon: Icon(
         icon,
-        color: Colors.white,
+        color: Theme.of(ctx).colorScheme.primary,
       ),
     ).show(ctx);
   }
 
   static showErrorSnackbar(BuildContext ctx,
-      {NetworkException nException,
-      Exception exception,
+      {Exception? exception,
       FlushbarPosition position = FlushbarPosition.BOTTOM}) {
     var title = "Error";
     var text = "Wow, an unexpected error happened";
     if (exception != null) {
       text = exception.toString();
-    } else if (nException != null) {
-      text = ExceptionsHelpers.getExceptionMessage(nException);
     }
     Flushbar(
       margin: EdgeInsets.all(8),
@@ -56,7 +57,7 @@ class AlertsService {
   }
 
   static Future<String> showPrompt(BuildContext ctx, String title,
-      {String message, TextInputType inputType = TextInputType.text}) {
+      {String? message, TextInputType inputType = TextInputType.text}) {
     var completer = Completer<String>();
     var value = "";
     showDialog(
@@ -64,7 +65,7 @@ class AlertsService {
         builder: (cont) {
           return AlertDialog(
             title: Text(title),
-            content: CustomFormField(
+            content: TextField(
               keyboardType: inputType,
               onChanged: (text) {
                 value = text;
@@ -72,7 +73,8 @@ class AlertsService {
             ),
             actions: [
               TextButton(
-                  textColor: Colors.red,
+                  style: TextButton.styleFrom(
+                      textStyle: TextStyle(color: Colors.red)),
                   onPressed: () {
                     Navigator.pop(ctx);
                     completer.complete(null);
@@ -89,7 +91,7 @@ class AlertsService {
         });
 
     return completer.future;
-  }*/
+  }
 
   static showAlert(BuildContext ctx, String title, String text,
       {Function? callback = null,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/app_theme.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
@@ -22,6 +23,8 @@ void main() {
   runApp(MyApp());
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -36,11 +39,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<DownloadSourcesProvider>(
           create: (context) => DownloadSourcesProvider(),
         ),
+        ChangeNotifierProvider<LibraryProvider>(
+          create: (context) => LibraryProvider(),
+        ),
       ],
       builder: (context, wg) {
         return MaterialApp(
             title: 'NeonRom3r',
             theme: appTheme,
+            navigatorKey: navigatorKey,
             home: Builder(
               builder: (ctx) {
                 var _appProvider = AppProvider.of(ctx);

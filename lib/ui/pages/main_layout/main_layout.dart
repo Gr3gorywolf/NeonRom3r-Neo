@@ -26,7 +26,7 @@ class _MainLayoutState extends State<MainLayout> {
     var isSmallScreen = ScreenHelpers.isSmallScreen(context);
     const navigationItems = [
       {'icon': Icons.home, 'label': 'Home'},
-      {'icon': Icons.apps, 'label': 'Library'},
+      {'icon': Icons.collections_bookmark, 'label': 'Library'},
       {'icon': Icons.download_sharp, 'label': 'Downloads'},
       {'icon': Icons.settings, 'label': 'Settings'},
     ];

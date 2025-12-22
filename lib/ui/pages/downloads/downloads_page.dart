@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:material_segmented_control/material_segmented_control.dart';
-import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/models/toolbar_elements.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:neonrom3r/ui/widgets/no_downloads_placeholder.dart';
 import 'package:neonrom3r/ui/pages/home/home_page.dart';
@@ -13,6 +13,7 @@ import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/ui/widgets/toolbar.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:neonrom3r/services/download_service.dart';
+import 'package:neonrom3r/ui/widgets/view_mode_toggle.dart';
 import 'package:neonrom3r/utils/filter_helpers.dart';
 
 class DownloadsPage extends StatefulWidget {
@@ -21,31 +22,43 @@ class DownloadsPage extends StatefulWidget {
 }
 
 class _DownloadsPageState extends State<DownloadsPage> {
-  List<RomDownload> _downloadedRoms = [];
   ToolbarValue? filterValues = null;
-  int _currentSelection = 0;
+  ViewModeToggleMode viewMode = ViewModeToggleMode.list;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
 
+  List<RomInfo> get _downloadedRoms {
+    var provider = LibraryProvider.of(context);
+    var romDownloadInfos = DownloadProvider.of(context)
+        .activeDownloadInfos
+        .map((e) => e.romSlug)
+        .toList();
+    var downloadingRoms = provider.getBySlugs(romDownloadInfos);
+    var downloadedRoms = provider.getDownloads();
+
+    return [
+      ...downloadingRoms.map((e) => e.rom).toList().reversed,
+      ...downloadedRoms.map((e) => e.rom).toList().reversed,
+    ];
+  }
+
   bool get hasDownloads {
     return this._downloadedRoms.length > 0;
   }
 
-  List<RomDownload> get filteredDownloads {
-    if (filterValues == null) return _downloadedRoms;
-    return FilterHelpers.handleDynamicFilter<RomDownload>(
-        _downloadedRoms, filterValues!,
-        nameField: 'name');
+  List<RomInfo> get filteredDownloads {
+    if (filterValues == null) {
+      return this._downloadedRoms;
+    }
+    return FilterHelpers.handleDynamicFilter<RomInfo>(
+        this._downloadedRoms, filterValues!);
   }
 
   @override
   Widget build(BuildContext context) {
-    var provider = DownloadProvider.of(context);
-    _downloadedRoms = provider.downloadsRegistry.toList();
-
     return Scaffold(
       appBar: Toolbar(
         onChanged: (values) {
@@ -75,10 +88,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   child: RomList(
                       isLoading: false,
                       showConsole: true,
+                      viewMode: viewMode,
+                      onViewModeChanged: (mode) {
+                        setState(() {
+                          viewMode = mode;
+                        });
+                      },
                       roms: filteredDownloads
-                          .map(((e) => e.toRomInfo()))
+                          .map(((e) => e))
                           .toList()
-                          .reversed
                           .take(50)
                           .toList()),
                 ),

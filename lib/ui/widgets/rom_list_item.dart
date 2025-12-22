@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
+import 'package:neonrom3r/services/rom_service.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
+import 'package:neonrom3r/ui/widgets/rom_library_actions.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
 import 'package:neonrom3r/services/console_service.dart';
+import 'package:provider/provider.dart';
 
 enum RomListItemType { card, listItem }
 
@@ -20,15 +24,15 @@ class RomListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var _provider = DownloadProvider.of(context);
+    var libraryProvider = Provider.of<LibraryProvider>(context);
     var _downloadInfo = _provider.getDownloadInfo(romItem);
-    var _isRomDownloaded = _provider.getDownloadedRomInfo(romItem);
+    var _libraryDetails = libraryProvider.getLibraryItem(romItem.slug);
     var thumbnail = RomThumbnail(
       this.romItem!,
       timeout: Duration(milliseconds: 60),
     );
     var console = ConsoleService.getConsoleFromName(romItem!.console);
-    var lastPlayed =
-        _isRomDownloaded != null ? "Last played: " : "Not installed";
+    var isFavorite = (_libraryDetails?.isFavorite ?? false) == true;
 
     navigateToDetails() {
       // MaterialPageRoute route = MaterialPageRoute(
@@ -40,8 +44,6 @@ class RomListItem extends StatelessWidget {
                 rom: romItem!,
               ));
     }
-
-    handleLike() {}
 
     String getSubHeader() {
       var releaseDate = (romItem?.releaseDate?.isNotEmpty ?? false
@@ -62,6 +64,7 @@ class RomListItem extends StatelessWidget {
           minimumSize: Size(35, 35));
     }
 
+    /// List Item View
     if (itemType == RomListItemType.listItem) {
       return InkWell(
           onTap: () {
@@ -154,7 +157,9 @@ class RomListItem extends StatelessWidget {
                             children: [
                               Opacity(
                                 opacity: 0.7,
-                                child: Text(lastPlayed,
+                                child: Text(
+                                    RomService.getLastPlayedLabel(
+                                        _libraryDetails),
                                     style:
                                         Theme.of(context).textTheme.labelSmall),
                               ),
@@ -164,30 +169,8 @@ class RomListItem extends StatelessWidget {
                         Positioned(
                           right: 0,
                           top: 0,
-                          child: Row(
-                            children: [
-                              IconButton(
-                                iconSize: 22,
-                                style: iconButtonStyle(),
-                                icon: Icon(Icons.star_border),
-                                onPressed: () {
-                                  navigateToDetails();
-                                },
-                                color: Colors.grey,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              IconButton(
-                                iconSize: 22,
-                                style: iconButtonStyle(),
-                                icon: Icon(Icons.tune),
-                                onPressed: () {
-                                  navigateToDetails();
-                                },
-                                color: Colors.grey,
-                              ),
-                            ],
+                          child: RomLibraryActions(
+                            rom: romItem,
                           ),
                         )
                       ],
@@ -198,6 +181,8 @@ class RomListItem extends StatelessWidget {
             ),
           ));
     }
+
+    //Card View
 
     return InkWell(
       onTap: () {
@@ -269,34 +254,15 @@ class RomListItem extends StatelessWidget {
                         size: RomActionButtonSize.small,
                       ),
                       Spacer(),
-                      IconButton(
-                        iconSize: 22,
-                        style: iconButtonStyle(),
-                        icon: Icon(Icons.star_border),
-                        onPressed: () {
-                          navigateToDetails();
-                        },
-                        color: Colors.grey,
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      IconButton(
-                        iconSize: 22,
-                        style: iconButtonStyle(),
-                        icon: Icon(Icons.tune),
-                        onPressed: () {
-                          navigateToDetails();
-                        },
-                        color: Colors.grey,
-                      ),
+                      RomLibraryActions(rom: romItem)
                     ]),
                     SizedBox(
                       height: 3,
                     ),
                     Opacity(
                       opacity: 0.7,
-                      child: Text(lastPlayed,
+                      child: Text(
+                          RomService.getLastPlayedLabel(_libraryDetails),
                           style: Theme.of(context).textTheme.labelSmall),
                     )
                   ]))),

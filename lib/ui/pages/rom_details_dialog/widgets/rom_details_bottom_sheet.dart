@@ -4,17 +4,18 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/models/hltb.dart';
 import 'package:neonrom3r/models/tgdb.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/repository/rom_details_repository.dart';
 import 'package:neonrom3r/ui/widgets/Images_carousel.dart';
 import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
 import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
+import 'package:neonrom3r/ui/widgets/rom_library_actions.dart';
 import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
-import 'package:neonrom3r/ui/pages/rom_details_dialog/widgets/rom_details_action_button.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
 import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/services/download_service.dart';
@@ -47,19 +48,21 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   void fetchHltbInfo() async {
     setState(() => isFetchingHltbDetails = true);
     final data = await RomDetailsRepository().fetchHltbData(widget.rom);
-    setState(() {
-      hltbInfo = data;
-      isFetchingHltbDetails = false;
-    });
+    if (mounted)
+      setState(() {
+        hltbInfo = data;
+        isFetchingHltbDetails = false;
+      });
   }
 
   void fetchTgdbInfo() async {
     setState(() => isFetchingTgdbDetails = true);
     final data = await RomDetailsRepository().fetchTgdbData(widget.rom);
-    setState(() {
-      tgdbInfo = data;
-      isFetchingTgdbDetails = false;
-    });
+    if (mounted)
+      setState(() {
+        tgdbInfo = data;
+        isFetchingTgdbDetails = false;
+      });
   }
 
   String formatDuration(int? hours) {
@@ -84,10 +87,9 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
 
     final thumbnail = RomThumbnail(widget.rom);
     final provider = DownloadProvider.of(context);
+    final libraryProvider = LibraryProvider.of(context);
     final downloadInfo = provider.getDownloadInfo(widget.rom);
-    final downloadedRom = provider.getDownloadedRomInfo(widget.rom);
-
-    final lastPlayed = downloadedRom != null ? "Last played:" : "Not installed";
+    final downloadedRom = libraryProvider.getLibraryItem(widget.rom.slug);
 
     Widget detailsContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,9 +202,11 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
               widget.rom,
               size: RomActionButtonSize.medium,
             ),
-            const SizedBox(width: 4),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.star_border)),
+            const SizedBox(width: 6),
+            RomLibraryActions(
+              rom: widget.rom,
+              size: RomLibraryActionSize.large,
+            ),
             const SizedBox(width: 12),
           ],
         ),
@@ -210,7 +214,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
         Opacity(
           opacity: 0.7,
           child: Text(
-            lastPlayed,
+            RomService.getLastPlayedLabel(downloadedRom),
             style: Theme.of(context).textTheme.labelSmall,
           ),
         ),

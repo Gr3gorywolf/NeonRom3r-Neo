@@ -2,8 +2,10 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/download_info.dart';
 import 'package:neonrom3r/models/rom_info.dart';
+import 'package:neonrom3r/models/rom_library_item.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/ui/widgets/download_spinner.dart';
 import 'package:neonrom3r/ui/widgets/rom_download_sources_dialog/rom_download_sources_dialog.dart';
 import 'package:neonrom3r/services/download_service.dart';
@@ -23,10 +25,13 @@ class RomActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var _provider = DownloadProvider.of(context);
+    var libraryProvider = Provider.of<LibraryProvider>(context);
+
+    var libraryItem = libraryProvider.getLibraryItem(rom.slug);
     var _download_sources_provider =
         Provider.of<DownloadSourcesProvider>(context);
     var _isDownloading = _provider.isRomDownloading(rom);
-    var _isReadyToPlay = _provider.isRomReadyToPlay(rom);
+    var _isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
     var _has_download_sources =
         _download_sources_provider.getRomSources(rom.slug).isNotEmpty;
 
@@ -45,6 +50,7 @@ class RomActionButton extends StatelessWidget {
           acceptTitle: "Yes", callback: () {
         Provider.of<DownloadProvider>(context, listen: false)
             .abortDownload(_provider.getDownloadInfo(rom)!);
+        AlertsService.showSnackbar(context, "Download cancelled");
       }, cancelable: true);
     }
 
@@ -58,9 +64,9 @@ class RomActionButton extends StatelessWidget {
       if (romSource == null) {
         return;
       }
+      await libraryProvider.addRomToLibrary(rom);
       DownloadService().downloadRom(context, rom, romSource);
-      Toast.show("Download started...",
-          duration: Toast.lengthLong, gravity: Toast.bottom);
+      AlertsService.showSnackbar(context, "Download started", duration: 3);
     }
 
     switch (size) {
@@ -103,22 +109,18 @@ class RomActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: verticalPadding)),
-        onPressed: _has_download_sources
+        onPressed: _has_download_sources || _isReadyToPlay || _isDownloading
             ? () => {
                   if (_isDownloading)
                     {handleCancelDownload()}
-                  else if (_isReadyToPlay)
+                  else if (_isReadyToPlay && libraryItem != null)
                     {
-                      RomService.openDownloadedRom(
-                          _provider.getDownloadedRomInfo(rom)!),
-                      Toast.show("Rom launched",
-                          duration: Toast.lengthLong, gravity: Toast.bottom)
+                      RomService.openDownloadedRom(libraryItem),
+                      AlertsService.showSnackbar(context, "Rom launched")
                     }
                   else
                     {
                       handleShowDownload(),
-                      Toast.show("Download started...",
-                          duration: Toast.lengthLong, gravity: Toast.bottom)
                     }
                 }
             : null,

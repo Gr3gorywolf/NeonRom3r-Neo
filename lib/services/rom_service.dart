@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:neonrom3r/models/emulator_intent.dart';
-import 'package:neonrom3r/models/rom_download.dart';
+import 'package:neonrom3r/models/rom_library_item.dart';
 import 'package:neonrom3r/repository/settings_repository.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:neonrom3r/utils/time_helpers.dart';
 
 class RomService {
   static List<EmulatorIntent> get _intents {
@@ -21,9 +22,9 @@ class RomService {
     return intents;
   }
 
-  static Future openDownloadedRom(RomDownload download) async {
+  static Future openDownloadedRom(RomLibraryItem download) async {
     var intents = _intents;
-    var console = ConsoleService.getConsoleFromName(download.console);
+    var console = ConsoleService.getConsoleFromName(download.rom.console);
     EmulatorIntent? emulatorIntent = null;
     for (var intent in intents) {
       if (intent.consoleSlug == console!.slug) {
@@ -74,5 +75,29 @@ class RomService {
     value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
     value = value.replaceAll(" ", "");
     return value;
+  }
+
+  static String getLastPlayedLabel(RomLibraryItem? downloadedRom) {
+    if (downloadedRom == null) {
+      return "Not installed";
+    }
+
+    if (downloadedRom.playTimeMins > 0) {
+      return "⏱ Played ${TimeHelpers.formatMinutes(downloadedRom.playTimeMins.toInt())}";
+    }
+
+    if (downloadedRom.lastPlayedAt != null) {
+      return "⏱ Last played ${TimeHelpers.getTimeAgo(downloadedRom.lastPlayedAt!)}";
+    }
+
+    if (downloadedRom.downloadedAt != null) {
+      return "Installed ${TimeHelpers.getTimeAgo(downloadedRom.downloadedAt!)}";
+    }
+
+    if (downloadedRom.addedAt != null) {
+      return "Added ${TimeHelpers.getTimeAgo(downloadedRom.addedAt!)}";
+    }
+
+    return "Not played yet";
   }
 }

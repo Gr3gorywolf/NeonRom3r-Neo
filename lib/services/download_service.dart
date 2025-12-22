@@ -7,7 +7,6 @@ import 'package:neonrom3r/models/aria2c.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:neonrom3r/constants/app_constants.dart';
@@ -67,58 +66,6 @@ class DownloadService {
       http.get(Uri.parse(romInfo.portrait ?? '')).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
       });
-    }
-  }
-
-  List<RomDownload?> getDownloadedRoms() {
-    var registryData = "[]";
-    File registryFile = File(FileSystemService.downloadRegistryFilePath);
-    if (registryFile.existsSync()) {
-      registryData = registryFile.readAsStringSync();
-    } else {
-      return [];
-    }
-    var registryObject = json.decode(registryData);
-    List<RomDownload?> downloads = [];
-    for (var down in registryObject) {
-      downloads.add(RomDownload.fromJson(down));
-    }
-    return downloads;
-  }
-
-  void registerRomDownload(RomInfo downloadedRom, String? downloadedPath) {
-    File registryFile = File(FileSystemService.downloadRegistryFilePath);
-    var downloads = getDownloadedRoms();
-    var downloadIndex = downloads
-        .indexWhere((element) => element!.isRomInfoEqual(downloadedRom));
-    if (downloadIndex == -1) {
-      downloads.add(RomDownload.fromRomInfo(downloadedRom, downloadedPath));
-    } else {
-      downloads[downloadIndex]!.filePath = downloadedPath;
-    }
-    var jsonData = json.encode(downloads);
-    registryFile.writeAsStringSync(jsonData);
-  }
-
-  //import the downloaded roms from the old version of neonrom3r
-  void importOldRoms() async {
-    var registryData = "[]";
-    File registryFile = File(FileSystemService.cachePath + "/downloads.json");
-    if (registryFile.existsSync()) {
-      registryData = registryFile.readAsStringSync();
-      var oldDownloads = json.decode(registryData);
-      for (var oldDownload in oldDownloads) {
-        if (oldDownload['path'] != null) {
-          registerRomDownload(
-              RomInfo(
-                console: oldDownload['consola'],
-                name: oldDownload['nombre'],
-                slug: RomService.normalizeRomTitle(oldDownload['nombre']),
-                portrait: oldDownload['portadalink'],
-              ),
-              oldDownload['path']);
-        }
-      }
     }
   }
 }

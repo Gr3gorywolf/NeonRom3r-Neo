@@ -41,6 +41,7 @@ dependencies:
   skeletonizer: ^1.4.3
   sembast: ^3.7.1
   path_provider: ^2.1.4
+  another_flushbar: ^1.12.32
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,11 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/database/app_database.dart';
+import 'package:neonrom3r/database/daos/library_dao.dart';
 import 'package:neonrom3r/main.dart';
+import 'package:neonrom3r/models/rom_library_item.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/services/aria2c/aria2c_download_manager.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +16,6 @@ import 'package:provider/provider.dart';
 import 'package:neonrom3r/models/aria2c.dart';
 import 'package:neonrom3r/models/download_info.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
-import 'package:neonrom3r/models/rom_download.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/services/download_service.dart';
 import 'package:neonrom3r/services/files_system_service.dart';
@@ -26,53 +29,25 @@ class DownloadProvider extends ChangeNotifier {
 
   final Map<String?, _ActiveAria2Download> _aria2cDownloadProcesses = {};
   final List<DownloadInfo> _activeDownloadInfos = [];
-  List<RomDownload?> _downloadHistory = [];
 
   List<DownloadInfo> get activeDownloadInfos => _activeDownloadInfos;
-  List<RomDownload> get downloadsRegistry {
-    final downloadingRoms =
-        _activeDownloadInfos.map((e) => e.download).toList();
-    var downloadHistory = _downloadHistory
-        .where((d) => !downloadingRoms
-            .any((dr) => dr!.name == d!.name && dr.console == d.console))
-        .toList();
-    return [...downloadHistory, ...downloadingRoms]
-        .where((element) => element != null)
-        .cast<RomDownload>()
-        .toList();
-  }
 
   /// ========================================================================
   /// Public API
   /// ========================================================================
 
   bool isRomDownloading(RomInfo rom) {
-    return activeDownloadInfos.any((d) => d.download!.isRomInfoEqual(rom));
+    return activeDownloadInfos.any((d) => d.romSlug == rom.slug);
   }
 
   DownloadInfo? getDownloadInfo(RomInfo? rom) {
     try {
       return _activeDownloadInfos
-          .where((e) => e.download!.isRomInfoEqual(rom!) && !e.isCompleted)
+          .where((e) => e.romSlug == rom!.slug && !e.isCompleted)
           .first;
     } catch (_) {
       return null;
     }
-  }
-
-  RomDownload? getDownloadedRomInfo(RomInfo rom) {
-    try {
-      return _downloadHistory.where((e) => e!.isRomInfoEqual(rom)).first;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  bool isRomReadyToPlay(RomInfo rom) {
-    final downloaded = getDownloadedRomInfo(rom);
-    if (downloaded == null) return false;
-    return Directory(downloaded.filePath!).existsSync() ||
-        File(downloaded.filePath!).existsSync();
   }
 
   /// ========================================================================
@@ -85,17 +60,8 @@ class DownloadProvider extends ChangeNotifier {
     Aria2DownloadHandle handle,
   ) async {
     final downloadId = handle.id;
-
-    final romDownload = RomDownload(
-      name: rom.name,
-      portrait: rom.portrait,
-      downloadLink: downloadId,
-      console: rom.console,
-      size: source.fileSize,
-    );
-
     final info = DownloadInfo(
-      download: romDownload,
+      romSlug: rom.slug,
       downloadId: downloadId,
       downloadPercent: 0,
       downloadInfo: 'Starting download...',
@@ -171,9 +137,11 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadPercent = 100;
       info.downloadInfo = 'Download completed';
       print("Download completed: ${event.outputFilePath}");
-      info.download!.filePath = event.outputFilePath;
+      info.downloadPercent = 100;
+      info.downloadInfo = 'Download completed';
+      print("Download completed: ${event.outputFilePath}");
       _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
-      _registerCompletedDownload(info.download, rom);
+      _registerCompletedDownload(info, rom, event.outputFilePath ?? "");
 
       _disposeActive(handle.id);
       notifyListeners();
@@ -220,21 +188,27 @@ class DownloadProvider extends ChangeNotifier {
     return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 
-  void initDownloads() {
-    _downloadHistory = DownloadService().getDownloadedRoms();
-    print(
-        "Download registry initialized with ${_downloadHistory.length} items");
-  }
-
-  void _registerCompletedDownload(RomDownload? download, RomInfo rom) {
-    _downloadHistory = DownloadService().getDownloadedRoms();
-
-    final exists = _downloadHistory.any((e) => e!.isRomInfoEqual(rom));
-
-    if (!exists) {
-      _downloadHistory.add(download);
-      DownloadService().registerRomDownload(rom, download!.filePath);
+  void _registerCompletedDownload(
+      DownloadInfo download, RomInfo rom, String path) async {
+    BuildContext? context = navigatorKey.currentContext;
+    if (context == null) {
+      return;
     }
+    var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    var libraryItem = libraryProvider.getLibraryItem(rom.slug);
+    if (libraryItem == null) {
+      libraryItem = RomLibraryItem(
+        rom: rom,
+        filePath: path,
+        downloadedAt: DateTime.now(),
+        addedAt: DateTime.now(),
+      );
+      await libraryProvider.addLibraryItem(libraryItem);
+      return;
+    }
+    libraryItem.filePath = path;
+    libraryItem.downloadedAt = DateTime.now();
+    await libraryProvider.updateLibraryItem(libraryItem);
   }
 
   void _disposeActive(String? id) {
