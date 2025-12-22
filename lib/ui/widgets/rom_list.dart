@@ -19,13 +19,13 @@ class RomList extends StatefulWidget {
   bool? isLoading = false;
   List<RomInfo>? roms;
   bool showConsole;
-  ViewModeToggleMode viewMode;
+  ViewModeToggleMode initialViewMode;
   Function(ViewModeToggleMode)? onViewModeChanged;
   RomList(
       {this.isLoading,
       this.roms,
       this.showConsole = false,
-      this.viewMode = ViewModeToggleMode.list,
+      this.initialViewMode = ViewModeToggleMode.list,
       this.onViewModeChanged});
 
   @override
@@ -33,6 +33,12 @@ class RomList extends StatefulWidget {
 }
 
 class _RomListState extends State<RomList> {
+  var viewMode = ViewModeToggleMode.list;
+  @override
+  void initState() {
+    viewMode = widget.initialViewMode;
+  }
+
   @override
   Widget build(BuildContext context) {
     var gridAxisCount =
@@ -50,9 +56,9 @@ class _RomListState extends State<RomList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ViewModeToggle(
-                  value: widget.viewMode,
+                  value: viewMode,
                   onChanged: (value) {
-                    setState(() => widget.viewMode = value);
+                    if (mounted) setState(() => viewMode = value);
                     if (widget.onViewModeChanged != null) {
                       widget.onViewModeChanged!(value);
                     }
@@ -64,7 +70,7 @@ class _RomListState extends State<RomList> {
               ],
             ),
           ),
-          if (widget.viewMode == ViewModeToggleMode.list)
+          if (viewMode == ViewModeToggleMode.list)
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -81,7 +87,7 @@ class _RomListState extends State<RomList> {
                 childCount: widget.roms!.length,
               ),
             ),
-          if (widget.viewMode == ViewModeToggleMode.grid)
+          if (viewMode == ViewModeToggleMode.grid)
             SliverGrid(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {

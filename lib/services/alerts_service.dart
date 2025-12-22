@@ -2,16 +2,22 @@ import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:neonrom3r/services/files_system_service.dart';
 
 class AlertsService {
   static showSnackbar(BuildContext ctx, String message,
       {String? title,
       IconData? icon,
       int duration = 2,
-      FlushbarPosition position = FlushbarPosition.BOTTOM,
+      FlushbarPosition? position = null,
       Function? onTap}) {
     if (icon == null) {
       icon = Icons.info;
+    }
+    if (position == null) {
+      position = FileSystemService.isDesktop
+          ? FlushbarPosition.TOP
+          : FlushbarPosition.BOTTOM;
     }
     Flushbar(
       margin: EdgeInsets.all(8),
@@ -34,12 +40,16 @@ class AlertsService {
   }
 
   static showErrorSnackbar(BuildContext ctx,
-      {Exception? exception,
-      FlushbarPosition position = FlushbarPosition.BOTTOM}) {
+      {Exception? exception, FlushbarPosition? position = null}) {
     var title = "Error";
     var text = "Wow, an unexpected error happened";
     if (exception != null) {
       text = exception.toString();
+    }
+    if (position == null) {
+      position = FileSystemService.isDesktop
+          ? FlushbarPosition.TOP
+          : FlushbarPosition.BOTTOM;
     }
     Flushbar(
       margin: EdgeInsets.all(8),
@@ -47,6 +57,8 @@ class AlertsService {
       duration: Duration(seconds: 4),
       title: title,
       backgroundColor: Colors.red,
+      maxWidth: 600,
+      flushbarStyle: FlushbarStyle.FLOATING,
       flushbarPosition: position,
       message: text,
       icon: Icon(
@@ -56,20 +68,41 @@ class AlertsService {
     ).show(ctx);
   }
 
-  static Future<String> showPrompt(BuildContext ctx, String title,
-      {String? message, TextInputType inputType = TextInputType.text}) {
+  static Future<String?> showPrompt(BuildContext ctx, String title,
+      {String? message,
+      TextInputType inputType = TextInputType.text,
+      String? inputPlaceholder,
+      double? minWidth = 300}) {
     var completer = Completer<String>();
     var value = "";
     showDialog(
         context: ctx,
         builder: (cont) {
           return AlertDialog(
-            title: Text(title),
-            content: TextField(
-              keyboardType: inputType,
-              onChanged: (text) {
-                value = text;
-              },
+            title: Text(title, style: Theme.of(ctx).textTheme.titleMedium),
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            titlePadding: EdgeInsets.only(top: 20, left: 13, bottom: 5),
+            content: Container(
+              width: minWidth,
+              child: TextField(
+                keyboardType: inputType,
+                decoration: InputDecoration(
+                  hintText: inputPlaceholder ?? "",
+                  helperText: message ?? "",
+                  helperMaxLines: 3,
+                  helperStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: (text) {
+                  value = text;
+                },
+              ),
             ),
             actions: [
               TextButton(

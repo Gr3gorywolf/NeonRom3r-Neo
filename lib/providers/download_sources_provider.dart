@@ -49,9 +49,6 @@ class DownloadSourcesProvider extends ChangeNotifier {
         .toList();
   }
 
-  // -------------------------
-  // PUBLIC QUERIES
-  // -------------------------
   List<DownloadSourceWithDownloads> findRomSourcesWithDownloads(RomInfo rom) {
     return _downloadSources
         .map((source) {
@@ -99,12 +96,13 @@ class DownloadSourcesProvider extends ChangeNotifier {
       _downloadSources.add(parsed);
       DownloadSourcesService.saveDownloadSource(parsed);
     }
-
+    _romSources.clear();
     notifyListeners();
   }
 
   void removeDownloadSource(DownloadSourceWithDownloads source) {
     _downloadSources.remove(source);
+    _romSources.clear();
     DownloadSourcesService.deleteDownloadSource(source);
     notifyListeners();
   }

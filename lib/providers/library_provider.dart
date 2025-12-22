@@ -14,7 +14,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Map<String, RomLibraryItem> _libraryItems = {};
-  Map<String, RomLibraryItem> get libraryItems => _libraryItems;
+  List<RomLibraryItem> get libraryItems => _libraryItems.values.toList();
 
   init() async {
     if (db == null) {

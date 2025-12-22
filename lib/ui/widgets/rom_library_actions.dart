@@ -39,6 +39,11 @@ class RomLibraryActions extends StatelessWidget {
               : "Rom removed from favorites");
     }
 
+    handleAddToLibrary() {
+      AlertsService.showSnackbar(context, "Rom added to library");
+      libraryProvider.addRomToLibrary(rom);
+    }
+
     iconButtonStyle() {
       return IconButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.inverseSurface,
@@ -52,9 +57,7 @@ class RomLibraryActions extends StatelessWidget {
         iconSize: iconSize,
         style: iconButtonStyle(),
         icon: Icon(Icons.library_add),
-        onPressed: () {
-          libraryProvider.addRomToLibrary(rom);
-        },
+        onPressed: handleAddToLibrary,
         color: Colors.grey,
       );
     }

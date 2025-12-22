@@ -9,7 +9,7 @@ import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
-import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
+import 'package:neonrom3r/ui/pages/library/library_page.dart';
 import 'package:neonrom3r/ui/pages/home/home_page.dart';
 import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
 import 'package:neonrom3r/ui/pages/splashcreen/splashcreen_page.dart';

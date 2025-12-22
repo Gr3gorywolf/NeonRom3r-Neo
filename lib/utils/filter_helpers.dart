@@ -3,31 +3,49 @@ import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/models/toolbar_elements.dart';
 
 class FilterHelpers {
+  static _getValueByPath(Map<String, dynamic> json, String path) {
+    dynamic current = json;
+
+    for (final key in path.split('.')) {
+      if (current is Map<String, dynamic> && current.containsKey(key)) {
+        current = current[key];
+      } else {
+        return null;
+      }
+    }
+
+    return current;
+  }
+
   static List<T> handleDynamicFilter<T extends JsonSerializable>(
-      List<T> subjects, ToolbarValue filters,
-      {nameField = 'name'}) {
+    List<T> subjects,
+    ToolbarValue filters, {
+    String nameField = 'name',
+  }) {
     List<T> filteredSubjects = subjects;
-    var sort = filters.sortBy;
+    final sort = filters.sortBy;
 
     if (filters.search.isNotEmpty) {
-      filteredSubjects = filteredSubjects
-          .where((subject) => subject
-              .toJson()[nameField]
-              ?.toLowerCase()
-              ?.contains(filters.search.toLowerCase()))
-          .toList();
-    }
+      final searchLower = filters.search.toLowerCase();
 
-    for (var filter in filters.filters) {
       filteredSubjects = filteredSubjects.where((subject) {
-        var subjectValue = subject.toJson()[filter.field]?.toString() ?? '';
-        return subjectValue == filter.value;
+        final value = _getValueByPath(subject.toJson(), nameField)?.toString();
+        return value?.toLowerCase().contains(searchLower) ?? false;
       }).toList();
     }
+
+    for (final filter in filters.filters) {
+      filteredSubjects = filteredSubjects.where((subject) {
+        final value = _getValueByPath(subject.toJson(), filter.field);
+        return value?.toString() == filter.value;
+      }).toList();
+    }
+
     if (sort != null) {
       filteredSubjects.sort((a, b) {
-        var aValue = a.toJson()[sort.field];
-        var bValue = b.toJson()[sort.field];
+        final aValue = _getValueByPath(a.toJson(), sort.field);
+        final bValue = _getValueByPath(b.toJson(), sort.field);
+
         if (aValue is Comparable && bValue is Comparable) {
           return sort.value == ToolBarSortByType.ascending
               ? aValue.compareTo(bValue)

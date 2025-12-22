@@ -23,7 +23,6 @@ class DownloadsPage extends StatefulWidget {
 
 class _DownloadsPageState extends State<DownloadsPage> {
   ToolbarValue? filterValues = null;
-  ViewModeToggleMode viewMode = ViewModeToggleMode.list;
   @override
   void initState() {
     // TODO: implement initState
@@ -71,7 +70,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ToolBarSortByElement(
               label: 'Name', field: 'name', value: ToolBarSortByType.ascending),
         ], filters: [
-          ToolBarFilterGroups(groupName: "Consoles", filters: [
+          ToolBarFilterGroup(groupName: "Consoles", filters: [
             ...ConsoleService.getConsoles()
                 .map((console) => ToolBarFilterElement(
                     label: console.name ?? "",
@@ -88,12 +87,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   child: RomList(
                       isLoading: false,
                       showConsole: true,
-                      viewMode: viewMode,
-                      onViewModeChanged: (mode) {
-                        setState(() {
-                          viewMode = mode;
-                        });
-                      },
                       roms: filteredDownloads
                           .map(((e) => e))
                           .toList()

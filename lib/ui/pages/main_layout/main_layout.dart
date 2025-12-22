@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/app_theme.dart';
 import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
-import 'package:neonrom3r/ui/pages/emulators/emulators_page.dart';
+import 'package:neonrom3r/ui/pages/library/library_page.dart';
 import 'package:neonrom3r/ui/pages/home/home_page.dart';
 import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
 import 'package:neonrom3r/services/assets_service.dart';
@@ -19,7 +19,7 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     List<Widget> routes = [
       HomePage(),
-      EmulatorsPage(),
+      LibraryPage(),
       DownloadsPage(),
       SettingsPage()
     ];

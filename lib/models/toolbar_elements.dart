@@ -2,7 +2,7 @@ class ToolbarSettings {
   String? searchHint = "Search...";
   String? title = "Search";
   List<ToolBarSortByElement>? sorts = [];
-  List<ToolBarFilterGroups>? filters = [];
+  List<ToolBarFilterGroup>? filters = [];
   ToolbarSettings({this.sorts, this.filters, this.title, this.searchHint});
 }
 
@@ -23,10 +23,10 @@ class ToolBarSortByElement {
       {required this.label, required this.field, required this.value});
 }
 
-class ToolBarFilterGroups {
+class ToolBarFilterGroup {
   String groupName;
   List<ToolBarFilterElement> filters;
-  ToolBarFilterGroups({required this.groupName, required this.filters});
+  ToolBarFilterGroup({required this.groupName, required this.filters});
 }
 
 class ToolBarFilterElement {

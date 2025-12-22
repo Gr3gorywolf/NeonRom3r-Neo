@@ -94,7 +94,7 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
       body: RomList(
         isLoading: this._isLoading,
         roms: filteredRoms,
-        viewMode: appProvider.consoleRomsItemType,
+        initialViewMode: appProvider.consoleRomsItemType,
         onViewModeChanged: (mode) {
           appProvider.setConsoleRomsItemType(mode);
         },

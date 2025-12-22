@@ -83,6 +83,14 @@ ThemeData appTheme = ThemeData(
         color: primaryGreen,
       ),
     ),
+    dialogTheme: DialogTheme(
+      backgroundColor: inverseSurfaceColor,
+      surfaceTintColor: Colors.transparent,
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: backgroundColor,
       selectedItemColor: primaryGreen,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/console.dart';
 import 'package:neonrom3r/models/console_source.dart';
+import 'package:neonrom3r/repository/console_sources_repository.dart';
+import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_add_dialog.dart';
 import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_list_item.dart';
 import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_add_dialog.dart';
@@ -19,16 +21,33 @@ class ConsoleSourcesPage extends StatefulWidget {
 }
 
 class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
-  handleOpenCreateDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => ConsoleSourceAddDialog(
-        onSave: (ConsoleSource source) {
-          ConsoleService.addConsoleSource(source);
-          setState(() {});
-        },
-      ),
-    );
+  handleOpenCreateDialog() async {
+    var result = await AlertsService.showPrompt(context, 'Add Console Source',
+        inputPlaceholder: 'Enter console source URL',
+        message:
+            "The console source must be a valid URL pointing to a JSON file containing console definitions.");
+    if (result != null && result.isNotEmpty) {
+      try {
+        final source = await ConsoleSourcesRepository().fetchSource(result);
+        if (source != null) {
+          bool added = await ConsoleService.addConsoleSource(source);
+          if (added) {
+            setState(() {});
+            AlertsService.showSnackbar(
+                context, "Console source added successfully.");
+          } else {
+            AlertsService.showErrorSnackbar(context,
+                exception: Exception("Console source already exists."));
+          }
+        } else {
+          AlertsService.showErrorSnackbar(context,
+              exception: Exception("Failed to fetch console source."));
+        }
+      } catch (e) {
+        AlertsService.showErrorSnackbar(context,
+            exception: Exception("Failed to fetch console source."));
+      }
+    }
   }
 
   @override
