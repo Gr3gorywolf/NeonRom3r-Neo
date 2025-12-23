@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:neonrom3r/constants/settings_constants.dart';
 import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/services/files_system_service.dart';
@@ -14,335 +13,298 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  var appVersion = "---";
-  var downloadPath = "";
-  var prefixConsoleSlug = false;
-  var enableNotifications = false;
-  var enableImageCaching = false;
+  /// App info
+  String _appVersion = '---';
 
-  fetchInitialValues() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    downloadPath = FileSystemService.downloadsPath;
-    prefixConsoleSlug =
-        await SettingsService().get<bool>(SettingsKeys.PREFIX_CONSOLE_SLUG);
-    enableImageCaching =
-        await SettingsService().get<bool>(SettingsKeys.ENABLE_IMAGE_CACHING);
-    appVersion = packageInfo.version;
-    enableNotifications =
-        await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
-    setState(() {});
-  }
-
-  setSettingValue<T>(SettingsKeys key, T value) async {
-    switch (key) {
-      case SettingsKeys.DOWNLOAD_PATH:
-        downloadPath = value as String;
-        break;
-      case SettingsKeys.PREFIX_CONSOLE_SLUG:
-        prefixConsoleSlug = value as bool;
-        break;
-      case SettingsKeys.ENABLE_IMAGE_CACHING:
-        enableImageCaching = value as bool;
-        break;
-      case SettingsKeys.ENABLE_NOTIFICATIONS:
-        enableNotifications = value as bool;
-        break;
-      default:
-        break;
-    }
-    await SettingsService().set<T>(key, value);
-    if (key == SettingsKeys.DOWNLOAD_PATH) {
-      await FileSystemService.setupDownloadsPath();
-    }
-    setState(() {});
-  }
-
-  handlePickDownloadsPath() async {
-    // Use file picker to select directory
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory != null) {
-      //test if can write and read a file on it
-      var testFile = File(selectedDirectory + "/test");
-      try {
-        await testFile.writeAsString("test");
-        await testFile.readAsString();
-        await testFile.delete();
-        await setSettingValue<String>(
-            SettingsKeys.DOWNLOAD_PATH, selectedDirectory);
-      } catch (e) {
-        AlertsService.showErrorSnackbar(context,
-            exception:
-                Exception("Cannot write/read in the selected directory"));
-      }
-    }
-  }
+  /// Settings state
+  String _downloadPath = '';
+  bool _prefixConsoleSlug = false;
+  bool _enableNotifications = false;
+  bool _enableImageCaching = false;
 
   @override
   void initState() {
     super.initState();
-    fetchInitialValues();
+    _loadInitialValues();
   }
 
-  Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      AlertsService.showErrorSnackbar(context,
-          exception: Exception('Could not launch the url'));
+  Future<void> _loadInitialValues() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+
+    setState(() {
+      _appVersion = packageInfo.version;
+      _downloadPath = FileSystemService.downloadsPath;
+    });
+
+    _prefixConsoleSlug =
+        await SettingsService().get<bool>(SettingsKeys.PREFIX_CONSOLE_SLUG);
+    _enableNotifications =
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
+    _enableImageCaching =
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_IMAGE_CACHING);
+
+    setState(() {});
+  }
+
+  Future<void> _setSetting<T>(SettingsKeys key, T value) async {
+    await SettingsService().set<T>(key, value);
+
+    setState(() {
+      switch (key) {
+        case SettingsKeys.DOWNLOAD_PATH:
+          _downloadPath = value as String;
+          break;
+        case SettingsKeys.PREFIX_CONSOLE_SLUG:
+          _prefixConsoleSlug = value as bool;
+          break;
+        case SettingsKeys.ENABLE_NOTIFICATIONS:
+          _enableNotifications = value as bool;
+          break;
+        case SettingsKeys.ENABLE_IMAGE_CACHING:
+          _enableImageCaching = value as bool;
+          break;
+        default:
+          break;
+      }
+    });
+
+    if (key == SettingsKeys.DOWNLOAD_PATH) {
+      await FileSystemService.setupDownloadsPath();
     }
   }
 
-  handleDeleteCachePath() async {
-    var deleted = await FileSystemService.deleteCachePath();
+  Future<void> _pickDownloadPath() async {
+    final selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+    if (selectedDirectory == null) return;
+
+    final testFile = File('$selectedDirectory/test');
+
+    try {
+      await testFile.writeAsString('test');
+      await testFile.readAsString();
+      await testFile.delete();
+
+      await _setSetting<String>(
+        SettingsKeys.DOWNLOAD_PATH,
+        selectedDirectory,
+      );
+    } catch (_) {
+      AlertsService.showErrorSnackbar(
+        context,
+        exception: Exception('Cannot write/read in the selected directory'),
+      );
+    }
+  }
+
+  Future<void> _clearCache() async {
+    final deleted = await FileSystemService.deleteCachePath();
+
     if (deleted) {
-      AlertsService.showSnackbar(context, "Cache cleared successfully");
+      AlertsService.showSnackbar(context, 'Cache cleared successfully');
     } else {
-      AlertsService.showErrorSnackbar(context,
-          exception: Exception("Could not clear the cache"));
+      AlertsService.showErrorSnackbar(
+        context,
+        exception: Exception('Could not clear the cache'),
+      );
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      AlertsService.showErrorSnackbar(
+        context,
+        exception: Exception('Could not launch the url'),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Settings'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "Sources",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  leading: Icon(Icons.download_sharp),
-                  trailing: Icon(Icons.chevron_right),
-                  title: Text("Download Sources"),
-                  subtitle: Text("Manage your download sources"),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => DownloadSourcesPage(),
-                    ));
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.gamepad),
-                  trailing: Icon(Icons.chevron_right),
-                  title: Text("Console Sources"),
-                  subtitle: Text("Manage your console sources"),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ConsoleSourcesPage(),
-                    ));
-                  },
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "Notifications",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  leading: Icon(Icons.notifications),
-                  trailing: Switch(
-                    value: enableNotifications,
-                    onChanged: (value) {
-                      setSettingValue<bool>(
-                          SettingsKeys.ENABLE_NOTIFICATIONS, value);
-                    },
-                  ),
-                  title: Text("Show notifications"),
-                  subtitle: Opacity(
-                    opacity: 0.7,
-                    child: Text(
-                        "Enable or disable notifications for downloads and other events"),
-                  ),
-                ),
-                SizedBox(
-                  height: 18,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "Paths",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  leading: Icon(Icons.folder),
-                  trailing: Icon(Icons.edit),
-                  title: Text("Download path"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text(FileSystemService.downloadsPath)),
-                  onTap: () {
-                    handlePickDownloadsPath();
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.drive_file_move),
-                  trailing: Switch(
-                    value: prefixConsoleSlug,
-                    onChanged: (value) {
-                      setSettingValue<bool>(
-                          SettingsKeys.PREFIX_CONSOLE_SLUG, value);
-                    },
-                  ),
-                  title: Text("Add console name folder"),
-                  subtitle: Opacity(
-                    opacity: 0.7,
-                    child: Text(
-                        "Put your roms in folders named after consoles e.g. 'nds/{your rom}'"),
-                  ),
-                ),
-                SizedBox(
-                  height: 18,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "Roms & Emulators",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  leading: Icon(Icons.gamepad),
-                  trailing: Icon(Icons.chevron_right),
-                  title: Text("Emulator settings"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text("Manage your emulators for each console")),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => EmulatorSettingsPage(),
-                    ));
-                  },
-                ),
-                SizedBox(
-                  height: 18,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "Cache Management",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  leading: Icon(Icons.image),
-                  trailing: Switch(
-                    value: enableImageCaching,
-                    onChanged: (value) {
-                      setSettingValue<bool>(
-                          SettingsKeys.ENABLE_IMAGE_CACHING, value);
-                    },
-                  ),
-                  title: Text("Enable image caching"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text(
-                          "Download the rom portrait when added to the library for a better offline experience")),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ConsoleSourcesPage(),
-                    ));
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.delete),
-                  title: Text("Clear app cache"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text("Delete all cached files to free up space")),
-                  onTap: () {
-                    handleDeleteCachePath();
-                  },
-                ),
-                SizedBox(
-                  height: 18,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    "About",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                ListTile(
-                  trailing: Icon(Icons.open_in_new),
-                  title: Text("Github Repository"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text("Know more about the project or contribute")),
-                  onTap: () {
-                    _launchUrl(
-                        "https://github.com/Gr3gorywolf/Yamata-launcher");
-                  },
-                ),
-                ListTile(
-                  trailing: Icon(Icons.open_in_new),
-                  title: Text("App Developed by Gr3gorywolf"),
-                  subtitle: Opacity(
-                      opacity: 0.7,
-                      child: Text("Check out my website for more projects")),
-                  onTap: () {
-                    _launchUrl("https://gregoryc.dev");
-                  },
-                ),
-                ListTile(
-                  title: Opacity(
-                      opacity: 0.7, child: Text("App version: ${appVersion}")),
-                ),
-              ],
+      appBar: AppBar(title: const Text('Settings')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _SectionHeader(title: 'Sources'),
+            _NavigationTile(
+              icon: Icons.download_sharp,
+              title: 'Download Sources',
+              subtitle: 'Manage your download sources',
+              onTap: () => _push(DownloadSourcesPage()),
             ),
-          ),
-        ));
+            _NavigationTile(
+              icon: Icons.gamepad,
+              title: 'Console Sources',
+              subtitle: 'Manage your console sources',
+              onTap: () => _push(ConsoleSourcesPage()),
+            ),
+            const _SectionHeader(title: 'Notifications'),
+            _SwitchTile(
+              icon: Icons.notifications,
+              title: 'Show notifications',
+              subtitle:
+                  'Enable or disable notifications for downloads and other events',
+              value: _enableNotifications,
+              onChanged: (v) =>
+                  _setSetting(SettingsKeys.ENABLE_NOTIFICATIONS, v),
+            ),
+            const _SectionHeader(title: 'Paths'),
+            ListTile(
+              leading: const Icon(Icons.folder),
+              trailing: const Icon(Icons.edit),
+              title: const Text('Download path'),
+              subtitle: Opacity(opacity: 0.7, child: Text(_downloadPath)),
+              onTap: _pickDownloadPath,
+            ),
+            _SwitchTile(
+              icon: Icons.drive_file_move,
+              title: 'Add console name folder',
+              subtitle:
+                  "Put your roms in folders named after consoles e.g. 'nds/rom'",
+              value: _prefixConsoleSlug,
+              onChanged: (v) =>
+                  _setSetting(SettingsKeys.PREFIX_CONSOLE_SLUG, v),
+            ),
+            const _SectionHeader(title: 'Roms & Emulators'),
+            _NavigationTile(
+              icon: Icons.gamepad,
+              title: 'Emulator settings',
+              subtitle: 'Manage your emulators for each console',
+              onTap: () => _push(const EmulatorSettingsPage()),
+            ),
+            const _SectionHeader(title: 'Cache Management'),
+            _SwitchTile(
+              icon: Icons.image,
+              title: 'Enable image caching',
+              subtitle:
+                  'Download rom portraits for a better offline experience',
+              value: _enableImageCaching,
+              onChanged: (v) =>
+                  _setSetting(SettingsKeys.ENABLE_IMAGE_CACHING, v),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete),
+              title: const Text('Clear app cache'),
+              subtitle: Opacity(
+                  opacity: 0.7, child: const Text('Delete all cached files')),
+              onTap: _clearCache,
+            ),
+            const _SectionHeader(title: 'About'),
+            _NavigationTile(
+              title: 'Github Repository',
+              subtitle: 'Know more about the project or contribute',
+              trailing: Icons.open_in_new,
+              onTap: () => _launchUrl(
+                'https://github.com/Gr3gorywolf/Yamata-launcher',
+              ),
+            ),
+            _NavigationTile(
+              title: 'App Developed by Gr3gorywolf',
+              subtitle: 'Check out my website',
+              trailing: Icons.open_in_new,
+              onTap: () => _launchUrl('https://gregoryc.dev'),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'App version: $_appVersion',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _push(Widget page) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => page),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 18, 8, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: Theme.of(context).colorScheme.secondary,
+        ),
+      ),
+    );
+  }
+}
+
+class _NavigationTile extends StatelessWidget {
+  final IconData? icon;
+  final IconData? trailing;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _NavigationTile({
+    this.icon,
+    this.trailing = Icons.chevron_right,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: icon != null ? Icon(icon) : null,
+      trailing: Icon(trailing),
+      title: Text(title),
+      subtitle: Opacity(opacity: 0.7, child: Text(subtitle)),
+      onTap: onTap,
+    );
+  }
+}
+
+class _SwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      trailing: Switch(value: value, onChanged: onChanged),
+      title: Text(title),
+      subtitle: Opacity(opacity: 0.7, child: Text(subtitle)),
+    );
   }
 }
