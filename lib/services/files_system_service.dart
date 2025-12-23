@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:neonrom3r/constants/settings_constants.dart';
+import 'package:neonrom3r/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FileSystemService {
   static String _rootPath = "";
   static String _appDocPath = "";
+  static String? _downloadsPath;
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -20,6 +23,9 @@ class FileSystemService {
   }
 
   static get downloadsPath {
+    if (_downloadsPath != null) {
+      return _downloadsPath!;
+    }
     return _rootPath + "/downloads";
   }
 
@@ -59,6 +65,35 @@ class FileSystemService {
     return _appDocPath + "/emulatorIntents.json";
   }
 
+  static setupDownloadsPath() async {
+    var path = await SettingsService().get<String>(SettingsKeys.DOWNLOAD_PATH);
+    if (path.isEmpty) {
+      await SettingsService()
+          .set<String>(SettingsKeys.DOWNLOAD_PATH, downloadsPath);
+      return;
+    }
+    if (path.isNotEmpty) {
+      if (Directory(path).existsSync()) {
+        _downloadsPath = path;
+        return;
+      }
+    }
+  }
+
+  static Future<bool> deleteCachePath() async {
+    try {
+      var dir = Directory(cachePath);
+      if (await dir.exists()) {
+        await dir.delete(recursive: true);
+      }
+      await dir.create();
+      return true;
+    } catch (e) {
+      print("Error deleting cache path: " + e.toString());
+      return false;
+    }
+  }
+
   //root-path initializer
   static _initRootPath() async {
     var rootPath = "";
@@ -83,6 +118,7 @@ class FileSystemService {
       }
     }
     await _initRootPath();
+    await setupDownloadsPath();
 
     var paths = [
       downloadsPath,

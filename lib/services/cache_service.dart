@@ -44,7 +44,6 @@ class CacheService {
     final expiry = prefs.getInt(_expiryPrefix + fileName);
 
     if (expiry != null && DateTime.now().millisecondsSinceEpoch > expiry) {
-      // ⛔ Cache expirado → limpiar
       await _invalidate(fileName);
       return null;
     }

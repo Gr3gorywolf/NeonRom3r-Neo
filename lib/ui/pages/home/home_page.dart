@@ -6,7 +6,6 @@ import 'package:neonrom3r/repository/roms_repository.dart';
 import 'package:neonrom3r/ui/pages/console_roms/console_roms_page.dart';
 import 'package:neonrom3r/ui/widgets/console_list.dart';
 import 'package:neonrom3r/ui/widgets/console_card.dart';
-import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/ui/widgets/unselected_placeholder.dart';

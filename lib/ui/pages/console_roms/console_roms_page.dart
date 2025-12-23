@@ -6,7 +6,6 @@ import 'package:neonrom3r/providers/app_provider.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/repository/roms_repository.dart';
-import 'package:neonrom3r/ui/widgets/flutter_search_bar_custom.dart';
 import 'package:neonrom3r/ui/widgets/rom_list.dart';
 import 'package:neonrom3r/ui/widgets/toolbar.dart';
 import 'package:provider/provider.dart';

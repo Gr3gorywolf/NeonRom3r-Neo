@@ -91,6 +91,10 @@ class _LibraryPageState extends State<LibraryPage> {
                 label: 'Added Date',
                 field: 'addedAt',
                 value: ToolBarSortByType.ascending),
+            ToolBarSortByElement(
+                label: 'Played time',
+                field: 'playTimeMins',
+                value: ToolBarSortByType.ascending),
           ],
         ),
         initialValues: _initialToolbarValues,

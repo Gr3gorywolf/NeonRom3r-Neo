@@ -31,6 +31,7 @@ class RomActionButton extends StatelessWidget {
     var _download_sources_provider =
         Provider.of<DownloadSourcesProvider>(context);
     var _isDownloading = _provider.isRomDownloading(rom);
+    var _isPlaying = libraryProvider.isGameRunning(rom.slug);
     var _isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
     var _has_download_sources =
         _download_sources_provider.getRomSources(rom.slug).isNotEmpty;
@@ -69,6 +70,10 @@ class RomActionButton extends StatelessWidget {
       AlertsService.showSnackbar(context, "Download started", duration: 3);
     }
 
+    handleOpenRom(RomLibraryItem download) async {
+      RomService.openDownloadedRom(download);
+    }
+
     switch (size) {
       case RomActionButtonSize.small:
         horizontalPadding = 10;
@@ -93,37 +98,41 @@ class RomActionButton extends StatelessWidget {
         spacing = 3;
         break;
     }
-    if (_has_download_sources) {
-      icon = Icons.cloud_download;
-      text = "Download";
-    }
-    if (_isDownloading) {
+    if (_isPlaying) {
+      icon = Icons.videogame_asset;
+      text = "Playing";
+    } else if (_isDownloading) {
       icon = Icons.stop;
       text = "Cancel";
     } else if (_isReadyToPlay) {
       icon = Icons.play_arrow_outlined;
       text = "Play";
+    } else if (_has_download_sources) {
+      icon = Icons.cloud_download_outlined;
+      text = "Download";
     }
 
     return ElevatedButton(
         style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: verticalPadding)),
-        onPressed: _has_download_sources || _isReadyToPlay || _isDownloading
-            ? () => {
-                  if (_isDownloading)
-                    {handleCancelDownload()}
-                  else if (_isReadyToPlay && libraryItem != null)
-                    {
-                      RomService.openDownloadedRom(libraryItem),
-                      AlertsService.showSnackbar(context, "Rom launched")
+        onPressed:
+            (_has_download_sources || _isReadyToPlay || _isDownloading) &&
+                    !_isPlaying
+                ? () => {
+                      if (_isDownloading)
+                        {handleCancelDownload()}
+                      else if (_isReadyToPlay && libraryItem != null)
+                        {
+                          RomService.openDownloadedRom(libraryItem),
+                          AlertsService.showSnackbar(context, "Rom launched")
+                        }
+                      else
+                        {
+                          handleShowDownload(),
+                        }
                     }
-                  else
-                    {
-                      handleShowDownload(),
-                    }
-                }
-            : null,
+                : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

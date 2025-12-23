@@ -1,16 +1,26 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
+import 'package:neonrom3r/database/app_database.dart';
+import 'package:neonrom3r/database/daos/emulator_settings_dao.dart';
+import 'package:neonrom3r/database/daos/library_dao.dart';
+import 'package:neonrom3r/main.dart';
 import 'package:neonrom3r/models/emulator_intent.dart';
 import 'package:neonrom3r/models/rom_library_item.dart';
+import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/repository/settings_repository.dart';
+import 'package:neonrom3r/services/alerts_service.dart';
 import 'package:neonrom3r/services/console_service.dart';
 import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:neonrom3r/utils/process_helper.dart';
 import 'package:neonrom3r/utils/time_helpers.dart';
+import 'package:provider/provider.dart';
 
 class RomService {
+  static Map<String, Timer> _activeGames = {};
   static List<EmulatorIntent> get _intents {
     var file = File(FileSystemService.emulatorIntentsFilePath);
     List<EmulatorIntent> intents = [];
@@ -24,22 +34,53 @@ class RomService {
 
   static Future openDownloadedRom(RomLibraryItem download) async {
     var intents = _intents;
-    var console = ConsoleService.getConsoleFromName(download.rom.console);
-    EmulatorIntent? emulatorIntent = null;
-    for (var intent in intents) {
-      if (intent.consoleSlug == console!.slug) {
-        emulatorIntent = intent;
-        break;
-      }
+    if (db == null) {
+      return;
     }
-    if (emulatorIntent != null) {
-      for (var intent in emulatorIntent.intents!) {
-        if (await DeviceApps.isAppInstalled(intent.package!)) {
-          await _launchIntent(intent, download.filePath);
+    var emulatorSetting =
+        await EmulatorSettingsDao(db!).get(download.rom.console);
+    if (emulatorSetting == null) {
+      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
+          exception: Exception(
+              "No emulator configured for ${download.rom.console}. Please set it up in settings."));
+      return;
+    }
+    var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,
+        listen: false);
+
+    updateLibraryItem({bool addTime = false}) {
+      var currentLibraryItem = provider.getLibraryItem(download.rom.slug);
+      if (currentLibraryItem != null) {
+        if (addTime) {
+          currentLibraryItem.playTimeMins += 1;
         }
+        currentLibraryItem.lastPlayedAt = DateTime.now();
+        provider.updateLibraryItem(currentLibraryItem);
       }
     }
-    print(download);
+
+    var stopWatch = Timer.periodic(Duration(minutes: 1), (timer) async {
+      updateLibraryItem(addTime: true);
+    });
+    _activeGames[download.rom.slug] = stopWatch;
+    var openParams = download.openParams ?? "";
+    List<String> launchParams = [
+      ...(openParams.isEmpty ? [] : [openParams]),
+      download.filePath ?? ""
+    ];
+    print(
+        "Launching emulator ${emulatorSetting.emulatorBinary} with params: $launchParams");
+    updateLibraryItem();
+    provider.setGameRunning(download.rom.slug, true);
+    var process =
+        await Process.start(emulatorSetting.emulatorBinary, launchParams);
+    await process.exitCode;
+    if (_activeGames[download.rom.slug] != null) {
+      _activeGames[download.rom.slug]?.cancel();
+      _activeGames.remove(download.rom.slug);
+      provider.setGameRunning(download.rom.slug, false);
+      print("Stopped playtime tracking for ${download.rom.slug}");
+    }
   }
 
   static Future _launchIntent(Intents intent, String? romPath) async {

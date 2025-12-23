@@ -6,6 +6,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:neonrom3r/models/aria2c.dart';
 import 'package:neonrom3r/models/download_source_rom.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
+import 'package:neonrom3r/utils/string_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/services/console_service.dart';
@@ -61,8 +62,9 @@ class DownloadService {
   }
 
   void catchRomPortrait(RomInfo romInfo) async {
-    var portraitName = '${FileSystemService.portraitsPath}/${romInfo.name}.png';
-    if (!File(portraitName).existsSync()) {
+    var portraitName = '${FileSystemService.portraitsPath}/${romInfo.slug}.png';
+    var portraitUrl = romInfo.portrait ?? '';
+    if (!File(portraitName).existsSync() && portraitUrl.isNotEmpty) {
       http.get(Uri.parse(romInfo.portrait ?? '')).then((response) {
         new File(portraitName).writeAsBytes(response.bodyBytes);
       });

@@ -23,9 +23,9 @@ class RomThumbnail extends StatefulWidget {
 
 class _RomThumbnailState extends State<RomThumbnail> {
   var timeoutEnded = false;
-  File? get catchedImage {
+  File? getCatchedImage() {
     var path =
-        "${FileSystemService.portraitsPath}/${this.widget.info.name}.png";
+        "${FileSystemService.portraitsPath}/${this.widget.info.slug}.png";
     if (File(path).existsSync()) {
       return File(path);
     } else {
@@ -56,12 +56,19 @@ class _RomThumbnailState extends State<RomThumbnail> {
         child: Bone(height: double.infinity, width: double.infinity),
       );
     }
+    if (Uri.tryParse(widget.info.portrait ?? "") == null) {
+      return AssetsService.getIcon(
+        widget.info.console,
+        size: widget.width,
+      );
+    }
     return Image.network(
       widget.info?.portrait ?? "",
       errorBuilder: (context, obj, trace) {
-        if (catchedImage != null) {
+        var cachedImg = getCatchedImage();
+        if (cachedImg != null) {
           return Image.file(
-            catchedImage!,
+            cachedImg,
             height: this.widget.height,
             width: this.widget.width,
             fit: BoxFit.cover,

@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+import 'package:neonrom3r/database/app_database.dart';
+import 'package:neonrom3r/database/daos/emulator_settings_dao.dart';
+import 'package:neonrom3r/models/console.dart';
+import 'package:neonrom3r/models/emulator_setting.dart';
+import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/ui/pages/settings/emulator_settings/emulator_settings_form.dart';
+
+class EmulatorSettingsPage extends StatefulWidget {
+  const EmulatorSettingsPage({super.key});
+
+  @override
+  State<EmulatorSettingsPage> createState() => _EmulatorSettingsPageState();
+}
+
+class _EmulatorSettingsPageState extends State<EmulatorSettingsPage> {
+  List<EmulatorSetting> emulatorSettings = [];
+
+  List<String> get existingConsoles {
+    return emulatorSettings.map((e) => e.console).toList();
+  }
+
+  void loadEmulatorSettings() async {
+    if (db == null) {
+      return;
+    }
+    emulatorSettings = await EmulatorSettingsDao(db!).getAll();
+    setState(() {});
+  }
+
+  void deleteEmulatorSetting(String slug) async {
+    if (db == null) {
+      return;
+    }
+    await EmulatorSettingsDao(db!).delete(slug);
+    emulatorSettings =
+        emulatorSettings.where((setting) => setting.console != slug).toList();
+    setState(() {});
+  }
+
+  void handleAddEmulatorSetting() async {
+    // Show add emulator setting form
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return EmulatorSettingsForm(
+            existingConsoles: existingConsoles,
+            onSubmit: (EmulatorSetting setting) async {
+              if (db == null) {
+                return;
+              }
+              await EmulatorSettingsDao(db!).insert(setting);
+              emulatorSettings.add(setting);
+              setState(() {});
+            },
+          );
+        });
+  }
+
+  void handleEditEmulatorSetting(EmulatorSetting setting) async {
+    // Show edit emulator setting form
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return EmulatorSettingsForm(
+            existingConsoles: existingConsoles
+                .where((slug) => slug != setting.console)
+                .toList(),
+            editingSetting: setting,
+            onSubmit: (EmulatorSetting updatedSetting) async {
+              if (db == null) {
+                return;
+              }
+              await EmulatorSettingsDao(db!).update(updatedSetting);
+              int index = emulatorSettings.indexWhere(
+                  (element) => element.console == updatedSetting.console);
+              if (index != -1) {
+                emulatorSettings[index] = updatedSetting;
+                setState(() {});
+              }
+            },
+          );
+        });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    loadEmulatorSettings();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Emulator Settings'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: handleAddEmulatorSetting,
+      ),
+      body: ListView.builder(
+        itemCount: emulatorSettings.length,
+        itemBuilder: (context, index) {
+          final setting = emulatorSettings[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: ListTile(
+              title: Text(
+                  ConsoleService.getConsoleFromName(setting.console)?.name ??
+                      ""),
+              subtitle: Text(setting.emulatorBinary),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => deleteEmulatorSetting(setting.console),
+                  ),
+                  SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => handleEditEmulatorSetting(setting),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

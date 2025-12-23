@@ -6,6 +6,7 @@ import 'package:neonrom3r/database/app_database.dart';
 import 'package:neonrom3r/providers/download_sources_provider.dart';
 import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/services/console_service.dart';
+import 'package:neonrom3r/services/notifications_service.dart';
 import 'package:provider/provider.dart';
 import 'package:neonrom3r/providers/app_provider.dart';
 import 'package:neonrom3r/providers/download_provider.dart';
@@ -46,6 +47,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
 
   Future initPlugins() async {
     DownloadService().initDownloader();
+    await NotificationsService.init();
   }
 
   @override
