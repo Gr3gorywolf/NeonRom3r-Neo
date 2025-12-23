@@ -205,6 +205,7 @@ class RomSettingsDialog extends StatelessWidget {
               ),
               _DangerSettingItem(
                   title: "Remove from library",
+                  enabled: true,
                   content: Text(
                       "This will delete configuration and metadata. The file will remain on disk"),
                   icon: Icons.dangerous,
@@ -218,17 +219,20 @@ class RomSettingsDialog extends StatelessWidget {
                   ]),
               _DangerSettingItem(
                   title: "Delete files",
+                  enabled: fileExists,
                   content: Text(
                       "Permanently delete the file from storage. The library entry will not be removed."),
                   icon: Icons.dangerous,
-                  actions: [
-                    IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.redAccent,
-                        ),
-                        onPressed: _deleteRomFile)
-                  ]),
+                  actions: fileExists
+                      ? [
+                          IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.redAccent,
+                              ),
+                              onPressed: _deleteRomFile)
+                        ]
+                      : []),
             ],
           ),
         ),
@@ -308,9 +312,11 @@ class _DangerSettingItem extends StatelessWidget {
   final Widget content;
   final IconData icon;
   final List<IconButton> actions;
+  final bool enabled;
 
   const _DangerSettingItem(
       {required this.title,
+      required this.enabled,
       required this.content,
       required this.icon,
       required this.actions});
@@ -319,16 +325,16 @@ class _DangerSettingItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.redAccent),
+          border: Border.all(color: enabled ? Colors.redAccent : Colors.grey),
           borderRadius: BorderRadius.circular(4),
         ),
-        margin: EdgeInsets.symmetric(vertical: 8),
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: ListTile(
           title: Text(title,
               style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
-                  color: Colors.redAccent)),
+                  color: enabled ? Colors.redAccent : Colors.grey)),
           subtitle: Opacity(opacity: 0.6, child: content),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
