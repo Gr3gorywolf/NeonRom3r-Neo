@@ -22,6 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
   var appVersion = "---";
   var downloadPath = "";
   var prefixConsoleSlug = false;
+  var enableNotifications = false;
   var enableImageCaching = false;
 
   fetchInitialValues() async {
@@ -32,6 +33,8 @@ class _SettingsPageState extends State<SettingsPage> {
     enableImageCaching =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_IMAGE_CACHING);
     appVersion = packageInfo.version;
+    enableNotifications =
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
     setState(() {});
   }
 
@@ -45,6 +48,9 @@ class _SettingsPageState extends State<SettingsPage> {
         break;
       case SettingsKeys.ENABLE_IMAGE_CACHING:
         enableImageCaching = value as bool;
+        break;
+      case SettingsKeys.ENABLE_NOTIFICATIONS:
+        enableNotifications = value as bool;
         break;
       default:
         break;
@@ -146,6 +152,35 @@ class _SettingsPageState extends State<SettingsPage> {
                     ));
                   },
                 ),
+                Container(
+                  margin: EdgeInsets.only(left: 8),
+                  child: Text(
+                    "Notifications",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.secondary),
+                  ),
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                ListTile(
+                  leading: Icon(Icons.notifications),
+                  trailing: Switch(
+                    value: enableNotifications,
+                    onChanged: (value) {
+                      setSettingValue<bool>(
+                          SettingsKeys.ENABLE_NOTIFICATIONS, value);
+                    },
+                  ),
+                  title: Text("Show notifications"),
+                  subtitle: Opacity(
+                    opacity: 0.7,
+                    child: Text(
+                        "Enable or disable notifications for downloads and other events"),
+                  ),
+                ),
                 SizedBox(
                   height: 18,
                 ),
@@ -188,11 +223,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: Text(
                         "Put your roms in folders named after consoles e.g. 'nds/{your rom}'"),
                   ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ConsoleSourcesPage(),
-                    ));
-                  },
                 ),
                 SizedBox(
                   height: 18,

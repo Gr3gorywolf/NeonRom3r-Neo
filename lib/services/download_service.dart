@@ -21,7 +21,9 @@ import 'aria2c/aria2c_download_manager.dart';
 class DownloadService {
   initDownloader() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await FlutterDownloader.initialize(debug: false);
+    if (Platform.isAndroid) {
+      await FlutterDownloader.initialize(debug: false);
+    }
   }
 
   Future<Map<String, String>> fetchDownloadHeaders(url) async {

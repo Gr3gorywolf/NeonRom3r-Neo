@@ -32,9 +32,9 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   initApp() async {
     await FileSystemService.initPaths();
     if (Platform.isAndroid) {
-      await initPlugins();
       await RomService.catchEmulatorsIntents();
     }
+    await initPlugins();
     await initDb();
     await ConsoleService.loadConsoleSources();
     await Provider.of<LibraryProvider>(context, listen: false).init();
@@ -46,7 +46,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   }
 
   Future initPlugins() async {
-    DownloadService().initDownloader();
+    await DownloadService().initDownloader();
     await NotificationsService.init();
   }
 
