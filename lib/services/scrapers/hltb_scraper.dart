@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart';
 import 'package:html/dom.dart';
-import 'package:neonrom3r/models/hltb.dart';
+import 'package:yamata_launcher/models/hltb.dart';
 
 class HltbScraper {
   static const String _baseUrl = 'https://howlongtobeat.com';

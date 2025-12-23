@@ -1,4 +1,4 @@
-import 'package:neonrom3r/models/contracts/json_serializable.dart';
+import 'package:yamata_launcher/models/contracts/json_serializable.dart';
 
 class EmulatorSetting implements JsonSerializable {
   String console = "";

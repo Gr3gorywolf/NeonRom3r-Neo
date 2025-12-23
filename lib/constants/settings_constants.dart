@@ -1,4 +1,4 @@
-import 'package:neonrom3r/models/setting.dart';
+import 'package:yamata_launcher/models/setting.dart';
 
 enum SettingsKeys {
   DOWNLOAD_PATH,

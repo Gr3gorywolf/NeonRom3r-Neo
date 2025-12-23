@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/widgets/console_list.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/ui/widgets/console_list.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 
 class ConsolesPage extends StatefulWidget {
   @override

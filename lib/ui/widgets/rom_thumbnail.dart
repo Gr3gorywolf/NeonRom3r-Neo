@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/ui/widgets/console_card.dart';
-import 'package:neonrom3r/utils/animation_helper.dart';
-import 'package:neonrom3r/services/assets_service.dart';
-import 'package:neonrom3r/services/console_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/ui/widgets/console_card.dart';
+import 'package:yamata_launcher/utils/animation_helper.dart';
+import 'package:yamata_launcher/services/assets_service.dart';
+import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class RomThumbnail extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/console.dart';
+import 'package:yamata_launcher/models/console.dart';
 
 class ConsoleSourcesListItem extends StatelessWidget {
   final Console console;

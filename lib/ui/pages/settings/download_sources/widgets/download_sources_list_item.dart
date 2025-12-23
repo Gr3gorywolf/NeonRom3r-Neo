@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/download_source.dart';
+import 'package:yamata_launcher/models/download_source.dart';
 
 class DownloadSourceListItem extends StatelessWidget {
   final DownloadSourceWithDownloads source;

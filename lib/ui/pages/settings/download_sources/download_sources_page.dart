@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/repository/download_sources_repository.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
+import 'package:yamata_launcher/repository/download_sources_repository.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
+import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
 import 'package:provider/provider.dart';
-import 'package:neonrom3r/providers/download_sources_provider.dart';
-import 'package:neonrom3r/models/download_source.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/models/download_source.dart';
 
 class DownloadSourcesPage extends StatefulWidget {
   @override

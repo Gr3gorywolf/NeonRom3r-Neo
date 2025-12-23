@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:neonrom3r/models/contracts/json_serializable.dart';
-import 'package:neonrom3r/services/cache_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/models/contracts/json_serializable.dart';
+import 'package:yamata_launcher/services/cache_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 
 typedef FromJson<T> = T Function(Map<String, dynamic> json);
 

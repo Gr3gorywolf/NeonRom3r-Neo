@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 
 class AssetsService {
   static getImage(String name, {double size = 24, double? width}) {
+    var hasExtension = name.contains('.');
     return Image.asset(
-      "assets/images/$name.png",
+      "assets/images/$name${hasExtension ? '' : '.png'}",
       height: size,
       width: width ?? size,
     );
+  }
+
+  static getSvgImage(String name, {double size = 24, double? width}) {
+    return SvgPicture.asset("assets/svgs/$name.svg",
+        semanticsLabel: 'Dart Logo', height: size, width: width ?? size);
   }
 
   static Image getIcon(String name, {double size = 24, double? width = 24}) {

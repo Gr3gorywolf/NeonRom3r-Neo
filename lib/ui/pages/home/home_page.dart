@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/repository/roms_repository.dart';
-import 'package:neonrom3r/ui/pages/console_roms/console_roms_page.dart';
-import 'package:neonrom3r/ui/widgets/console_list.dart';
-import 'package:neonrom3r/ui/widgets/console_card.dart';
-import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
-import 'package:neonrom3r/ui/widgets/rom_list.dart';
-import 'package:neonrom3r/ui/widgets/unselected_placeholder.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/repository/roms_repository.dart';
+import 'package:yamata_launcher/ui/pages/console_roms/console_roms_page.dart';
+import 'package:yamata_launcher/ui/widgets/console_list.dart';
+import 'package:yamata_launcher/ui/widgets/console_card.dart';
+import 'package:yamata_launcher/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/rom_list.dart';
+import 'package:yamata_launcher/ui/widgets/unselected_placeholder.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 
 class HomePage extends StatefulWidget {
   @override

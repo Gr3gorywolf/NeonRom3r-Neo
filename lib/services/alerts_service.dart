@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 
 class AlertsService {
   static showSnackbar(BuildContext ctx, String message,

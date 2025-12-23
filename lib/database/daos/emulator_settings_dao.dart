@@ -1,6 +1,6 @@
-import 'package:neonrom3r/database/db_stores.dart';
-import 'package:neonrom3r/models/emulator_setting.dart';
-import 'package:neonrom3r/models/rom_library_item.dart';
+import 'package:yamata_launcher/database/db_stores.dart';
+import 'package:yamata_launcher/models/emulator_setting.dart';
+import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:sembast/sembast.dart';
 
 class EmulatorSettingsDao {

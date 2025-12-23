@@ -1,5 +1,5 @@
-import 'package:neonrom3r/constants/settings_constants.dart';
-import 'package:neonrom3r/models/setting.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/models/setting.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {

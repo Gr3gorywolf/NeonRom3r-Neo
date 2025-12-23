@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/providers/download_provider.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
-import 'package:neonrom3r/services/rom_service.dart';
-import 'package:neonrom3r/ui/pages/rom_details_dialog/rom_details_dialog.dart';
-import 'package:neonrom3r/ui/widgets/rom_action_button.dart';
-import 'package:neonrom3r/ui/widgets/rom_library_actions.dart';
-import 'package:neonrom3r/ui/widgets/rom_thumbnail.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/providers/download_provider.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:yamata_launcher/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/rom_action_button.dart';
+import 'package:yamata_launcher/ui/widgets/rom_library_actions.dart';
+import 'package:yamata_launcher/ui/widgets/rom_thumbnail.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 import 'package:provider/provider.dart';
 
 enum RomListItemType { card, listItem }

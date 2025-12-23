@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/models/console.dart';
+import 'package:yamata_launcher/models/console.dart';
 
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/services/cache_service.dart';
-import 'package:neonrom3r/constants/app_constants.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/cache_service.dart';
+import 'package:yamata_launcher/constants/app_constants.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {

@@ -1,5 +1,5 @@
-import 'package:neonrom3r/models/contracts/json_serializable.dart';
-import 'package:neonrom3r/utils/filter_helpers.dart';
+import 'package:yamata_launcher/models/contracts/json_serializable.dart';
+import 'package:yamata_launcher/utils/filter_helpers.dart';
 
 class RomInfo implements JsonSerializable {
   String slug = "";

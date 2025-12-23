@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:neonrom3r/constants/settings_constants.dart';
-import 'package:neonrom3r/services/settings_service.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 

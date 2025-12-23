@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:neonrom3r/models/emulator_intent.dart';
+import 'package:yamata_launcher/models/emulator_intent.dart';
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/constants/app_constants.dart';
+import 'package:yamata_launcher/constants/app_constants.dart';
 
 class SettingsRepository {
   Future<List<EmulatorIntent>> fetchIntentsSettings() async {

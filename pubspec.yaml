@@ -1,4 +1,4 @@
-name: neonrom3r
+name: yamata_launcher
 description: Yamata Launcher
 
 # The following line prevents the package from being accidentally published to
@@ -46,11 +46,12 @@ dependencies:
   url_launcher: ^6.3.1
   file_picker: ^8.0.5
   flutter_local_notifications: ^19.5.0
+  flutter_svg: ^2.1.0 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.11.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,33 +68,8 @@ flutter:
   assets:
       - assets/images/
       - assets/icons/
-  #   - images/a_dot_ham.jpeg
+      - assets/svgs/
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
 dependency_overrides:
   file: 6.1.4
   platform: 3.1.0

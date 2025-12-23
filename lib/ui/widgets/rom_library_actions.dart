@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/ui/pages/rom_settings_dialog/rom_settings_dialog.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/ui/pages/rom_settings_dialog/rom_settings_dialog.dart';
 import 'package:provider/provider.dart';
 
 enum RomLibraryActionSize { small, medium, large }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/utils/animation_helper.dart';
+import 'package:yamata_launcher/utils/animation_helper.dart';
 
 class NoDownloadsPlaceholder extends StatelessWidget {
   @override

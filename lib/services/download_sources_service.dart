@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:neonrom3r/models/download_source.dart';
-import 'package:neonrom3r/providers/download_sources_provider.dart';
-import 'package:neonrom3r/services/cache_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
-import 'package:neonrom3r/services/rom_service.dart';
+import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/services/cache_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:provider/provider.dart';
 
 const sourcesFile = "download-sources.json";

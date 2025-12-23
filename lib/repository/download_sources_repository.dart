@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/models/download_source.dart';
-import 'package:neonrom3r/models/download_source_rom.dart';
+import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/models/download_source_rom.dart';
 
 class DownloadSourcesRepository {
   Future<DownloadSourceWithDownloads?> fetchSource(String sourceUrl) async {

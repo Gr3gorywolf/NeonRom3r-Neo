@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/constants/console_constants.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/models/console_source.dart';
-import 'package:neonrom3r/models/emulator.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/constants/console_constants.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/models/console_source.dart';
+import 'package:yamata_launcher/models/emulator.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 
 class ConsoleService {
   static List<Console> consolesFromSources = [];

@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:neonrom3r/models/hltb.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/models/tgdb.dart';
-import 'package:neonrom3r/services/scrapers/hltb_scraper.dart';
-import 'package:neonrom3r/services/scrapers/tgdb_scraper.dart';
-import 'package:neonrom3r/services/cache_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
-import 'package:neonrom3r/utils/cached_fetch.dart';
+import 'package:yamata_launcher/models/hltb.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/models/tgdb.dart';
+import 'package:yamata_launcher/services/scrapers/hltb_scraper.dart';
+import 'package:yamata_launcher/services/scrapers/tgdb_scraper.dart';
+import 'package:yamata_launcher/services/cache_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/utils/cached_fetch.dart';
 
 class RomDetailsRepository {
   Future<HltbEntry?> fetchHltbData(RomInfo rom) async {

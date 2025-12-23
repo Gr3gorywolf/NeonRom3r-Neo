@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/constants/settings_constants.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
-import 'package:neonrom3r/services/settings_service.dart';
-import 'package:neonrom3r/ui/pages/settings/console_sources/console_sources_page.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/download_sources_page.dart';
-import 'package:neonrom3r/ui/pages/settings/emulator_settings/emulator_settings_page.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
+import 'package:yamata_launcher/ui/pages/settings/console_sources/console_sources_page.dart';
+import 'package:yamata_launcher/ui/pages/settings/download_sources/download_sources_page.dart';
+import 'package:yamata_launcher/ui/pages/settings/emulator_settings/emulator_settings_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 

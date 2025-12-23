@@ -4,25 +4,25 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/constants/settings_constants.dart';
-import 'package:neonrom3r/database/app_database.dart';
-import 'package:neonrom3r/database/daos/library_dao.dart';
-import 'package:neonrom3r/main.dart';
-import 'package:neonrom3r/models/rom_library_item.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/services/aria2c/aria2c_download_manager.dart';
-import 'package:neonrom3r/services/notifications_service.dart';
-import 'package:neonrom3r/services/settings_service.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/database/app_database.dart';
+import 'package:yamata_launcher/database/daos/library_dao.dart';
+import 'package:yamata_launcher/main.dart';
+import 'package:yamata_launcher/models/rom_library_item.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_download_manager.dart';
+import 'package:yamata_launcher/services/notifications_service.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:provider/provider.dart';
 
-import 'package:neonrom3r/models/aria2c.dart';
-import 'package:neonrom3r/models/download_info.dart';
-import 'package:neonrom3r/models/download_source_rom.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/services/download_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
-import 'package:neonrom3r/utils/string_helper.dart';
+import 'package:yamata_launcher/models/aria2c.dart';
+import 'package:yamata_launcher/models/download_info.dart';
+import 'package:yamata_launcher/models/download_source_rom.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/download_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:toast/toast.dart';
 
 class _ActiveAria2Download {

@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 
 import 'console_card.dart';
 

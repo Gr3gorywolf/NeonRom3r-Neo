@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/models/console_source.dart';
-import 'package:neonrom3r/repository/console_sources_repository.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_add_dialog.dart';
-import 'package:neonrom3r/ui/pages/settings/console_sources/widgets/console_sources_list_item.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
-import 'package:neonrom3r/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/models/console_source.dart';
+import 'package:yamata_launcher/repository/console_sources_repository.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/ui/pages/settings/console_sources/widgets/console_sources_add_dialog.dart';
+import 'package:yamata_launcher/ui/pages/settings/console_sources/widgets/console_sources_list_item.dart';
+import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
+import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 import 'package:provider/provider.dart';
-import 'package:neonrom3r/providers/download_sources_provider.dart';
-import 'package:neonrom3r/models/download_source.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/models/download_source.dart';
 
 import 'widgets/console_sources_empty_state.dart';
 

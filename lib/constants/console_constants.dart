@@ -1,4 +1,4 @@
-import 'package:neonrom3r/models/console.dart';
+import 'package:yamata_launcher/models/console.dart';
 
 class ConsoleConstants {
   static List<Console> defaultConsoles = [

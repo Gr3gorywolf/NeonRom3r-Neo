@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:neonrom3r/ui/widgets/rom_list_item.dart';
-import 'package:neonrom3r/ui/widgets/view_mode_toggle.dart';
+import 'package:yamata_launcher/ui/widgets/rom_list_item.dart';
+import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
 import 'package:provider/provider.dart';
 
 class AppProvider extends ChangeNotifier {

@@ -1,6 +1,6 @@
-import 'package:neonrom3r/models/toolbar_elements.dart';
+import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/utils/screen_helpers.dart';
+import 'package:yamata_launcher/utils/screen_helpers.dart';
 
 class Toolbar extends StatefulWidget implements PreferredSizeWidget {
   final ToolbarSettings settings;

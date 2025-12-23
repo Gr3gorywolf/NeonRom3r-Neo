@@ -4,19 +4,19 @@ import 'dart:io';
 
 import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
-import 'package:neonrom3r/database/app_database.dart';
-import 'package:neonrom3r/database/daos/emulator_settings_dao.dart';
-import 'package:neonrom3r/database/daos/library_dao.dart';
-import 'package:neonrom3r/main.dart';
-import 'package:neonrom3r/models/emulator_intent.dart';
-import 'package:neonrom3r/models/rom_library_item.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
-import 'package:neonrom3r/repository/settings_repository.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/services/console_service.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
-import 'package:neonrom3r/utils/process_helper.dart';
-import 'package:neonrom3r/utils/time_helpers.dart';
+import 'package:yamata_launcher/database/app_database.dart';
+import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
+import 'package:yamata_launcher/database/daos/library_dao.dart';
+import 'package:yamata_launcher/main.dart';
+import 'package:yamata_launcher/models/emulator_intent.dart';
+import 'package:yamata_launcher/models/rom_library_item.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/repository/settings_repository.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/utils/process_helper.dart';
+import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
 
 class RomService {

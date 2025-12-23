@@ -1,4 +1,4 @@
-import 'package:neonrom3r/models/rom_library_item.dart';
+import 'package:yamata_launcher/models/rom_library_item.dart';
 
 class DownloadInfo {
   String romSlug;

@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/models/console_source.dart';
-import 'package:neonrom3r/models/download_source.dart';
-import 'package:neonrom3r/models/download_source_rom.dart';
-import 'package:neonrom3r/services/files_system_service.dart';
+import 'package:yamata_launcher/models/console_source.dart';
+import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/models/download_source_rom.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 
 class ConsoleSourcesRepository {
   Future<ConsoleSource?> fetchSource(String sourceUrl) async {

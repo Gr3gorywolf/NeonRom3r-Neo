@@ -1,12 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/app_theme.dart';
-import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
-import 'package:neonrom3r/ui/pages/library/library_page.dart';
-import 'package:neonrom3r/ui/pages/home/home_page.dart';
-import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
-import 'package:neonrom3r/services/assets_service.dart';
-import 'package:neonrom3r/utils/screen_helpers.dart';
+import 'package:yamata_launcher/app_theme.dart';
+import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
+import 'package:yamata_launcher/ui/pages/library/library_page.dart';
+import 'package:yamata_launcher/ui/pages/home/home_page.dart';
+import 'package:yamata_launcher/ui/pages/settings/settings_page.dart';
+import 'package:yamata_launcher/services/assets_service.dart';
+import 'package:yamata_launcher/utils/screen_helpers.dart';
 
 class MainLayout extends StatefulWidget {
   @override
@@ -24,6 +24,7 @@ class _MainLayoutState extends State<MainLayout> {
       SettingsPage()
     ];
     var isSmallScreen = ScreenHelpers.isSmallScreen(context);
+    var isMediumScreen = ScreenHelpers.isMediumScreen(context);
     const navigationItems = [
       {'icon': Icons.home, 'label': 'Home'},
       {'icon': Icons.collections_bookmark, 'label': 'Library'},
@@ -31,8 +32,15 @@ class _MainLayoutState extends State<MainLayout> {
       {'icon': Icons.settings, 'label': 'Settings'},
     ];
 
+    _getLogo() {
+      if (isMediumScreen) {
+        return AssetsService.getSvgImage("logo-orig", size: 80);
+      } else {
+        return AssetsService.getImage("logolarge", size: 80, width: 180);
+      }
+    }
+
     Widget buildDesktopBody() {
-      var isMediumScreen = ScreenHelpers.isMediumScreen(context);
       return Row(
         children: [
           NavigationRail(
@@ -50,11 +58,7 @@ class _MainLayoutState extends State<MainLayout> {
             minWidth: 60,
             useIndicator: true,
             leading: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: AssetsService.getImage(
-                    isMediumScreen ? "logo" : "logolarge",
-                    size: 50,
-                    width: isMediumScreen ? 50 : 180)),
+                padding: const EdgeInsets.only(top: 0), child: _getLogo()),
             destinations: navigationItems.map((item) {
               return NavigationRailDestination(
                 icon: Icon(item['icon'] as IconData),

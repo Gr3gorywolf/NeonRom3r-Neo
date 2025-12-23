@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:neonrom3r/constants/app_constants.dart';
+import 'package:yamata_launcher/constants/app_constants.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class NotificationsService {
@@ -9,8 +9,8 @@ class NotificationsService {
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
-  static const String _channelId = 'neonrom3r_channel';
-  static const String _channelName = 'NeonROM3r Notifications';
+  static const String _channelId = 'yamata_launcher_channel';
+  static const String _channelName = 'yamata_launcher Notifications';
   static const String _channelDescription =
       'Notifications for game activity and system events';
 

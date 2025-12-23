@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/emulator.dart';
+import 'package:yamata_launcher/models/emulator.dart';
 
 class EmulatorListItem extends StatefulWidget {
   Emulator emulator;
@@ -55,7 +55,7 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
                   data: widget.emulator.downloadLink, action: "action_view")
               .launch();
         } else {
-         DeviceApps.openApp(widget.emulator.packageName!);
+          DeviceApps.openApp(widget.emulator.packageName!);
         }
       },
       contentPadding: EdgeInsets.all(5),

@@ -1,21 +1,21 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/app_theme.dart';
-import 'package:neonrom3r/providers/download_sources_provider.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
+import 'package:yamata_launcher/app_theme.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/providers/app_provider.dart';
-import 'package:neonrom3r/providers/download_provider.dart';
-import 'package:neonrom3r/ui/pages/downloads/downloads_page.dart';
-import 'package:neonrom3r/ui/pages/library/library_page.dart';
-import 'package:neonrom3r/ui/pages/home/home_page.dart';
-import 'package:neonrom3r/ui/pages/settings/settings_page.dart';
-import 'package:neonrom3r/ui/pages/splashcreen/splashcreen_page.dart';
-import 'package:neonrom3r/ui/widgets/console_list.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/providers/app_provider.dart';
+import 'package:yamata_launcher/providers/download_provider.dart';
+import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
+import 'package:yamata_launcher/ui/pages/library/library_page.dart';
+import 'package:yamata_launcher/ui/pages/home/home_page.dart';
+import 'package:yamata_launcher/ui/pages/settings/settings_page.dart';
+import 'package:yamata_launcher/ui/pages/splashcreen/splashcreen_page.dart';
+import 'package:yamata_launcher/ui/widgets/console_list.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:neonrom3r/services/download_service.dart';
+import 'package:yamata_launcher/services/download_service.dart';
 
 import 'ui/pages/main_layout/main_layout.dart';
 
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
       ],
       builder: (context, wg) {
         return MaterialApp(
-            title: 'NeonRom3r',
+            title: 'yamata_launcher',
             theme: appTheme,
             navigatorKey: navigatorKey,
             home: Builder(

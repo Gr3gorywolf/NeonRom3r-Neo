@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/models/download_source_rom.dart';
-import 'package:neonrom3r/models/rom_info.dart';
+import 'package:yamata_launcher/models/download_source_rom.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:provider/provider.dart';
-import 'package:neonrom3r/providers/download_sources_provider.dart';
-import 'package:neonrom3r/models/download_source.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/models/download_source.dart';
 
 class RomDownloadSourcesDialog extends StatelessWidget {
   final RomInfo rom;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
-project(neonrom3r LANGUAGES CXX)
+project(yamata_launcher LANGUAGES CXX)
 
-set(BINARY_NAME "neonrom3r")
+set(BINARY_NAME "yamata_launcher")
 
 cmake_policy(SET CMP0063 NEW)
 

@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/ui/widgets/image_lightbox.dart';
+import 'package:yamata_launcher/ui/widgets/image_lightbox.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ImagesCarousel extends StatefulWidget {

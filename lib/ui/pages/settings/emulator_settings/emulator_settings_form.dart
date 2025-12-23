@@ -1,9 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/constants/files_constants.dart';
-import 'package:neonrom3r/models/emulator_setting.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/services/console_service.dart';
+import 'package:yamata_launcher/constants/files_constants.dart';
+import 'package:yamata_launcher/models/emulator_setting.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 
 class EmulatorSettingsForm extends StatefulWidget {
   final List<String> existingConsoles;

@@ -1,4 +1,4 @@
-import 'package:neonrom3r/models/rom_info.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
 
 import 'console.dart';
 

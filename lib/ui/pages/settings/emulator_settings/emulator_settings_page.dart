@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/database/app_database.dart';
-import 'package:neonrom3r/database/daos/emulator_settings_dao.dart';
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/models/emulator_setting.dart';
-import 'package:neonrom3r/services/console_service.dart';
-import 'package:neonrom3r/ui/pages/settings/emulator_settings/emulator_settings_form.dart';
+import 'package:yamata_launcher/database/app_database.dart';
+import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/models/emulator_setting.dart';
+import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/ui/pages/settings/emulator_settings/emulator_settings_form.dart';
 
 class EmulatorSettingsPage extends StatefulWidget {
   const EmulatorSettingsPage({super.key});

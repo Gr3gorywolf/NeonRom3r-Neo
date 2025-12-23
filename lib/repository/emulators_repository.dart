@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:neonrom3r/models/console.dart';
-import 'package:neonrom3r/models/emulator.dart';
+import 'package:yamata_launcher/models/console.dart';
+import 'package:yamata_launcher/models/emulator.dart';
 import 'package:http/http.dart' as http;
-import 'package:neonrom3r/services/console_service.dart';
-import 'package:neonrom3r/constants/app_constants.dart';
+import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/constants/app_constants.dart';
 
 class EmulatorsRepository {
   Future<Map<Console, List<Emulator>>> fetchEmulators() async {

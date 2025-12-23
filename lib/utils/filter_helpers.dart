@@ -1,6 +1,6 @@
-import 'package:neonrom3r/models/contracts/json_serializable.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/models/toolbar_elements.dart';
+import 'package:yamata_launcher/models/contracts/json_serializable.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/models/toolbar_elements.dart';
 
 class FilterHelpers {
   static _getValueByPath(Map<String, dynamic> json, String path) {

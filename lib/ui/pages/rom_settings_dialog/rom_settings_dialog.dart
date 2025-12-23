@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:neonrom3r/constants/files_constants.dart';
-import 'package:neonrom3r/models/rom_info.dart';
-import 'package:neonrom3r/providers/library_provider.dart';
-import 'package:neonrom3r/services/alerts_service.dart';
-import 'package:neonrom3r/services/rom_service.dart';
-import 'package:neonrom3r/ui/widgets/duration_picker_dialog.dart';
-import 'package:neonrom3r/utils/time_helpers.dart';
+import 'package:yamata_launcher/constants/files_constants.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:yamata_launcher/ui/widgets/duration_picker_dialog.dart';
+import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
 
 class RomSettingsDialog extends StatelessWidget {

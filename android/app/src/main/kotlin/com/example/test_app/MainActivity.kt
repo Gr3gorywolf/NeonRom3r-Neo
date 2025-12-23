@@ -1,4 +1,4 @@
-package com.gregoryc.dev.neonrom3r
+package com.gregoryc.dev.yamata_launcher
 
 import io.flutter.embedding.android.FlutterActivity
 
