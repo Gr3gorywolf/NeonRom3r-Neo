@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neonrom3r/models/rom_info.dart';
 import 'package:neonrom3r/providers/library_provider.dart';
 import 'package:neonrom3r/services/alerts_service.dart';
+import 'package:neonrom3r/ui/pages/rom_settings_dialog/rom_settings_dialog.dart';
 import 'package:provider/provider.dart';
 
 enum RomLibraryActionSize { small, medium, large }
@@ -44,6 +45,14 @@ class RomLibraryActions extends StatelessWidget {
       libraryProvider.addRomToLibrary(rom);
     }
 
+    handleOpenConfigurations() {
+      showDialog(
+          context: context,
+          builder: (dialog) {
+            return RomSettingsDialog(rom: rom);
+          });
+    }
+
     iconButtonStyle() {
       return IconButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.inverseSurface,
@@ -83,7 +92,7 @@ class RomLibraryActions extends StatelessWidget {
           iconSize: iconSize,
           style: iconButtonStyle(),
           icon: Icon(Icons.tune),
-          onPressed: () {},
+          onPressed: handleOpenConfigurations,
           color: Colors.grey,
         ),
       ],

@@ -68,12 +68,13 @@ class RomService {
       ...(openParams.isEmpty ? [] : [openParams]),
       download.filePath ?? ""
     ];
-    print(
-        "Launching emulator ${emulatorSetting.emulatorBinary} with params: $launchParams");
+    String emulatorBinary = download.overrideEmulator?.isNotEmpty ?? false
+        ? download.overrideEmulator ?? ""
+        : emulatorSetting.emulatorBinary;
+    print("Launching emulator ${emulatorBinary} with params: $launchParams");
     updateLibraryItem();
     provider.setGameRunning(download.rom.slug, true);
-    var process =
-        await Process.start(emulatorSetting.emulatorBinary, launchParams);
+    var process = await Process.start(emulatorBinary, launchParams);
     await process.exitCode;
     if (_activeGames[download.rom.slug] != null) {
       _activeGames[download.rom.slug]?.cancel();

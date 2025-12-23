@@ -129,7 +129,7 @@ class AlertsService {
   static showAlert(BuildContext ctx, String title, String text,
       {Function? callback = null,
       Function? onClose = null,
-      bool cancelable = false,
+      bool cancelable = true,
       String acceptTitle = "Ok",
       TextButton? additionalAction = null}) {
     showDialog(
@@ -142,7 +142,9 @@ class AlertsService {
               style: TextStyle(color: Colors.green),
             ),
             backgroundColor: Colors.grey[900],
-            content: Text(text, style: TextStyle(color: Colors.green)),
+            content: Container(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: Text(text, style: TextStyle(color: Colors.green))),
             actions: [
               if (cancelable || onClose != null)
                 TextButton(

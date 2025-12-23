@@ -100,6 +100,7 @@ class _LibraryPageState extends State<LibraryPage> {
         initialValues: _initialToolbarValues,
       ),
       body: RomList(
+        showConsole: true,
         roms: getFilteredRoms(),
       ),
     );

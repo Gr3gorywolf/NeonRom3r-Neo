@@ -10,6 +10,7 @@ class RomLibraryItem extends JsonSerializable {
   DateTime? lastPlayedAt;
   DateTime? downloadedAt;
   String? openParams;
+  String? overrideEmulator;
   RomLibraryItem({
     required this.rom,
     this.isFavorite = false,
@@ -19,6 +20,7 @@ class RomLibraryItem extends JsonSerializable {
     this.lastPlayedAt,
     this.downloadedAt,
     this.openParams,
+    this.overrideEmulator,
   });
 
   RomLibraryItem.fromJson(Map<String, dynamic> json)
@@ -34,7 +36,8 @@ class RomLibraryItem extends JsonSerializable {
         downloadedAt = json['downloadedAt'] != null
             ? DateTime.parse(json['downloadedAt'])
             : null,
-        openParams = json['openParams'];
+        openParams = json['openParams'],
+        overrideEmulator = json['overrideEmulator'];
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -46,6 +49,7 @@ class RomLibraryItem extends JsonSerializable {
     data['lastPlayedAt'] = this.lastPlayedAt?.toIso8601String();
     data['downloadedAt'] = this.downloadedAt?.toIso8601String();
     data['openParams'] = this.openParams;
+    data['overrideEmulator'] = this.overrideEmulator;
     return data;
   }
 }
