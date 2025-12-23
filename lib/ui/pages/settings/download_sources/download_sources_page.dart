@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/repository/download_sources_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
-import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_empty_state.dart';
-import 'package:yamata_launcher/ui/pages/settings/download_sources/widgets/download_sources_list_item.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/models/download_source.dart';
@@ -13,21 +11,42 @@ class DownloadSourcesPage extends StatefulWidget {
 }
 
 class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
-  handleAddSource() async {
-    var result = await AlertsService.showPrompt(context, "Add Download Source",
-        message: "Enter the URL of the download source:",
-        inputPlaceholder: "Source URL");
+  _handleDeleteSource(DownloadSourceWithDownloads source) async {
+    final confirmed = await AlertsService.showAlert(
+      context,
+      "Delete Download Source",
+      "Are you sure you want to delete the source '${source.sourceInfo!.title}'?",
+      callback: () {
+        final provider =
+            Provider.of<DownloadSourcesProvider>(context, listen: false);
+        provider.removeDownloadSource(source);
+        AlertsService.showSnackbar(context, "Source deleted successfully");
+      },
+    );
+  }
+
+  _handleSetSource(DownloadSourceWithDownloads? sourceToUpdate) async {
+    var result = sourceToUpdate == null
+        ? await AlertsService.showPrompt(context, "Add Download Source",
+            message: "Enter the URL of the download source:",
+            inputPlaceholder: "Source URL")
+        : sourceToUpdate.sourceInfo!.downloadUrl;
     if (result == null || result.isEmpty) {
       return;
     }
     final source = await DownloadSourcesRepository().fetchSource(result);
 
     if (source != null) {
-      print(source.toJson());
-      final provider = context.read<DownloadSourcesProvider>();
-      var success = await provider.addDownloadSource(source);
+      source.sourceInfo.downloadUrl = result;
+      final provider =
+          Provider.of<DownloadSourcesProvider>(context, listen: false);
+      var success = await provider.setDownloadSource(source);
       if (success) {
-        AlertsService.showSnackbar(context, "Source added successfully");
+        AlertsService.showSnackbar(
+            context,
+            sourceToUpdate == null
+                ? "Source added successfully"
+                : "Source updated successfully");
       } else {
         AlertsService.showErrorSnackbar(context,
             exception: Exception("This source already exists"));
@@ -46,28 +65,59 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
       ),
       body: Consumer<DownloadSourcesProvider>(
         builder: (_, provider, __) {
-          if (!provider.initialized) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           if (provider.downloadSources.isEmpty) {
-            return DownloadSourcesEmptyState(onAdd: handleAddSource);
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'No download sources',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () => _handleSetSource(null),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add source'),
+                  )
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
             itemCount: provider.downloadSources.length,
             itemBuilder: (_, index) {
               final source = provider.downloadSources[index];
-              return DownloadSourceListItem(
-                source: source,
-                onDelete: () => provider.removeDownloadSource(source),
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  title: Text(source.sourceInfo!.title!),
+                  subtitle: Opacity(
+                      opacity: 0.7,
+                      child:
+                          Text('${source.downloads!.length} roms available')),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _handleDeleteSource(source),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () => _handleSetSource(source),
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: handleAddSource,
+        onPressed: () => _handleSetSource(null),
         child: const Icon(Icons.add),
       ),
     );

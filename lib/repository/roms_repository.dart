@@ -1,30 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
 import 'package:yamata_launcher/models/console.dart';
-
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/cache_service.dart';
 import 'package:yamata_launcher/constants/app_constants.dart';
+import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {
-    List<RomInfo> roms = [];
-    if (console.fromLocalSource != null && console.fromLocalSource == true) {
-      File consoleFile = File(
-          FileSystemService.consoleSourcesPath + "/" + console.slug + ".json");
-      if (await consoleFile.exists()) {
-        String jsonString = await consoleFile.readAsString();
-        for (var rom in json.decode(jsonString)['games']) {
-          roms.add(RomInfo.fromJson(rom));
-        }
-        return roms;
-      }
-    }
+    Map<String, RomInfo> roms = {};
+    var externalConsoles = ConsoleService.consolesFromExternalSources;
+    var foundExternalSources =
+        externalConsoles.where((c) => c.slug == console.slug).toList();
     var baseUrl = "${AppConstants.apiBasePath}/Data/Roms/${console.slug}.json";
     var client = new http.Client();
+    var retrievedFromCache = false;
     //If is catched tries to retrieve the cache file
     var signature = await CacheService.getCacheSignature(console?.slug ?? "");
     if (signature != null) {
@@ -33,25 +25,37 @@ class RomsRepository {
         var file = await CacheService.retrieveCacheFile("${console.slug}.json");
         if (file != null) {
           for (var rom in json.decode(file)['games']) {
-            roms.add(RomInfo.fromJson(rom));
+            roms[rom['slug'] ?? ""] = RomInfo.fromJson(rom);
           }
-          return roms;
+        }
+        retrievedFromCache = true;
+      }
+    }
+
+    //If its not cached retrieve it from the web
+    if (!retrievedFromCache) {
+      var res = await client.get(Uri.parse(baseUrl));
+      if (res.statusCode == 200 && res.body != null) {
+        await CacheService.writeCacheFile("${console.slug}.json", res.body);
+        await CacheService.setCacheSignature(
+            console.slug ?? "", res.headers['content-length'] ?? "");
+        for (var rom in json.decode(res.body)['games']) {
+          roms[rom['slug'] ?? ""] = RomInfo.fromJson(rom);
         }
       }
     }
-    var res = await client.get(Uri.parse(baseUrl));
-    var headers = res.headers;
-    if (res.statusCode == 200 && res.body != null) {
-      await CacheService.writeCacheFile("${console.slug}.json", res.body);
-      await CacheService.setCacheSignature(
-          console.slug ?? "", res.headers['content-length'] ?? "");
-      for (var rom in json.decode(res.body)['games']) {
-        roms.add(RomInfo.fromJson(rom));
+    // Load external sources and override local roms if necessary
+    if (foundExternalSources.isNotEmpty) {
+      for (var console in foundExternalSources) {
+        var consoleSource = await ConsoleService.getConsoleSource(console);
+        if (consoleSource == null) continue;
+        for (var rom in consoleSource.games) {
+          roms[rom.slug ?? ""] = rom;
+        }
       }
-      return roms;
-    } else {
-      return [];
     }
+
+    return roms.values.toList();
   }
 
   Future<RomInfo?> fetchRomDetails(String infoLink) async {

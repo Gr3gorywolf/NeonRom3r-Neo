@@ -4,6 +4,7 @@ import 'console.dart';
 
 class ConsoleSource {
   Console console = Console();
+  String? downloadUrl;
   List<RomInfo> games = [];
 
   ConsoleSource({required this.console, required this.games});
@@ -11,12 +12,13 @@ class ConsoleSource {
   ConsoleSource.fromJson(Map<String, dynamic> json) {
     var consoleData = json['console'];
     console = Console(
-        fromLocalSource: true,
+        fromExternalSource: true,
         name: consoleData['name'],
         slug: consoleData['slug'],
         altName: consoleData['name'],
         logoUrl: consoleData['logoUrl'],
         description: consoleData['description']);
+    downloadUrl = json['downloadUrl'];
     games = json['games'] != null
         ? (json['games'] as List).map((i) => RomInfo.fromJson(i)).toList()
         : [];
@@ -30,6 +32,7 @@ class ConsoleSource {
       "logoUrl": this.console.logoUrl,
       "description": this.console.description,
     };
+    data['downloadUrl'] = this.downloadUrl;
     data['games'] = this.games.map((v) => v.toJson()).toList();
     return data;
   }

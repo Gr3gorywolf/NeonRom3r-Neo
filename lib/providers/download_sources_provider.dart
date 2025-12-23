@@ -67,8 +67,8 @@ class DownloadSourcesProvider extends ChangeNotifier {
     return _romSources[romSlug] ?? [];
   }
 
-  void compileRomSources(List<RomInfo> roms) {
-    print("Compiling rom sources for ${roms.length} roms...");
+  void compileRomDownloadSources(List<RomInfo> roms) {
+    print("Compiling rom download sources for ${roms.length} roms...");
 
     for (final rom in roms) {
       if (_romSources.containsKey(rom.slug)) continue;
@@ -82,11 +82,11 @@ class DownloadSourcesProvider extends ChangeNotifier {
     }
 
     notifyListeners();
-    print("Compiled rom sources for ${roms.length} roms...");
+    print("Compiled rom download sources for ${roms.length} roms...");
   }
 
   // Mutations
-  Future<bool> addDownloadSource(DownloadSourceWithDownloads source) async {
+  Future<bool> setDownloadSource(DownloadSourceWithDownloads source) async {
     final parsed = DownloadSourcesService.parseDownloadSourceNames(source);
 
     var validFile = await DownloadSourcesService.saveDownloadSource(parsed);
@@ -94,7 +94,8 @@ class DownloadSourcesProvider extends ChangeNotifier {
       return false;
     }
 
-    final index = _downloadSources.indexOf(parsed);
+    final index = _downloadSources.indexWhere(
+        (source) => source.sourceInfo.title == parsed.sourceInfo!.title);
     if (index != -1) {
       _downloadSources[index] = parsed;
     } else {

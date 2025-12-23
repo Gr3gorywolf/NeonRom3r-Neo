@@ -3,7 +3,7 @@ class Console {
       {this.name,
       this.altName,
       this.slug,
-      this.fromLocalSource,
+      this.fromExternalSource,
       this.description,
       this.logoUrl});
   String? name;
@@ -11,5 +11,5 @@ class Console {
   String? altName;
   String? description;
   String? logoUrl;
-  bool? fromLocalSource;
+  bool? fromExternalSource;
 }

@@ -2,14 +2,20 @@ import 'download_source_rom.dart';
 
 class DownloadSource {
   String title = "Unknown";
+  String? downloadUrl;
   int? romsCount;
   String? lastUpdated;
 
-  DownloadSource({required this.title, this.romsCount, this.lastUpdated});
+  DownloadSource(
+      {required this.title,
+      this.romsCount,
+      this.lastUpdated,
+      this.downloadUrl});
   DownloadSource.fromJson(Map<String, dynamic> json) {
     title = json['title'] ?? "";
     romsCount = json['roms_count'];
     lastUpdated = json['last_updated'];
+    downloadUrl = json['download_url'];
   }
 
   Map<String, dynamic> toJson() {
@@ -17,6 +23,7 @@ class DownloadSource {
     data['title'] = this.title;
     data['roms_count'] = this.romsCount;
     data['last_updated'] = this.lastUpdated;
+    data['download_url'] = this.downloadUrl;
     return data;
   }
 }

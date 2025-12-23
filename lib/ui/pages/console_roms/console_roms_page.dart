@@ -50,7 +50,7 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
     var roms = await new RomsRepository().fetchRoms(widget.console);
     var downloadSourcesProvider =
         Provider.of<DownloadSourcesProvider>(context, listen: false);
-    downloadSourcesProvider.compileRomSources(roms);
+    downloadSourcesProvider.compileRomDownloadSources(roms);
     setState(() {
       _roms = roms;
       _isLoading = false;

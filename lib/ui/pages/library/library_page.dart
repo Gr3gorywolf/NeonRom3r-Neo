@@ -35,7 +35,7 @@ class _LibraryPageState extends State<LibraryPage> {
       var libraryProvider =
           Provider.of<LibraryProvider>(context, listen: false);
       Provider.of<DownloadSourcesProvider>(context, listen: false)
-          .compileRomSources(
+          .compileRomDownloadSources(
               libraryProvider.libraryItems.map((e) => e.rom).toList());
     }).then((value) => null);
 

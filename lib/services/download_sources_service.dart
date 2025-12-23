@@ -49,9 +49,6 @@ class DownloadSourcesService {
       DownloadSourceWithDownloads source) async {
     final jsonData = json.encode(source.toJson());
     final file = File(_getDownloadSourcePath(source));
-    if (await file.exists()) {
-      return false;
-    }
     await file.writeAsString(jsonData);
     return true;
   }
