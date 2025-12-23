@@ -33,6 +33,13 @@ class RomSettingsDialog extends StatelessWidget {
       await provider.updateLibraryItem(libraryItem);
     }
 
+    _removeRomPath() async {
+      if (libraryItem != null) {
+        libraryItem.filePath = "";
+        await provider.updateLibraryItem(libraryItem);
+      }
+    }
+
     _pickEmulatorBinary() async {
       FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
         dialogTitle: "Select Emulator Binary",
@@ -65,6 +72,7 @@ class RomSettingsDialog extends StatelessWidget {
         showDialog<int>(
           context: context,
           builder: (context) => DurationPickerDialog(
+            title: "Select Played Time",
             initialMinutes: libraryItem.playTimeMins?.toInt() ?? 0,
             onSubmit: (minutes) {
               libraryItem.playTimeMins = minutes.toDouble();
@@ -72,6 +80,13 @@ class RomSettingsDialog extends StatelessWidget {
             },
           ),
         );
+      }
+    }
+
+    _restoreTime() async {
+      if (libraryItem != null) {
+        libraryItem.playTimeMins = 0;
+        await provider.updateLibraryItem(libraryItem);
       }
     }
 
@@ -95,102 +110,125 @@ class RomSettingsDialog extends StatelessWidget {
       contentPadding: const EdgeInsets.all(10.0),
       content: SingleChildScrollView(
         child: Container(
-          constraints: BoxConstraints(maxWidth: 800, minWidth: 350),
+          constraints: BoxConstraints(maxWidth: 400),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SectionHeader(title: "Path & Initialization"),
-              ListTile(
-                leading: const Icon(Icons.description),
-                trailing:
-                    IconButton(icon: Icon(Icons.edit), onPressed: _pickRomPath),
-                title: const Text('Rom path'),
-                subtitle: Opacity(
-                    opacity: 0.7,
-                    child: Text(_downloadPath.isEmpty
-                        ? "Not downloaded"
-                        : _downloadPath)),
-              ),
-              _SectionHeader(title: "Emulator"),
-              ListTile(
-                leading: const Icon(Icons.videogame_asset),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...overrideEmulator.isEmpty
-                        ? []
-                        : [
-                            IconButton(
-                                icon: Icon(Icons.clear),
-                                onPressed: _restoreEmulator),
-                          ],
-                    IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _pickEmulatorBinary()),
-                  ],
-                ),
-                title: const Text('Emulator override'),
-                subtitle: Opacity(
-                    opacity: 0.7,
-                    child: Text(overrideEmulator.isEmpty
-                        ? "Default Emulator"
-                        : overrideEmulator)),
-              ),
-              SizedBox(height: 7),
-              TextField(
-                controller: launchParameters,
-                decoration: InputDecoration(
-                  hintText: "Custom launch parameters",
-                  helperText:
-                      "Parameters flags used when launching the ROM (if supported by the emulator)",
-                  helperMaxLines: 3,
-                  helperStyle: TextStyle(color: Colors.grey[500]),
-                  filled: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (text) {
-                  libraryItem?.openParams = text;
-                  if (libraryItem != null) {
-                    provider.updateLibraryItem(libraryItem);
-                  }
-                },
-              ),
-              _SectionHeader(title: "Management"),
-              ListTile(
-                leading: const Icon(Icons.access_time),
-                trailing: IconButton(
-                    icon: Icon(Icons.edit), onPressed: () => _pickTime()),
-                title: const Text('Update played time'),
-                subtitle: Opacity(
-                    opacity: 0.7,
-                    child: Text("Time played: " +
-                        TimeHelpers.formatMinutes(
-                            libraryItem?.playTimeMins.toInt() ?? 0))),
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  ElevatedButton(
-                      onPressed: _removeFromLibrary,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: EdgeInsets.symmetric(horizontal: 12)),
-                      child: const Text('Remove from library')),
-                  SizedBox(width: 12),
-                  ElevatedButton(
-                      onPressed: fileExists ? _deleteRomFile : null,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: EdgeInsets.symmetric(horizontal: 12)),
-                      child: const Text('Delete files'))
+              _SettingItem(
+                title: "Rom path",
+                content: Text(
+                    _downloadPath.isEmpty ? "Not downloaded" : _downloadPath),
+                icon: Icons.description,
+                actions: [
+                  ..._downloadPath.isEmpty
+                      ? []
+                      : [
+                          IconButton(
+                              icon: Icon(Icons.settings_backup_restore),
+                              onPressed: _removeRomPath),
+                        ],
+                  IconButton(icon: Icon(Icons.edit), onPressed: _pickRomPath)
                 ],
               ),
+              _SettingItem(
+                title: "Emulator override",
+                content: Text(overrideEmulator.isEmpty
+                    ? "Default Emulator"
+                    : overrideEmulator),
+                icon: Icons.videogame_asset,
+                actions: [
+                  ...overrideEmulator.isEmpty
+                      ? []
+                      : [
+                          IconButton(
+                              icon: Icon(Icons.settings_backup_restore),
+                              onPressed: _restoreEmulator),
+                        ],
+                  IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () => _pickEmulatorBinary()),
+                ],
+              ),
+              _SettingItem(
+                title: "Launch parameters",
+                helperText:
+                    "Parameters flags used when launching the ROM (if supported by the emulator)",
+                content: TextField(
+                  controller: launchParameters,
+                  decoration: InputDecoration(
+                    hintText: "Custom launch parameters",
+                    helperMaxLines: 3,
+                    helperStyle: TextStyle(color: Colors.grey[500]),
+                    filled: true,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (text) {
+                    libraryItem?.openParams = text;
+                    if (libraryItem != null) {
+                      provider.updateLibraryItem(libraryItem);
+                    }
+                  },
+                ),
+                icon: Icons.terminal,
+                actions: [],
+              ),
+              _SettingItem(
+                title: "Time played",
+                content: Text(TimeHelpers.formatMinutes(
+                    libraryItem?.playTimeMins.toInt() ?? 0)),
+                icon: Icons.access_time,
+                actions: [
+                  ...((libraryItem?.playTimeMins.toInt() ?? 0) == 0
+                      ? []
+                      : [
+                          IconButton(
+                              icon: Icon(Icons.settings_backup_restore),
+                              onPressed: _restoreTime),
+                        ]),
+                  IconButton(
+                      icon: Icon(Icons.edit), onPressed: () => _pickTime()),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text("Danger Zone",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.redAccent)),
+              ),
+              _DangerSettingItem(
+                  title: "Remove from library",
+                  content: Text(
+                      "This will delete configuration and metadata. The file will remain on disk"),
+                  icon: Icons.dangerous,
+                  actions: [
+                    IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                        ),
+                        onPressed: _removeFromLibrary)
+                  ]),
+              _DangerSettingItem(
+                  title: "Delete files",
+                  content: Text(
+                      "Permanently delete the file from storage. The library entry will not be removed."),
+                  icon: Icons.dangerous,
+                  actions: [
+                    IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                        ),
+                        onPressed: _deleteRomFile)
+                  ]),
             ],
           ),
         ),
@@ -205,23 +243,97 @@ class RomSettingsDialog extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _SettingItem extends StatelessWidget {
   final String title;
+  final Widget content;
+  final String? helperText;
+  final IconData icon;
+  final List<IconButton> actions;
 
-  const _SectionHeader({required this.title});
+  const _SettingItem(
+      {required this.title,
+      required this.content,
+      this.helperText,
+      required this.icon,
+      required this.actions});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 3),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          color: Theme.of(context).colorScheme.secondary,
-        ),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(title,
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
+          ),
+          SizedBox(height: 5),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                constraints: BoxConstraints(minHeight: 40),
+                child: Row(
+                  children: [
+                    Icon(icon),
+                    SizedBox(width: 10),
+                    Expanded(child: content),
+                    Row(children: actions)
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (helperText?.isNotEmpty ?? false)
+            Opacity(
+                opacity: 0.7,
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 5, left: 4),
+                  child: Text(helperText ?? '',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
+                )),
+        ],
       ),
     );
+  }
+}
+
+class _DangerSettingItem extends StatelessWidget {
+  final String title;
+  final Widget content;
+  final IconData icon;
+  final List<IconButton> actions;
+
+  const _DangerSettingItem(
+      {required this.title,
+      required this.content,
+      required this.icon,
+      required this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.redAccent),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        margin: EdgeInsets.symmetric(vertical: 8),
+        child: ListTile(
+          title: Text(title,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Colors.redAccent)),
+          subtitle: Opacity(opacity: 0.6, child: content),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: actions,
+          ),
+        ));
   }
 }

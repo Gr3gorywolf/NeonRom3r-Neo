@@ -83,9 +83,29 @@ ThemeData appTheme = ThemeData(
         color: primaryGreen,
       ),
     ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      helperStyle: TextStyle(color: Colors.grey[500]),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
+      hintStyle: TextStyle(
+        color: textSecondary.withOpacity(0.7),
+      ),
+    ),
     dialogTheme: DialogTheme(
       backgroundColor: inverseSurfaceColor,
       surfaceTintColor: Colors.transparent,
+      titleTextStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
       elevation: 5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),

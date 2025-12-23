@@ -32,6 +32,8 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
     if (widget.editingSetting != null) {
       selectedConsole = widget.editingSetting!.console;
       selectedBinary = widget.editingSetting!.emulatorBinary;
+    } else if (availableConsoles.isNotEmpty) {
+      selectedConsole = availableConsoles.first;
     }
 
     super.initState();
@@ -74,9 +76,6 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           DropdownButtonFormField<String>(
-            decoration: const InputDecoration(
-              labelText: 'Console',
-            ),
             value: selectedConsole.isNotEmpty ? selectedConsole : null,
             items: availableConsoles
                 .map((consoleSlug) => DropdownMenuItem<String>(
@@ -120,7 +119,7 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
           },
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        TextButton(
           onPressed: handleSave,
           child: const Text('Save'),
         ),

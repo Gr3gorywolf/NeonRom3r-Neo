@@ -90,14 +90,6 @@ class AlertsService {
                   hintText: inputPlaceholder ?? "",
                   helperText: message ?? "",
                   helperMaxLines: 3,
-                  helperStyle: TextStyle(color: Colors.grey[500]),
-                  filled: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
                 ),
                 onChanged: (text) {
                   value = text;

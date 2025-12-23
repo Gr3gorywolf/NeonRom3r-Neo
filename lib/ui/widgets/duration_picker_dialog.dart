@@ -3,13 +3,15 @@ import 'package:flutter/services.dart';
 
 class DurationPickerDialog extends StatefulWidget {
   final int initialMinutes;
+  String title = "Select Duration";
   final ValueChanged<int> onSubmit;
 
-  const DurationPickerDialog({
-    Key? key,
-    required this.initialMinutes,
-    required this.onSubmit,
-  }) : super(key: key);
+  DurationPickerDialog(
+      {Key? key,
+      required this.initialMinutes,
+      required this.onSubmit,
+      this.title = "Select Duration"})
+      : super(key: key);
 
   @override
   State<DurationPickerDialog> createState() => _DurationPickerDialogState();
@@ -21,11 +23,10 @@ class _DurationPickerDialogState extends State<DurationPickerDialog> {
 
   @override
   void initState() {
-    super.initState();
     final initialHours = widget.initialMinutes ~/ 60;
     _minutes = widget.initialMinutes % 60;
-
     _hoursController = TextEditingController(text: initialHours.toString());
+    super.initState();
   }
 
   @override
@@ -35,13 +36,15 @@ class _DurationPickerDialogState extends State<DurationPickerDialog> {
   }
 
   int _parseHours() {
-    return int.tryParse(_hoursController.text) ?? 0;
+    final text = _hoursController.text;
+    if (text.isEmpty) return 0;
+    return int.tryParse(text) ?? 0;
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Select Duration'),
+      title: Text(widget.title),
       content: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -52,14 +55,11 @@ class _DurationPickerDialogState extends State<DurationPickerDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Hours'),
-                TextField(
+                SizedBox(height: 8),
+                TextFormField(
                   controller: _hoursController,
-                  keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                      hintText: '0',
-                      contentPadding: EdgeInsets.only(bottom: 0)),
-                ),
+                )
               ],
             ),
           ),
@@ -70,7 +70,8 @@ class _DurationPickerDialogState extends State<DurationPickerDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Minutes'),
-                DropdownButton<int>(
+                SizedBox(height: 8),
+                DropdownButtonFormField<int>(
                   value: _minutes,
                   isExpanded: true,
                   items: List.generate(
@@ -94,7 +95,7 @@ class _DurationPickerDialogState extends State<DurationPickerDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        TextButton(
           onPressed: () {
             final hours = _parseHours();
             final totalMinutes = (hours * 60) + _minutes;

@@ -35,6 +35,7 @@ class NotificationsService {
       appName: AppConstants.appName,
       appUserModelId: packageInfo.packageName,
       guid: AppConstants.appGuid,
+      iconPath: '${AppConstants.baseImagesPath}/logo.png',
     );
 
     final settings = InitializationSettings(
@@ -61,7 +62,7 @@ class NotificationsService {
   static Future<void> showNotification({
     required String title,
     required String body,
-    String? image, // ruta local del archivo
+    String? image,
   }) async {
     final androidDetails = await _androidDetails(image);
     final darwinDetails = _darwinDetails(image);
