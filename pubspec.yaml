@@ -46,7 +46,8 @@ dependencies:
   url_launcher: ^6.3.1
   file_picker: ^8.0.5
   flutter_local_notifications: ^19.5.0
-  flutter_svg: ^2.1.0 
+  flutter_svg: ^2.1.0
+
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +70,7 @@ flutter:
       - assets/images/
       - assets/icons/
       - assets/svgs/
+      - assets/bin/
 
 dependency_overrides:
   file: 6.1.4

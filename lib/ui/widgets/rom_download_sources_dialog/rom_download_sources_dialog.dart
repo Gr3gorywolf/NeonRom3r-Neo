@@ -13,8 +13,6 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     required this.rom,
   }) : super(key: key);
 
-  // ---------------- BUILD ----------------
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DownloadSourcesProvider>();
@@ -32,7 +30,7 @@ class RomDownloadSourcesDialog extends StatelessWidget {
     }
 
     return AlertDialog(
-      title: const Text('Available downloads'),
+      title: Text("Available download options"),
       content: SizedBox(
         width: 420,
         height: 420,
@@ -51,13 +49,16 @@ class RomDownloadSourcesDialog extends StatelessWidget {
                     leading: const Icon(Icons.gamepad),
                     title: Text(
                       item.rom.title!,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(
-                      '${item.sourceTitle} • ${item.rom.fileSize}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    subtitle: Opacity(
+                      opacity: 0.7,
+                      child: Text(
+                        '${item.sourceTitle} • ${item.rom.fileSize}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     onTap: () {
                       Navigator.pop(context, item.rom);

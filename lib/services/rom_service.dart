@@ -16,6 +16,7 @@ import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
+import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -109,14 +110,24 @@ class RomService {
   }
 
   static String normalizeRomTitle(String input) {
-    var value = input.toLowerCase();
-    value = value.replaceAll(RegExp(r'\(.*?\)'), '');
-    value = value.replaceAll(RegExp(r'\[.*?\]'), '');
-    value = value.replaceAll(RegExp(r'[-+_]'), ' ');
-    value = value.replaceAll(RegExp(r'[^a-z0-9\s]'), '');
-    value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
-    value = value.replaceAll(" ", "");
-    return value;
+    final buffer = StringBuffer();
+
+    final cleaned =
+        input.toLowerCase().replaceAll(RegExp(r'\(.*?\)|\[.*?\]'), '');
+
+    for (final rune in cleaned.runes) {
+      final mapped = StringHelper.unicodeMap[rune];
+      if (mapped != null) {
+        buffer.writeCharCode(mapped);
+        continue;
+      }
+
+      if ((rune >= 97 && rune <= 122) || (rune >= 48 && rune <= 57)) {
+        buffer.writeCharCode(rune);
+      }
+    }
+
+    return buffer.toString();
   }
 
   static String getLastPlayedLabel(RomLibraryItem? downloadedRom) {

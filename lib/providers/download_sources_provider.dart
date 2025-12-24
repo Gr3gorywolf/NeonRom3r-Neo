@@ -1,14 +1,52 @@
-import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:yamata_launcher/models/download_source_rom.dart';
+import 'package:yamata_launcher/models/download_source.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
+
 import 'package:yamata_launcher/services/download_sources_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
-import 'package:provider/provider.dart';
-import 'package:yamata_launcher/models/download_source.dart';
-import 'package:yamata_launcher/services/cache_service.dart';
+
+class _CompilePayload {
+  final List<RomInfo> roms;
+  final List<DownloadSourceWithDownloads> sources;
+
+  _CompilePayload({
+    required this.roms,
+    required this.sources,
+  });
+}
+
+Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
+  _CompilePayload payload,
+) {
+  final Map<String, List<DownloadSource>> result = {};
+
+  for (final rom in payload.roms) {
+    final normalizedRomName = RomService.normalizeRomTitle(rom.name);
+
+    for (final source in payload.sources) {
+      final hasMatch = source.downloads.any(
+        (sourceRom) =>
+            sourceRom.console == rom.console &&
+            StringHelper.hasMinConsecutiveMatch(
+              sourceRom.title_clean!,
+              normalizedRomName,
+              minLength: normalizedRomName.length,
+            ),
+      );
+
+      if (hasMatch) {
+        result.putIfAbsent(rom.slug!, () => []).add(source.sourceInfo);
+      }
+    }
+  }
+
+  return result;
+}
 
 class DownloadSourcesProvider extends ChangeNotifier {
   static DownloadSourcesProvider of(BuildContext ctx) {
@@ -17,7 +55,6 @@ class DownloadSourcesProvider extends ChangeNotifier {
 
   List<DownloadSourceWithDownloads> _downloadSources = [];
   final Map<String, List<DownloadSource>> _romSources = {};
-
   bool _initialized = false;
 
   List<DownloadSourceWithDownloads> get downloadSources => _downloadSources;
@@ -28,6 +65,10 @@ class DownloadSourcesProvider extends ChangeNotifier {
     _downloadSources = await DownloadSourcesService.getDownloadSources();
     _initialized = true;
     notifyListeners();
+  }
+
+  List<DownloadSource> getRomSources(String romSlug) {
+    return _romSources[romSlug] ?? [];
   }
 
   List<DownloadSourceRom> _findMatches(
@@ -54,6 +95,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
         .map((source) {
           final matches = _findMatches(source, rom);
           if (matches.isEmpty) return null;
+
           return DownloadSourceWithDownloads(
             sourceInfo: source.sourceInfo,
             downloads: matches,
@@ -63,45 +105,44 @@ class DownloadSourcesProvider extends ChangeNotifier {
         .toList();
   }
 
-  List<DownloadSource> getRomSources(String romSlug) {
-    return _romSources[romSlug] ?? [];
-  }
+  Future<void> compileRomDownloadSources(List<RomInfo> roms) async {
+    if (_downloadSources.isEmpty || roms.isEmpty) return;
 
-  void compileRomDownloadSources(List<RomInfo> roms) {
-    print("Compiling rom download sources for ${roms.length} roms...");
+    final romsToCompile =
+        roms.where((rom) => !_romSources.containsKey(rom.slug)).toList();
 
-    for (final rom in roms) {
-      if (_romSources.containsKey(rom.slug)) continue;
+    if (romsToCompile.isEmpty) return;
 
-      for (final source in _downloadSources) {
-        final matches = _findMatches(source, rom);
-        if (matches.isEmpty) continue;
+    final payload = _CompilePayload(
+      roms: romsToCompile,
+      sources: List.unmodifiable(_downloadSources),
+    );
 
-        _romSources.putIfAbsent(rom.slug!, () => []).add(source.sourceInfo);
-      }
-    }
+    final Map<String, List<DownloadSource>> compiled =
+        await compute(_compileRomSourcesIsolate, payload);
+
+    _romSources.addAll(compiled);
 
     notifyListeners();
-    print("Compiled rom download sources for ${roms.length} roms...");
   }
 
-  // Mutations
   Future<bool> setDownloadSource(DownloadSourceWithDownloads source) async {
     final parsed = DownloadSourcesService.parseDownloadSourceNames(source);
 
-    var validFile = await DownloadSourcesService.saveDownloadSource(parsed);
-    if (!validFile) {
-      return false;
-    }
+    final validFile = await DownloadSourcesService.saveDownloadSource(parsed);
+
+    if (!validFile) return false;
 
     final index = _downloadSources.indexWhere(
-        (source) => source.sourceInfo.title == parsed.sourceInfo!.title);
+      (s) => s.sourceInfo.title == parsed.sourceInfo!.title,
+    );
+
     if (index != -1) {
       _downloadSources[index] = parsed;
     } else {
       _downloadSources.add(parsed);
-      ;
     }
+
     _romSources.clear();
     notifyListeners();
     return true;

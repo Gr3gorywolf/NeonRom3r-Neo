@@ -2,22 +2,102 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 class StringHelper {
+  static const Map<String, String> diacriticsMap = {
+    'á': 'a',
+    'à': 'a',
+    'ä': 'a',
+    'â': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ë': 'e',
+    'ê': 'e',
+    'í': 'i',
+    'ì': 'i',
+    'ï': 'i',
+    'î': 'i',
+    'ó': 'o',
+    'ò': 'o',
+    'ö': 'o',
+    'ô': 'o',
+    'ú': 'u',
+    'ù': 'u',
+    'ü': 'u',
+    'û': 'u',
+    'ñ': 'n',
+    'ç': 'c',
+  };
+
+  static final Map<int, int> unicodeMap = {
+    // A
+    'á'.codeUnitAt(0): 'a'.codeUnitAt(0),
+    'à'.codeUnitAt(0): 'a'.codeUnitAt(0),
+    'ä'.codeUnitAt(0): 'a'.codeUnitAt(0),
+    'â'.codeUnitAt(0): 'a'.codeUnitAt(0),
+    'ā'.codeUnitAt(0): 'a'.codeUnitAt(0),
+
+    // E
+    'é'.codeUnitAt(0): 'e'.codeUnitAt(0),
+    'è'.codeUnitAt(0): 'e'.codeUnitAt(0),
+    'ë'.codeUnitAt(0): 'e'.codeUnitAt(0),
+    'ê'.codeUnitAt(0): 'e'.codeUnitAt(0),
+    'ē'.codeUnitAt(0): 'e'.codeUnitAt(0),
+
+    // I
+    'í'.codeUnitAt(0): 'i'.codeUnitAt(0),
+    'ì'.codeUnitAt(0): 'i'.codeUnitAt(0),
+    'ï'.codeUnitAt(0): 'i'.codeUnitAt(0),
+    'î'.codeUnitAt(0): 'i'.codeUnitAt(0),
+    'ī'.codeUnitAt(0): 'i'.codeUnitAt(0),
+
+    // O
+    'ó'.codeUnitAt(0): 'o'.codeUnitAt(0),
+    'ò'.codeUnitAt(0): 'o'.codeUnitAt(0),
+    'ö'.codeUnitAt(0): 'o'.codeUnitAt(0),
+    'ô'.codeUnitAt(0): 'o'.codeUnitAt(0),
+    'ō'.codeUnitAt(0): 'o'.codeUnitAt(0),
+    'Ō'.codeUnitAt(0): 'o'.codeUnitAt(0),
+
+    // U
+    'ú'.codeUnitAt(0): 'u'.codeUnitAt(0),
+    'ù'.codeUnitAt(0): 'u'.codeUnitAt(0),
+    'ü'.codeUnitAt(0): 'u'.codeUnitAt(0),
+    'û'.codeUnitAt(0): 'u'.codeUnitAt(0),
+    'ū'.codeUnitAt(0): 'u'.codeUnitAt(0),
+
+    // Otros
+    'ñ'.codeUnitAt(0): 'n'.codeUnitAt(0),
+    'ç'.codeUnitAt(0): 'c'.codeUnitAt(0),
+  };
+
   static bool hasMinConsecutiveMatch(
     String a,
     String b, {
     int minLength = 3,
   }) {
-    if (a.length < minLength || b.length < minLength) return false;
+    final lenA = a.length;
+    final lenB = b.length;
 
-    final short = a.length <= b.length ? a : b;
-    final long = a.length <= b.length ? b : a;
+    if (lenA < minLength || lenB < minLength) return false;
 
-    for (int i = 0; i <= short.length - minLength; i++) {
-      final substring = short.substring(i, i + minLength);
-      if (long.contains(substring)) {
-        return true;
+    final short = lenA <= lenB ? a : b;
+    final long = lenA <= lenB ? b : a;
+
+    final shortLen = short.length;
+    final longLen = long.length;
+
+    for (int i = 0; i <= shortLen - minLength; i++) {
+      for (int j = 0; j <= longLen - minLength; j++) {
+        int k = 0;
+
+        while (k < minLength &&
+            short.codeUnitAt(i + k) == long.codeUnitAt(j + k)) {
+          k++;
+        }
+
+        if (k == minLength) return true;
       }
     }
+
     return false;
   }
 

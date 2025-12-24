@@ -5,11 +5,13 @@ import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:yamata_launcher/utils/system_helpers.dart';
 
 class FileSystemService {
   static String _rootPath = "";
-  static String _appDocPath = "";
+  static String _appSupportPath = "";
   static String? _downloadsPath;
+  static String? _appDocsPath = "";
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -19,7 +21,7 @@ class FileSystemService {
   }
 
   static get cachePath {
-    return _appDocPath + "/cache";
+    return _appSupportPath + "/cache";
   }
 
   static get downloadsPath {
@@ -38,7 +40,7 @@ class FileSystemService {
   }
 
   static get aria2cPath {
-    return _rootPath + "/aria2c";
+    return (_appDocsPath ?? "") + "/aria2c/" + SystemHelpers.aria2cBinary;
   }
 
   static get torrentsCachePath {
@@ -46,15 +48,15 @@ class FileSystemService {
   }
 
   static get downloadSourcesPath {
-    return _appDocPath + "/download-sources";
+    return _appSupportPath + "/download-sources";
   }
 
   static get consoleSourcesPath {
-    return _appDocPath + "/console-sources";
+    return _appSupportPath + "/console-sources";
   }
 
   static get databaseFilePath {
-    return _appDocPath + "/database.db";
+    return _appSupportPath + "/database.db";
   }
 
   static get downloadRegistryFilePath {
@@ -62,12 +64,13 @@ class FileSystemService {
   }
 
   static get emulatorIntentsFilePath {
-    return _appDocPath + "/emulatorIntents.json";
+    return _appSupportPath + "/emulatorIntents.json";
   }
 
   static setupDownloadsPath() async {
     var path = await SettingsService().get<String>(SettingsKeys.DOWNLOAD_PATH);
     if (path.isEmpty) {
+      _downloadsPath = (await getDownloadsDirectory())?.path ?? null;
       await SettingsService()
           .set<String>(SettingsKeys.DOWNLOAD_PATH, downloadsPath);
       return;
@@ -78,6 +81,30 @@ class FileSystemService {
         return;
       }
     }
+  }
+
+  static setupAria2c() async {
+    if (Platform.isAndroid) {
+      return;
+    }
+    var aria2cDir = Directory("${_appDocsPath}/aria2c");
+    final file = File("${aria2cDir.path}/${SystemHelpers.aria2cBinary}");
+    if (await file.exists()) {
+      return;
+    }
+    if (aria2cDir.existsSync() == false) {
+      await aria2cDir.create(recursive: true);
+    }
+
+    final byteData =
+        await rootBundle.load("assets/bin/${SystemHelpers.aria2cBinary}");
+    final bytes = byteData.buffer.asUint8List();
+    await file.writeAsBytes(bytes, flush: true);
+    if (!Platform.isWindows) {
+      await Process.run('chmod', ['+x', file.path]);
+    }
+
+    return file.path;
   }
 
   static Future<bool> deleteCachePath() async {
@@ -98,7 +125,8 @@ class FileSystemService {
   static _initRootPath() async {
     var rootPath = "";
     rootPath = Directory.current.path;
-    _appDocPath = (await getApplicationSupportDirectory()).path;
+    _appSupportPath = (await getApplicationSupportDirectory()).path;
+    _appDocsPath = (await getApplicationDocumentsDirectory()).path;
     print("Root path initialized to: " + rootPath);
     _rootPath = rootPath;
   }
@@ -119,6 +147,7 @@ class FileSystemService {
     }
     await _initRootPath();
     await setupDownloadsPath();
+    await setupAria2c();
 
     var paths = [
       downloadsPath,

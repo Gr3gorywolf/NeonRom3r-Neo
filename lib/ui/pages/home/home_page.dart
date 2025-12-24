@@ -18,7 +18,8 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePage_State extends State<HomePage> {
-  List<Console> _consoles = ConsoleService.getConsoles();
+  List<Console> _consoles = ConsoleService.getConsoles(unique: true)
+    ..sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
 
   @override
   Widget build(BuildContext bldContext) {
