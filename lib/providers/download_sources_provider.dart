@@ -30,13 +30,14 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
 
     for (final source in payload.sources) {
       final hasMatch = source.downloads.any(
-        (sourceRom) =>
-            sourceRom.console == rom.console &&
-            StringHelper.hasMinConsecutiveMatch(
-              sourceRom.title_clean!,
-              normalizedRomName,
-              minLength: normalizedRomName.length,
-            ),
+        (sourceRom) {
+          if (sourceRom.console != rom.console) return false;
+          return StringHelper.hasMinConsecutiveMatch(
+            sourceRom.title_clean!,
+            normalizedRomName,
+            minLength: normalizedRomName.length,
+          );
+        },
       );
 
       if (hasMatch) {
