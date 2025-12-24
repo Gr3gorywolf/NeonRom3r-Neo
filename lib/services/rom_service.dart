@@ -43,7 +43,7 @@ class RomService {
     if (emulatorSetting == null) {
       AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
           exception: Exception(
-              "No emulator configured for ${download.rom.console}. Please set it up in settings."));
+              "No emulator configured for ${ConsoleService.getConsoleFromName(download.rom.console)?.name ?? download.rom.console}. Please set it up in settings."));
       return;
     }
     var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,

@@ -21,7 +21,9 @@ class SystemHelpers {
     } else if (Platform.isMacOS) {
       aria2cBinary = "aria2c-macos-${isArm ? 'arm' : 'x86'}";
     } else if (Platform.isLinux) {
-      aria2cBinary = "aria2c-unix-${isArm ? 'arm' : 'x86'}";
+      aria2cBinary = "aria2c-linux-${isArm ? 'arm' : 'x86'}";
+    } else if (Platform.isAndroid) {
+      aria2cBinary = "aria2c-android";
     }
     return aria2cBinary;
   }

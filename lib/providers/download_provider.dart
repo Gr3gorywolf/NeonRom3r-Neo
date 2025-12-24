@@ -202,6 +202,11 @@ class DownloadProvider extends ChangeNotifier {
       parts.add('ETA ${p.eta}');
     }
 
+    if (p.dlSpeed != null &&
+        [p.ulSpeed, p.seeds, p.eta].every((e) => e == null)) {
+      return 'Fetching metadata...';
+    }
+
     return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 

@@ -50,7 +50,7 @@ class DownloadService {
 
   downloadRom(
       BuildContext context, RomInfo rom, DownloadSourceRom sourceRom) async {
-    var downloadsPath = FileSystemService.downloadsPath + "/" + rom.console;
+    var downloadsPath = FileSystemService.downloadsPath;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
     }

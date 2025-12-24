@@ -92,8 +92,11 @@ class Aria2DownloadManager {
     final doneCompleter = Completer<Aria2DoneEvent>();
     final downloadPath = p.join(
         FileSystemService.downloadsPath,
-        includeConsolePrefix ? rom.console : "",
+        includeConsolePrefix ? rom.console.toUpperCase() : "",
         StringHelper.removeInvalidPathCharacters(rom.name!));
+    if (!await Directory(downloadPath).exists()) {
+      await Directory(downloadPath).create(recursive: true);
+    }
     final isolate = await Isolate.spawn<IsolateArgs>(
       _downloadIsolateMain,
       IsolateArgs(
@@ -233,7 +236,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     if (uriType == _UriType.direct) {
       final proc = await Process.start(
         args.aria2cPath!,
-        [args.uri!],
+        ["--file-allocation=none", args.uri!],
         workingDirectory: romDir.path,
       );
 
@@ -528,6 +531,7 @@ Future<void> _downloadSelectedFile({
 /// ============================================================================
 
 Aria2Progress _parseProgress(String line) {
+  print("Parsing line: $line");
   return Aria2Progress(
     rawLine: line,
     percent: RegExp(r'\((\d+%)\)').firstMatch(line)?.group(1),
