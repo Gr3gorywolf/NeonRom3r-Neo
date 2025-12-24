@@ -6,12 +6,22 @@ class SystemHelpers {
         Platform.version.toLowerCase().contains("aarch64");
   }
 
-  static String get aria2cBinary {
+  static String get aria2cOutputBinary {
+    var binary = "aria2c";
+    if (Platform.isWindows) {
+      binary = "aria2c.exe";
+    }
+    return binary;
+  }
+
+  static String get aria2cAssetBinary {
     var aria2cBinary = "aria2c";
     if (Platform.isWindows) {
       aria2cBinary = "aria2c.exe";
-    } else if ((Platform.isMacOS || Platform.isLinux) && SystemHelpers.isArm) {
-      aria2cBinary = "aria2c-unix-arm";
+    } else if (Platform.isMacOS) {
+      aria2cBinary = "aria2c-macos-${isArm ? 'arm' : 'x86'}";
+    } else if (Platform.isLinux) {
+      aria2cBinary = "aria2c-unix-${isArm ? 'arm' : 'x86'}";
     }
     return aria2cBinary;
   }

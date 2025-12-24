@@ -40,7 +40,9 @@ class FileSystemService {
   }
 
   static get aria2cPath {
-    return (_appDocsPath ?? "") + "/aria2c/" + SystemHelpers.aria2cBinary;
+    return (_appSupportPath ?? "") +
+        "/aria2c/" +
+        SystemHelpers.aria2cOutputBinary;
   }
 
   static get torrentsCachePath {
@@ -87,8 +89,8 @@ class FileSystemService {
     if (Platform.isAndroid) {
       return;
     }
-    var aria2cDir = Directory("${_appDocsPath}/aria2c");
-    final file = File("${aria2cDir.path}/${SystemHelpers.aria2cBinary}");
+    var aria2cDir = Directory("${_appSupportPath}/aria2c");
+    final file = File("${aria2cDir.path}/${SystemHelpers.aria2cOutputBinary}");
     if (await file.exists()) {
       return;
     }
@@ -97,7 +99,7 @@ class FileSystemService {
     }
 
     final byteData =
-        await rootBundle.load("assets/bin/${SystemHelpers.aria2cBinary}");
+        await rootBundle.load("assets/bin/${SystemHelpers.aria2cAssetBinary}");
     final bytes = byteData.buffer.asUint8List();
     await file.writeAsBytes(bytes, flush: true);
     if (!Platform.isWindows) {
