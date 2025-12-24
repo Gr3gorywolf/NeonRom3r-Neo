@@ -4,8 +4,6 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:crypto/crypto.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
