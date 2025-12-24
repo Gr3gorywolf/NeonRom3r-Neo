@@ -52,3 +52,90 @@ const VALID_EXECUTABLE_EXTENSIONS = [
   "elf32",
   "elf64"
 ];
+
+const VALID_ROM_EXTENSIONS = [
+  // Nintendo
+  'nes', // NES
+  'fds', // Famicom Disk System
+  'sfc', // SNES
+  'smc', // SNES
+  'n64', // Nintendo 64
+  'z64', // Nintendo 64
+  'v64', // Nintendo 64
+  'gb', // Game Boy
+  'gbc', // Game Boy Color
+  'gba', // Game Boy Advance
+  'nds', // Nintendo DS
+  '3ds', // Nintendo 3DS
+  'cia', // Nintendo 3DS
+  'wad', // Wii / Virtual Console
+  'iso', // GameCube / Wii
+  'gcm', // GameCube
+  'wbfs', // Wii
+  'wux', // Wii U
+  'wud', // Wii U
+  'nsp', // Nintendo Switch
+  'xci', // Nintendo Switch
+
+  // Sony
+  'psx', // PlayStation
+  'ps1', // PlayStation
+  'bin', // PlayStation / Sega CD
+  'cue', // PlayStation / Sega CD
+  'img', // PlayStation
+  'ccd', // PlayStation
+  'sub', // PlayStation
+  'mdf', // PlayStation
+  'pbp', // PSP / PS1 eboot
+  'iso', // PS2 / PSP / PS3
+  'cso', // PSP compressed ISO
+  'chd', // PS1 / PS2 / PSP
+  'pkg', // PS3
+  'elf', // PS3 / homebrew
+
+  // Sega
+  'sms', // Master System
+  'gg', // Game Gear
+  'sg', // SG-1000
+  'gen', // Genesis
+  'md', // Mega Drive
+  '32x', // Sega 32X
+  'cue', // Sega CD
+  'iso', // Sega CD
+  'cdi', // Dreamcast
+  'gdi', // Dreamcast
+
+  // Arcade
+  'zip', // MAME
+  '7z', // MAME
+  'chd', // MAME (HDD / CD)
+  'rom', // Arcade generic
+
+  // PC / OTHERS
+  'exe', // DOS / PC
+  'com', // DOS
+  'dsk', // Amstrad / Apple II
+];
+
+const VALID_COMPRESSED_EXTENSIONS = [
+  'zip',
+  'rar',
+  '7z',
+  'tar',
+  'gz',
+  'bz2',
+  'xz',
+  'lzma',
+  'zst',
+  'tgz',
+  'tbz2',
+  'txz',
+];
+
+const VALID_COMPRESSED_ROM_EXTENSIONS = [
+  'zip',
+  '7z',
+  'chd',
+  'cso',
+  'rvz',
+];

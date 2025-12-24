@@ -52,7 +52,7 @@ class LibraryProvider extends ChangeNotifier {
     if (item == null) {
       return false;
     }
-    return item.filePath != null;
+    return item.filePath != null && item.filePath!.isNotEmpty;
   }
 
   bool isGameRunning(String slug) {

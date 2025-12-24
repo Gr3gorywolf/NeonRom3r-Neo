@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/ui/pages/rom_settings_dialog/rom_settings_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
 
 enum RomLibraryActionSize { small, medium, large }
 
@@ -16,6 +18,7 @@ class RomLibraryActions extends StatelessWidget {
   Widget build(BuildContext context) {
     var libraryProvider = Provider.of<LibraryProvider>(context);
     var _libraryDetails = libraryProvider.getLibraryItem(rom.slug);
+    var isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
     var isFavorite = (_libraryDetails?.isFavorite ?? false) == true;
     double? minimumSize = 35;
     double? iconSize = 22;
@@ -51,6 +54,15 @@ class RomLibraryActions extends StatelessWidget {
           builder: (dialog) {
             return RomSettingsDialog(rom: rom);
           });
+    }
+
+    handleOpenFolder() async {
+      var romFolder = p.dirname(_libraryDetails?.filePath ?? "");
+      final uri = Uri.file(romFolder);
+
+      if (!await launchUrl(uri)) {
+        throw Exception('Failed to open folder $romFolder');
+      }
     }
 
     iconButtonStyle() {
@@ -93,6 +105,16 @@ class RomLibraryActions extends StatelessWidget {
           style: iconButtonStyle(),
           icon: Icon(Icons.tune),
           onPressed: handleOpenConfigurations,
+          color: Colors.grey,
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        IconButton(
+          iconSize: iconSize,
+          style: iconButtonStyle(),
+          icon: Icon(Icons.folder),
+          onPressed: handleOpenFolder,
           color: Colors.grey,
         ),
       ],
