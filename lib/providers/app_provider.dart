@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list_item.dart';
@@ -14,6 +16,9 @@ class AppProvider extends ChangeNotifier {
   ViewModeToggleMode consoleRomsItemType = ViewModeToggleMode.grid;
   setAppLoaded(bool val) {
     _isAppLoaded = val;
+    if (Platform.isAndroid) {
+      consoleRomsItemType = ViewModeToggleMode.list;
+    }
     notifyListeners();
   }
 

@@ -39,7 +39,7 @@ class _ConsoleListState extends State<ConsoleList> {
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
-    var axisCount = max(1, (MediaQuery.of(context).size.width / 220).floor());
+    var axisCount = max(2, (MediaQuery.of(context).size.width / 220).floor());
     return GridView.count(
       crossAxisCount: axisCount,
       crossAxisSpacing: 8,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/models/console.dart';
@@ -11,6 +13,7 @@ import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/ui/widgets/console_card.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
+import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
 import 'package:provider/provider.dart';
 
@@ -101,6 +104,9 @@ class _LibraryPageState extends State<LibraryPage> {
       ),
       body: RomList(
         showConsole: true,
+        initialViewMode: Platform.isAndroid
+            ? ViewModeToggleMode.list
+            : ViewModeToggleMode.grid,
         roms: getFilteredRoms(),
       ),
     );

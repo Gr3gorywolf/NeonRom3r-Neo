@@ -19,13 +19,13 @@ class RomList extends StatefulWidget {
   bool? isLoading = false;
   List<RomInfo>? roms;
   bool showConsole;
-  ViewModeToggleMode initialViewMode;
+  ViewModeToggleMode? initialViewMode;
   Function(ViewModeToggleMode)? onViewModeChanged;
   RomList(
       {this.isLoading,
       this.roms,
       this.showConsole = false,
-      this.initialViewMode = ViewModeToggleMode.list,
+      this.initialViewMode,
       this.onViewModeChanged});
 
   @override
@@ -36,7 +36,7 @@ class _RomListState extends State<RomList> {
   var viewMode = ViewModeToggleMode.list;
   @override
   void initState() {
-    viewMode = widget.initialViewMode;
+    viewMode = widget.initialViewMode ?? ViewModeToggleMode.grid;
   }
 
   @override
