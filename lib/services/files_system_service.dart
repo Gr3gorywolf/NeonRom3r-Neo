@@ -86,9 +86,6 @@ class FileSystemService {
   }
 
   static setupAria2c() async {
-    if (Platform.isAndroid) {
-      return;
-    }
     var aria2cDir = Directory("${_appSupportPath}/aria2c");
     final file = File("${aria2cDir.path}/${SystemHelpers.aria2cOutputBinary}");
     if (await file.exists()) {
@@ -135,18 +132,6 @@ class FileSystemService {
 
   //initializer
   static initPaths() async {
-    if (Platform.isAndroid) {
-      var status = await Permission.storage.status;
-      if (status.isRestricted || status.isDenied) {
-        Map<Permission, PermissionStatus> statuses = await [
-          Permission.storage,
-        ].request();
-        var status = statuses[Permission.storage]!;
-        if (!status.isGranted) {
-          return;
-        }
-      }
-    }
     await _initRootPath();
     await setupDownloadsPath();
     await setupAria2c();

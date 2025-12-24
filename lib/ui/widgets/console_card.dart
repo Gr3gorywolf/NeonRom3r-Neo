@@ -30,7 +30,8 @@ class ConsoleCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AssetsService.getIcon(console.slug!, size: 50, width: 110),
+                AssetsService.getConsoleIcon(console.slug!,
+                    size: 50, width: 110),
                 SizedBox(
                   height: 12,
                 ),

@@ -2,7 +2,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/images/logo.png"
-  min_sdk_android: 21
+  min_sdk_android: 21 
   web:
     generate: true
     image_path: "assets/images/logo.png"

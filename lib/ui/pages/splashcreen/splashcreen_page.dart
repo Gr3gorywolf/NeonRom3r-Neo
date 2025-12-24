@@ -29,10 +29,8 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   }
 
   initApp() async {
+    WidgetsFlutterBinding.ensureInitialized();
     await FileSystemService.initPaths();
-    if (Platform.isAndroid) {
-      await RomService.catchEmulatorsIntents();
-    }
     await initPlugins();
     await initDb();
     await ConsoleService.loadConsoleSources();

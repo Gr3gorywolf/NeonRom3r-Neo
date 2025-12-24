@@ -17,7 +17,8 @@ class AssetsService {
         semanticsLabel: 'Dart Logo', height: size, width: width ?? size);
   }
 
-  static Image getIcon(String name, {double size = 24, double? width = 24}) {
+  static Image getConsoleIcon(String name,
+      {double size = 24, double? width = 24}) {
     final double finalWidth = width ?? size;
     final String? fallbackUrl =
         ConsoleService.getConsoleFromName(name)?.logoUrl;
@@ -25,7 +26,7 @@ class AssetsService {
     Widget errorIcon() => Icon(Icons.error, size: size);
 
     return Image.asset(
-      "assets/icons/$name.png",
+      "assets/icons/consoles/${name.toUpperCase()}.png",
       height: size,
       width: finalWidth,
       errorBuilder: (_, __, ___) {

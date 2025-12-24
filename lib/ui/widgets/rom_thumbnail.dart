@@ -57,7 +57,7 @@ class _RomThumbnailState extends State<RomThumbnail> {
       );
     }
     if (Uri.tryParse(widget.info.portrait ?? "") == null) {
-      return AssetsService.getIcon(
+      return AssetsService.getConsoleIcon(
         widget.info.console,
         size: widget.width,
       );
@@ -74,7 +74,8 @@ class _RomThumbnailState extends State<RomThumbnail> {
             fit: BoxFit.cover,
           );
         }
-        return AssetsService.getIcon(widget.info.console, size: widget.width);
+        return AssetsService.getConsoleIcon(widget.info.console,
+            size: widget.width);
       },
       loadingBuilder: (child, widget, progress) {
         if (progress == null) return widget;
