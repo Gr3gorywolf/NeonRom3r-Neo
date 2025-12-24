@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:sembast/sembast.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
@@ -29,6 +32,13 @@ class RomLibraryActions extends StatelessWidget {
     } else if (size == RomLibraryActionSize.large) {
       minimumSize = 40;
       iconSize = 26;
+    }
+
+    getFileExist() {
+      if (isReadyToPlay) {
+        return File(_libraryDetails!.filePath!).existsSync();
+      }
+      return false;
     }
 
     handleToggleLike() {
@@ -110,13 +120,14 @@ class RomLibraryActions extends StatelessWidget {
         SizedBox(
           width: 8,
         ),
-        IconButton(
-          iconSize: iconSize,
-          style: iconButtonStyle(),
-          icon: Icon(Icons.folder),
-          onPressed: handleOpenFolder,
-          color: Colors.grey,
-        ),
+        if (isReadyToPlay)
+          IconButton(
+            iconSize: iconSize,
+            style: iconButtonStyle(),
+            icon: Icon(getFileExist() ? Icons.folder : Icons.folder_off),
+            onPressed: handleOpenFolder,
+            color: getFileExist() ? Colors.grey : Colors.red,
+          ),
       ],
     );
   }

@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:material_segmented_control/material_segmented_control.dart';
+import 'package:provider/provider.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
+import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/ui/widgets/console_list.dart';
 import 'package:yamata_launcher/ui/widgets/no_downloads_placeholder.dart';
@@ -23,10 +25,20 @@ class DownloadsPage extends StatefulWidget {
 
 class _DownloadsPageState extends State<DownloadsPage> {
   ToolbarValue? filterValues = null;
+
   @override
   void initState() {
-    // TODO: implement initState
+    compileDownloadedRoms();
     super.initState();
+  }
+
+  void compileDownloadedRoms() {
+    var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    var downloadSourcesProvider =
+        Provider.of<DownloadSourcesProvider>(context, listen: false);
+    var downloads = libraryProvider.getDownloads();
+    downloadSourcesProvider
+        .compileRomDownloadSources(downloads.map((e) => e.rom).toList());
   }
 
   List<RomInfo> get _downloadedRoms {
