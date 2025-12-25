@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -40,6 +41,9 @@ class FileSystemService {
   }
 
   static get aria2cPath {
+    if (Platform.isAndroid && Aria2cAndroidInterface.aria2cPath.isNotEmpty) {
+      return Aria2cAndroidInterface.aria2cPath;
+    }
     return (_appSupportPath ?? "") +
         "/aria2c/" +
         SystemHelpers.aria2cOutputBinary;

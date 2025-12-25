@@ -25,7 +25,7 @@ class RomLibraryActions extends StatelessWidget {
     var isFavorite = (_libraryDetails?.isFavorite ?? false) == true;
     double? minimumSize = 35;
     double? iconSize = 22;
-
+    double spacing = Platform.isAndroid ? 2 : 8;
     if (size == RomLibraryActionSize.small) {
       minimumSize = 30;
       iconSize = 18;
@@ -108,7 +108,7 @@ class RomLibraryActions extends StatelessWidget {
           color: Colors.grey,
         ),
         SizedBox(
-          width: 8,
+          width: spacing,
         ),
         IconButton(
           iconSize: iconSize,
@@ -118,7 +118,7 @@ class RomLibraryActions extends StatelessWidget {
           color: Colors.grey,
         ),
         SizedBox(
-          width: 8,
+          width: spacing,
         ),
         if (isReadyToPlay)
           IconButton(

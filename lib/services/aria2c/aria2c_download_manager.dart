@@ -9,6 +9,7 @@ import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
@@ -44,6 +45,7 @@ class IsolateArgs {
   final String? filePath;
   final String? downloadPath;
   final String? torrentsPath;
+  final String? certPath;
 
   IsolateArgs({
     this.sendPort,
@@ -53,8 +55,17 @@ class IsolateArgs {
     this.filePath,
     this.torrentsPath,
     this.downloadPath,
+    this.certPath,
   });
 }
+
+List<String> DHT_SOURCES_PARAMS = Platform.isAndroid
+    ? [
+        '--dht-entry-point=router.bittorrent.com:6881',
+        '--dht-entry-point=dht.transmissionbt.com:6881',
+        '--dht-entry-point=router.utorrent.com:6881',
+      ]
+    : [];
 
 enum _UriType { magnet, torrent, direct }
 
@@ -62,6 +73,26 @@ _UriType _detectUriType(String uri) {
   if (uri.contains('magnet:')) return _UriType.magnet;
   if (uri.toLowerCase().endsWith('.torrent')) return _UriType.torrent;
   return _UriType.direct;
+}
+
+List<String> _getCertParams(String? certPath) {
+  List<String> params = [];
+  if (certPath != null) {
+    params.add("--ca-certificate=${certPath}");
+    var dhtPath = "${p.dirname(certPath!)}/dht.dat";
+    if (Platform.isAndroid) {
+      var dhtFile = File(dhtPath);
+      if (!dhtFile.existsSync()) {
+        dhtFile.createSync();
+      }
+      params.add("--dht-file-path=${dhtPath}");
+      params.add("--dht-file-path6=${p.dirname(certPath!)}/dht6.dat");
+      params.addAll(DHT_SOURCES_PARAMS);
+    }
+  }
+  print(certPath);
+  print(params);
+  return params;
 }
 
 /// ============================================================================
@@ -104,6 +135,9 @@ class Aria2DownloadManager {
         aria2cPath: aria2cPath,
         uri: Uri.decodeComponent(uri),
         fileIndex: source.fileIndex,
+        certPath: Aria2cAndroidInterface.certPath.isEmpty
+            ? null
+            : Aria2cAndroidInterface.certPath,
         filePath: source.filePath != null
             ? Uri.decodeComponent(source.filePath!)
             : null,
@@ -233,10 +267,11 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
     // DIRECT FILE DOWNLOAD (no torrent, no magnet)
     // =======================================================================
+    var certArgs = _getCertParams(args.certPath);
     if (uriType == _UriType.direct) {
       final proc = await Process.start(
         args.aria2cPath!,
-        ["--file-allocation=none", args.uri!],
+        ["--file-allocation=none", ...certArgs, args.uri!],
         workingDirectory: romDir.path,
       );
 
@@ -269,6 +304,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       aria2cPath: args.aria2cPath,
       uri: args.uri!,
       onLog: log,
+      certPath: args.certPath,
       torrentsPath: args.torrentsPath,
       onProgress: progress,
       onRunning: (p) => running = p,
@@ -278,6 +314,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     final files = await _showFiles(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
+      certPath: args.certPath,
       cwd: args.torrentsPath,
       onLog: log,
       onSetRunning: (p) => running = p,
@@ -297,6 +334,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     await _downloadSelectedFile(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
+      certPath: args.certPath,
       selectIndex: fileIndex,
       cwd: args.downloadPath,
       onLog: log,
@@ -369,6 +407,7 @@ Future<String> _resolveTorrent({
   String? aria2cPath,
   required String uri,
   String? torrentsPath,
+  String? certPath,
   void Function(String)? onLog,
   void Function(String)? onProgress,
   void Function(Process)? onRunning,
@@ -428,13 +467,14 @@ Future<String> _resolveTorrent({
 
   final path = p.join(cache.path, '${StringHelper.hash20(uri)}.torrent');
   if (await File(path).exists()) return path;
-
+  var certArgs = _getCertParams(certPath);
   final proc = await Process.start(
     aria2cPath!,
     [
       '--bt-metadata-only=true',
       '--bt-save-metadata=true',
       '--seed-time=0',
+      ...certArgs,
       uri,
     ],
     workingDirectory: cache.path,
@@ -466,14 +506,16 @@ Future<String> _resolveTorrent({
 Future<Map<int, String>> _showFiles({
   required String aria2cPath,
   required String torrentPath,
+  String? certPath,
   String? cwd,
   void Function(String)? onLog,
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
+  var certArgs = _getCertParams(certPath);
   final proc = await Process.start(
     aria2cPath,
-    ['--show-files', torrentPath],
+    ['--show-files', torrentPath, ...certArgs],
     workingDirectory: cwd,
   );
 
@@ -500,17 +542,20 @@ Future<void> _downloadSelectedFile({
   required String torrentPath,
   int? selectIndex,
   String? cwd,
+  String? certPath,
   void Function(String)? onLog,
   void Function(String)? onProgressLine,
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
+  var certArgs = _getCertParams(certPath);
   final proc = await Process.start(
     aria2cPath,
     [
       ...(selectIndex == null ? [] : ['--select-file=$selectIndex']),
       '--seed-time=0',
       '--file-allocation=none',
+      ...certArgs,
       torrentPath,
     ],
     workingDirectory: cwd,

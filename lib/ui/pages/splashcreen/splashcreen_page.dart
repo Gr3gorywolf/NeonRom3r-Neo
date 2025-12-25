@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/notifications_service.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,9 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   Future initPlugins() async {
     await DownloadService().initDownloader();
     await NotificationsService.init();
+    if (Platform.isAndroid) {
+      await Aria2cAndroidInterface.init();
+    }
   }
 
   @override

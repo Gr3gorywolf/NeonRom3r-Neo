@@ -51,4 +51,6 @@ configurations.all {
 
 dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation "commons-io:commons-io:2.8.0"
+    implementation "org.apache.commons:commons-compress:1.21"
 }

@@ -147,6 +147,7 @@ class DownloadProvider extends ChangeNotifier {
       // info.downloadInfo = event.line;
       // _activeDownloadInfos[infoIndex].downloadInfo = event.line;
       // notifyListeners();
+      print("event.line: ${event.line}");
       return;
     }
 
@@ -167,6 +168,7 @@ class DownloadProvider extends ChangeNotifier {
 
     if (event is Aria2ErrorEvent) {
       info.downloadInfo = 'Error: ${event.message}';
+      print("Download error: ${event.message}");
       _disposeActive(handle.id);
       Future.delayed(Duration(seconds: 2), () {
         _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));

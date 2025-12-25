@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/app_theme.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_android_interface.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
 import 'package:yamata_launcher/ui/pages/library/library_page.dart';
 import 'package:yamata_launcher/ui/pages/home/home_page.dart';
@@ -15,6 +17,15 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
+  @override
+  void initState() {
+    // Aria2cAndroidInterface.run([
+    //   "https://myrient.erista.me/files/No-Intro/Nintendo%20-%20Nintendo%20DS%20(Decrypted)/007%20-%20Blood%20Stone%20%28France%29.zip",
+    //   "--dir=" + FileSystemService.downloadsPath + "/teste"
+    // ]);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> routes = [
