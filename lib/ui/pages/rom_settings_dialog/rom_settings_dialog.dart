@@ -107,6 +107,8 @@ class RomSettingsDialog extends StatelessWidget {
 
     return AlertDialog(
       title: Text('ROM Settings'),
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       contentPadding: const EdgeInsets.all(10.0),
       content: SingleChildScrollView(
         child: Container(

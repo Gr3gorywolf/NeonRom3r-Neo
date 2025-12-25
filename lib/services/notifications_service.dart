@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:windows_notification/notification_message.dart';
+import 'package:windows_notification/windows_notification.dart';
 import 'package:yamata_launcher/constants/app_constants.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -20,6 +23,10 @@ class NotificationsService {
   static Future<void> init() async {
     final packageInfo = await PackageInfo.fromPlatform();
 
+    if (Platform.isWindows) {
+      return;
+    }
+
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const darwinInit = DarwinInitializationSettings(
@@ -31,19 +38,11 @@ class NotificationsService {
     const linuxInit =
         LinuxInitializationSettings(defaultActionName: 'Open notification');
 
-    final windowsInit = WindowsInitializationSettings(
-      appName: AppConstants.appName,
-      appUserModelId: packageInfo.packageName,
-      guid: AppConstants.appGuid,
-      iconPath: '${AppConstants.baseImagesPath}/logo.png',
-    );
-
     final settings = InitializationSettings(
       android: androidInit,
       iOS: darwinInit,
       macOS: darwinInit,
       linux: linuxInit,
-      windows: windowsInit,
     );
 
     await _notifications.initialize(
@@ -64,17 +63,25 @@ class NotificationsService {
     required String body,
     String? image,
   }) async {
+    if (Platform.isWindows) {
+      final _winNotifyPlugin =
+          WindowsNotification(applicationId: "Yamata Launcher");
+      NotificationMessage message = NotificationMessage.fromPluginTemplate(
+          Random().nextInt(100000).toString(), title, body,
+          image: image);
+      _winNotifyPlugin.showNotificationPluginTemplate(message);
+      return;
+    }
+
     final androidDetails = await _androidDetails(image);
     final darwinDetails = _darwinDetails(image);
     final linuxDetails = _linuxDetails(image);
-    final windowsDetails = _windowsDetails(image);
 
     final notificationDetails = NotificationDetails(
       android: androidDetails,
       iOS: darwinDetails,
       macOS: darwinDetails,
       linux: linuxDetails,
-      windows: windowsDetails,
     );
 
     await _notifications.show(
@@ -129,14 +136,5 @@ class NotificationsService {
     return LinuxNotificationDetails(
       urgency: LinuxNotificationUrgency.normal,
     );
-  }
-
-  // windows
-
-  static WindowsNotificationDetails _windowsDetails(String? image) {
-    return WindowsNotificationDetails(
-        images: image != null && File(image).existsSync()
-            ? [WindowsImage(Uri.parse(image), altText: 'Notification Image')]
-            : []);
   }
 }

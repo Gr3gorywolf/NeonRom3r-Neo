@@ -95,6 +95,19 @@ List<String> _getCertParams(String? certPath) {
   return params;
 }
 
+Future<String> _handleRedirects(String url) async {
+  final client = HttpClient();
+  final request = await client.getUrl(Uri.parse(url));
+  final response = await request.close();
+  if (response.isRedirect &&
+      response.headers.value(HttpHeaders.locationHeader) != null) {
+    final redirectedUrl = response.headers.value(HttpHeaders.locationHeader)!;
+    return _handleRedirects(redirectedUrl);
+  } else {
+    return url;
+  }
+}
+
 /// ============================================================================
 /// Download Manager
 /// ============================================================================
@@ -267,8 +280,14 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
     // DIRECT FILE DOWNLOAD (no torrent, no magnet)
     // =======================================================================
-    var certArgs = _getCertParams(args.certPath);
+
     if (uriType == _UriType.direct) {
+      var certArgs = _getCertParams(args.certPath);
+      var url = args.uri ?? "";
+      if (url.contains("http")) {
+        url = await _handleRedirects(url);
+      }
+
       final proc = await Process.start(
         args.aria2cPath!,
         ["--file-allocation=none", ...certArgs, args.uri!],
