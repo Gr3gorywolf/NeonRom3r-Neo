@@ -108,11 +108,16 @@ class RomListItem extends StatelessWidget {
                             SizedBox(
                               height: 3,
                             ),
-                            Opacity(
-                              opacity: 0.7,
-                              child: Text(
-                                getSubHeader(),
-                                style: Theme.of(context).textTheme.labelSmall,
+                            Container(
+                              margin: EdgeInsets.only(right: 110),
+                              child: Opacity(
+                                opacity: 0.7,
+                                child: Text(
+                                  getSubHeader(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
                               ),
                             ),
                             ...(_downloadInfo != null
@@ -146,24 +151,17 @@ class RomListItem extends StatelessWidget {
                             RomActionButton(
                               romItem,
                               size: RomActionButtonSize.small,
-                            )
+                            ),
                           ],
                         ),
                         Positioned(
                           right: 0,
-                          bottom:
-                              MediaQuery.of(context).size.width > 380 ? 9 : 36,
-                          child: Row(
-                            children: [
-                              Opacity(
-                                opacity: 0.7,
-                                child: Text(
-                                    RomService.getLastPlayedLabel(
-                                        _libraryDetails),
-                                    style:
-                                        Theme.of(context).textTheme.labelSmall),
-                              ),
-                            ],
+                          bottom: 7,
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Text(
+                                RomService.getLastPlayedLabel(_libraryDetails),
+                                style: Theme.of(context).textTheme.labelSmall),
                           ),
                         ),
                         Positioned(
@@ -171,6 +169,7 @@ class RomListItem extends StatelessWidget {
                           top: 0,
                           child: RomLibraryActions(
                             rom: romItem,
+                            size: RomLibraryActionSize.small,
                           ),
                         )
                       ],

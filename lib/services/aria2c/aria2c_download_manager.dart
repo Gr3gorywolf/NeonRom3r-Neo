@@ -329,7 +329,6 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       onRunning: (p) => running = p,
       isAborted: () => aborted,
     );
-
     final files = await _showFiles(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
@@ -339,7 +338,6 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       onSetRunning: (p) => running = p,
       isAborted: () => aborted,
     );
-
     var fileIndex = args.fileIndex;
     if (fileIndex == null && args.filePath != null) {
       fileIndex = files.entries

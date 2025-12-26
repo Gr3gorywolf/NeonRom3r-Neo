@@ -84,6 +84,16 @@ class DownloadProvider extends ChangeNotifier {
       downloadInfo: 'Starting download...',
     );
 
+    if (Platform.isAndroid) {
+      NotificationsService.showNotification(
+        title: 'Downloading ${rom.name}',
+        body: 'Starting download...',
+        image: rom.portrait,
+        progressPercent: info.downloadPercent,
+        tag: rom.slug,
+      );
+    }
+
     _activeDownloadInfos.add(info);
     final sub = handle.events!.listen((event) {
       _handleAria2Event(
@@ -107,12 +117,15 @@ class DownloadProvider extends ChangeNotifier {
 
   abortDownload(DownloadInfo info) {
     final active = _aria2cDownloadProcesses[info.downloadId];
-    print(active);
     if (active != null) {
       _activeDownloadInfos
           .removeWhere((element) => element.downloadId == info.downloadId);
       active.handle!.abort!();
       _disposeActive(info.downloadId);
+      if (Platform.isAndroid) {
+        print("Cancelling notification for tag: ${info.romSlug}");
+        NotificationsService.cancelNotificationByTag(info.romSlug);
+      }
       notifyListeners();
     }
   }

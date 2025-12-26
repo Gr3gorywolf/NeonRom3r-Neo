@@ -67,7 +67,7 @@ class NotificationsService {
       String? tag}) async {
     var notificationsEnabledSetting =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
-    if (notificationsEnabledSetting == true) {
+    if (notificationsEnabledSetting == false) {
       return;
     }
     if (Platform.isWindows) {
@@ -90,13 +90,19 @@ class NotificationsService {
       macOS: darwinDetails,
       linux: linuxDetails,
     );
-
+    var id = tag != null
+        ? tag.hashCode
+        : DateTime.now().millisecondsSinceEpoch ~/ 1000;
     await _notifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      id,
       title,
       body,
       notificationDetails,
     );
+  }
+
+  static Future<void> cancelNotificationByTag(String tag) async {
+    await _notifications.cancel(tag.hashCode);
   }
 
   // android
@@ -115,18 +121,25 @@ class NotificationsService {
         ),
         importance: Importance.max,
         priority: Priority.high,
+        indeterminate: progressPercent == 0,
         maxProgress: 100,
         progress: progressPercent ?? 0,
         showProgress: progressPercent != null,
       );
     }
 
-    return const AndroidNotificationDetails(
+    return AndroidNotificationDetails(
       _channelId,
       _channelName,
+      tag: tag,
+      groupKey: 'yamata_launcher_group',
       channelDescription: _channelDescription,
       importance: Importance.max,
       priority: Priority.high,
+      indeterminate: progressPercent == 0,
+      maxProgress: 100,
+      progress: progressPercent ?? 0,
+      showProgress: progressPercent != null,
     );
   }
 

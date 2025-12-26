@@ -25,18 +25,17 @@ class RomLibraryActions extends StatelessWidget {
     var isFavorite = (_libraryDetails?.isFavorite ?? false) == true;
     double? minimumSize = 35;
     double? iconSize = 22;
-    double spacing = Platform.isAndroid ? 0 : 8;
+    double spacing = 8;
+    double contentWidth = 35;
 
     if (size == RomLibraryActionSize.small) {
       minimumSize = 30;
       iconSize = 18;
-      if (Platform.isAndroid) {
-        minimumSize = 20;
-        iconSize = 14;
-      }
+      contentWidth = 30;
     } else if (size == RomLibraryActionSize.large) {
       minimumSize = 40;
       iconSize = 26;
+      contentWidth = 40;
     }
 
     getFileExist() {
@@ -100,39 +99,53 @@ class RomLibraryActions extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        IconButton(
-          iconSize: iconSize,
-          style: iconButtonStyle(),
-          icon: Icon(
-            _libraryDetails.isFavorite == true ? Icons.star : Icons.star_border,
-            color: isFavorite ? Theme.of(context).colorScheme.primary : null,
+        Container(
+          width: contentWidth,
+          child: IconButton(
+            iconSize: iconSize,
+            style: iconButtonStyle(),
+            icon: Icon(
+              _libraryDetails.isFavorite == true
+                  ? Icons.star
+                  : Icons.star_border,
+              color: isFavorite ? Theme.of(context).colorScheme.primary : null,
+            ),
+            onPressed: () {
+              handleToggleLike();
+            },
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(),
+            color: Colors.grey,
           ),
-          onPressed: () {
-            handleToggleLike();
-          },
-          color: Colors.grey,
         ),
         SizedBox(
           width: spacing,
         ),
-        IconButton(
-          iconSize: iconSize,
-          style: iconButtonStyle(),
-          icon: Icon(Icons.tune),
-          onPressed: handleOpenConfigurations,
-          color: Colors.grey,
+        Container(
+          width: contentWidth,
+          child: IconButton(
+            iconSize: iconSize,
+            style: iconButtonStyle(),
+            icon: Icon(Icons.tune),
+            onPressed: handleOpenConfigurations,
+            color: Colors.grey,
+          ),
         ),
         SizedBox(
           width: spacing,
         ),
         if (isReadyToPlay)
-          IconButton(
-            iconSize: iconSize,
-            style: iconButtonStyle(),
-            icon: Icon(getFileExist() ? Icons.folder : Icons.folder_off),
-            onPressed: handleOpenFolder,
-            color: getFileExist() ? Colors.grey : Colors.red,
+          Container(
+            width: contentWidth,
+            child: IconButton(
+              iconSize: iconSize,
+              style: iconButtonStyle(),
+              icon: Icon(getFileExist() ? Icons.folder : Icons.folder_off),
+              onPressed: handleOpenFolder,
+              color: getFileExist() ? Colors.grey : Colors.red,
+            ),
           ),
       ],
     );
