@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
@@ -14,6 +12,7 @@ import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/repository/settings_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
@@ -75,38 +74,19 @@ class RomService {
     print("Launching emulator ${emulatorBinary} with params: $launchParams");
     updateLibraryItem();
     provider.setGameRunning(download.rom.slug, true);
-    var process = await Process.start(emulatorBinary, launchParams);
-    await process.exitCode;
+    if (Platform.isAndroid) {
+      await EmulatorService.launchEmulator(
+          emulatorBinary, download.filePath ?? "");
+    } else {
+      var process = await Process.start(emulatorBinary, launchParams);
+      await process.exitCode;
+    }
     if (_activeGames[download.rom.slug] != null) {
       _activeGames[download.rom.slug]?.cancel();
       _activeGames.remove(download.rom.slug);
       provider.setGameRunning(download.rom.slug, false);
       print("Stopped playtime tracking for ${download.rom.slug}");
     }
-  }
-
-  static Future _launchIntent(Intents intent, String? romPath) async {
-    String? action = null;
-    if (intent.action != null) {
-      if (intent.action!.endsWith("VIEW")) {
-        action = "action_view";
-      }
-    }
-    await AndroidIntent(
-            data: romPath,
-            type: intent.type,
-            package: intent.package,
-            componentName: intent.activity,
-            action: "action_view")
-        .launch();
-  }
-
-  static Future catchEmulatorsIntents() async {
-    try {
-      var intents = await SettingsRepository().fetchIntentsSettings();
-      new File(FileSystemService.emulatorIntentsFilePath).writeAsStringSync(
-          json.encode(intents.map((e) => e.toJson()).toList()));
-    } catch (err) {}
   }
 
   static String normalizeRomTitle(String input) {

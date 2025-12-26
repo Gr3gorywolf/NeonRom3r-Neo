@@ -18,7 +18,7 @@ def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 android {
     namespace = "com.example.yamata_launcher"
 
-    compileSdkVersion 34
+    compileSdkVersion flutter.compileSdkVersion
 
     defaultConfig {
         applicationId "com.example.yamata_launcher"

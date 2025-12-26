@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
@@ -7,6 +8,7 @@ import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/duration_picker_dialog.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +43,14 @@ class RomSettingsDialog extends StatelessWidget {
     }
 
     _pickEmulatorBinary() async {
+      if (Platform.isAndroid) {
+        var result = await AppSelectionDialog.show(context);
+        if (result != null && libraryItem != null) {
+          libraryItem.overrideEmulator = result.packageName;
+          await provider.updateLibraryItem(libraryItem);
+        }
+        return;
+      }
       FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
         dialogTitle: "Select Emulator Binary",
         type: FileType.custom,
@@ -152,34 +162,35 @@ class RomSettingsDialog extends StatelessWidget {
                       onPressed: () => _pickEmulatorBinary()),
                 ],
               ),
-              _SettingItem(
-                title: "Launch parameters",
-                helperText:
-                    "Parameters flags used when launching the ROM (if supported by the emulator)",
-                content: TextField(
-                  controller: launchParameters,
-                  decoration: InputDecoration(
-                    hintText: "Custom launch parameters",
-                    helperMaxLines: 3,
-                    helperStyle: TextStyle(color: Colors.grey[500]),
-                    filled: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
+              if (!Platform.isAndroid)
+                _SettingItem(
+                  title: "Launch parameters",
+                  helperText:
+                      "Parameters flags used when launching the ROM (if supported by the emulator)",
+                  content: TextField(
+                    controller: launchParameters,
+                    decoration: InputDecoration(
+                      hintText: "Custom launch parameters",
+                      helperMaxLines: 3,
+                      helperStyle: TextStyle(color: Colors.grey[500]),
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 7),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    onChanged: (text) {
+                      libraryItem?.openParams = text;
+                      if (libraryItem != null) {
+                        provider.updateLibraryItem(libraryItem);
+                      }
+                    },
                   ),
-                  onChanged: (text) {
-                    libraryItem?.openParams = text;
-                    if (libraryItem != null) {
-                      provider.updateLibraryItem(libraryItem);
-                    }
-                  },
+                  icon: Icons.terminal,
+                  actions: [],
                 ),
-                icon: Icons.terminal,
-                actions: [],
-              ),
               _SettingItem(
                 title: "Time played",
                 content: Text(TimeHelpers.formatMinutes(

@@ -1,9 +1,13 @@
+import 'dart:io';
+
+import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/models/emulator_setting.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
 
 class EmulatorSettingsForm extends StatefulWidget {
   final List<String> existingConsoles;
@@ -40,6 +44,15 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
   }
 
   void handleSelectEmulatorBinary() async {
+    if (Platform.isAndroid) {
+      var result = await AppSelectionDialog.show(context);
+      if (result != null) {
+        setState(() {
+          selectedBinary = result.packageName;
+        });
+      }
+      return;
+    }
     FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
       dialogTitle: "Select Emulator Binary",
       type: FileType.custom,
@@ -71,6 +84,8 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Add Emulator Setting'),
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       contentPadding: const EdgeInsets.all(15.0),
       content: Column(
         mainAxisSize: MainAxisSize.min,

@@ -1,33 +1,39 @@
-class EmulatorIntent {
-  String? consoleSlug;
-  bool? shouldUncompress;
-  List<Intents>? intents;
+import 'package:yamata_launcher/models/contracts/json_serializable.dart';
 
-  EmulatorIntent({this.consoleSlug, this.shouldUncompress, this.intents});
+class EmulatorIntent implements JsonSerializable {
+  String? package;
+  String? activity;
+  String? type;
+  String? action;
+  bool? shouldUncompress;
+
+  EmulatorIntent(
+      {this.package,
+      this.activity,
+      this.type,
+      this.action,
+      this.shouldUncompress = false});
 
   EmulatorIntent.fromJson(Map<String, dynamic> json) {
-    consoleSlug = json['console_slug'];
-    shouldUncompress = json['should_uncompress'];
-    if (json['intents'] != null) {
-      intents = [];
-      json['intents'].forEach((v) {
-        intents!.add(new Intents.fromJson(v));
-      });
-    }
+    package = json['package'];
+    activity = json['activity'];
+    type = json['type'];
+    action = json['action'];
+    shouldUncompress = json['shouldUncompress'] ?? false;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['console_slug'] = this.consoleSlug;
-    data['should_uncompress'] = this.shouldUncompress;
-    if (this.intents != null) {
-      data['intents'] = this.intents!.map((v) => v.toJson()).toList();
-    }
+    data['package'] = this.package;
+    data['activity'] = this.activity;
+    data['type'] = this.type;
+    data['action'] = this.action;
+    data['shouldUncompress'] = this.shouldUncompress;
     return data;
   }
 }
 
-class Intents {
+class Intents implements JsonSerializable {
   String? package;
   String? activity;
   String? type;

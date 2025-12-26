@@ -8,7 +8,6 @@ import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
-import 'package:yamata_launcher/repository/emulators_repository.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/ui/widgets/console_card.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';

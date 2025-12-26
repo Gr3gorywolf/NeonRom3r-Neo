@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:android_intent/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/models/emulator.dart';
@@ -49,15 +48,7 @@ class _EmulatorListItemState extends State<EmulatorListItem> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        if (!isEmulatorAvailable) {
-          AndroidIntent(
-                  data: widget.emulator.downloadLink, action: "action_view")
-              .launch();
-        } else {
-          DeviceApps.openApp(widget.emulator.packageName!);
-        }
-      },
+      onTap: () {},
       contentPadding: EdgeInsets.all(5),
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(5),
