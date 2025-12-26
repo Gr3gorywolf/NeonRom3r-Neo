@@ -1,5 +1,6 @@
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppSelectionDialog extends StatefulWidget {
   const AppSelectionDialog({super.key});
@@ -19,6 +20,8 @@ class AppSelectionDialog extends StatefulWidget {
 class _AppSelectionDialogState extends State<AppSelectionDialog> {
   var installedApps = [];
   var isLoading = false;
+  var controller = TextEditingController();
+  var query = '';
 
   fetchInstalledApps() async {
     setState(() {
@@ -33,6 +36,16 @@ class _AppSelectionDialogState extends State<AppSelectionDialog> {
       installedApps = apps;
       isLoading = false;
     });
+  }
+
+  List<ApplicationWithIcon> get filteredApps {
+    return installedApps
+        .where((app) {
+          final appName = (app as ApplicationWithIcon).appName;
+          return appName.toLowerCase().contains(query.toLowerCase());
+        })
+        .cast<ApplicationWithIcon>()
+        .toList();
   }
 
   @override
@@ -59,18 +72,37 @@ class _AppSelectionDialogState extends State<AppSelectionDialog> {
           height: 400,
           child: isLoading
               ? buildLoadContent()
-              : ListView.builder(
-                  itemCount: installedApps.length,
-                  itemBuilder: (context, i) {
-                    final app = installedApps[i] as ApplicationWithIcon;
+              : Column(
+                  children: [
+                    TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        labelText: 'Search Apps',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          query = value;
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredApps.length,
+                        itemBuilder: (context, i) {
+                          final app = filteredApps[i] as ApplicationWithIcon;
 
-                    return ListTile(
-                      leading: Image.memory(app.icon, width: 32, height: 32),
-                      title: Text(app.appName),
-                      subtitle: Text(app.packageName),
-                      onTap: () => Navigator.pop(context, app),
-                    );
-                  },
+                          return ListTile(
+                            leading:
+                                Image.memory(app.icon, width: 32, height: 32),
+                            title: Text(app.appName),
+                            subtitle: Text(app.packageName),
+                            onTap: () => Navigator.pop(context, app),
+                          );
+                        },
+                      ),
+                    )
+                  ],
                 ),
         ));
   }

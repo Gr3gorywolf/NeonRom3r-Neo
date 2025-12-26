@@ -18,12 +18,14 @@ class EmulatorService {
           (intent) => intent.package == packageName,
           orElse: () => EmulatorIntent(
               package: packageName, action: 'action_view', type: '*/*'));
+      print(
+          'Matched intent: ${matchedIntent.action}, ${filePath}, ${matchedIntent.type}, ${matchedIntent.activity}, ${matchedIntent.package}');
       final intent = AndroidIntent(
-        action: matchedIntent.action,
+        action: matchedIntent.action ?? 'action_view',
         package: packageName,
         componentName:
             matchedIntent.activity != null ? matchedIntent.activity : null,
-        data: filePath,
+        data: "$filePath",
         type: matchedIntent.type,
       );
 

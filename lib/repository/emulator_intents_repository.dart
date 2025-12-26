@@ -19,6 +19,7 @@ class EmulatorIntentsRepository {
       if (res.statusCode != 200 || signature == res.headers['content-length']) {
         var file = await CacheService.retrieveCacheFile("$cacheKey.json");
         if (file != null) {
+          print(file);
           for (var rom in json.decode(file)) {
             emulatorsIntents.add(EmulatorIntent.fromJson(rom));
           }
