@@ -1,21 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:material_segmented_control/material_segmented_control.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
-import 'package:yamata_launcher/ui/widgets/console_list.dart';
 import 'package:yamata_launcher/ui/widgets/no_downloads_placeholder.dart';
-import 'package:yamata_launcher/ui/pages/home/home_page.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
 import 'package:yamata_launcher/services/console_service.dart';
-import 'package:yamata_launcher/services/download_service.dart';
-import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
 
 class DownloadsPage extends StatefulWidget {

@@ -19,7 +19,7 @@ class EmulatorIntent implements JsonSerializable {
     activity = json['activity'];
     type = json['type'];
     action = json['action'];
-    shouldUncompress = json['shouldUncompress'] ?? false;
+    shouldUncompress = json['should_uncompress'] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -28,7 +28,7 @@ class EmulatorIntent implements JsonSerializable {
     data['activity'] = this.activity;
     data['type'] = this.type;
     data['action'] = this.action;
-    data['shouldUncompress'] = this.shouldUncompress;
+    data['should_uncompress'] = this.shouldUncompress;
     return data;
   }
 }

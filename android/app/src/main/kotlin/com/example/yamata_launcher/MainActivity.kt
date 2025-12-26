@@ -6,12 +6,13 @@ import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import androidx.core.content.FileProvider
 import java.io.File
 
 class MainActivity : FlutterActivity() {
 
-    private val CHANNEL = "aria2c"
-    private val TAG = "Aria2cPlugin"
+    private val CHANNEL = "yamata.launcher/methods"
+    private val TAG = "METHOD_CHANNEL"
 
     private var initialized = false
     private var baseName = "yamata"
@@ -30,8 +31,22 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
 
             when (call.method) {
+                 "getIntentUriFromFile" -> {
+                    try {
+                        val path = call.argument<String>("path")!!
+                        val file = File(path)
+                        val uri = FileProvider.getUriForFile(
+                        this,
+                        "${applicationContext.packageName}.fileprovider",
+                        file
+                    )
+                        result.success(uri.toString())
+                    } catch (e: Exception) {
+                        result.error("Failed to get intentUri", e.message, null)
+                    }
+                }
 
-                "init" -> {
+                "initAria2c" -> {
                     try {
                        val paths = initAria2c(applicationContext)
                         result.success(paths)

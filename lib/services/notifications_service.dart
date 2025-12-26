@@ -5,6 +5,8 @@ import 'package:windows_notification/notification_message.dart';
 import 'package:windows_notification/windows_notification.dart';
 import 'package:yamata_launcher/constants/app_constants.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
 
 class NotificationsService {
   NotificationsService._();
@@ -14,8 +16,7 @@ class NotificationsService {
 
   static const String _channelId = 'yamata_launcher_channel';
   static const String _channelName = 'yamata_launcher Notifications';
-  static const String _channelDescription =
-      'Notifications for game activity and system events';
+  static const String _channelDescription = 'Notifications for Yamata Launcher';
 
   static void _onDidReceiveNotificationResponse(
       NotificationResponse notificationResponse) {}
@@ -58,11 +59,17 @@ class NotificationsService {
     }
   }
 
-  static Future<void> showNotification({
-    required String title,
-    required String body,
-    String? image,
-  }) async {
+  static Future<void> showNotification(
+      {required String title,
+      required String body,
+      String? image,
+      int? progressPercent,
+      String? tag}) async {
+    var notificationsEnabledSetting =
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
+    if (notificationsEnabledSetting == true) {
+      return;
+    }
     if (Platform.isWindows) {
       final _winNotifyPlugin =
           WindowsNotification(applicationId: "Yamata Launcher");
@@ -73,7 +80,7 @@ class NotificationsService {
       return;
     }
 
-    final androidDetails = await _androidDetails(image);
+    final androidDetails = await _androidDetails(image, progressPercent, tag);
     final darwinDetails = _darwinDetails(image);
     final linuxDetails = _linuxDetails(image);
 
@@ -95,17 +102,22 @@ class NotificationsService {
   // android
 
   static Future<AndroidNotificationDetails> _androidDetails(
-      String? image) async {
+      String? image, int? progressPercent, String? tag) async {
     if (image != null && File(image).existsSync()) {
       return AndroidNotificationDetails(
         _channelId,
         _channelName,
+        tag: tag,
         channelDescription: _channelDescription,
+        groupKey: 'yamata_launcher_group',
         styleInformation: BigPictureStyleInformation(
           FilePathAndroidBitmap(image),
         ),
         importance: Importance.max,
         priority: Priority.high,
+        maxProgress: 100,
+        progress: progressPercent ?? 0,
+        showProgress: progressPercent != null,
       );
     }
 

@@ -14,6 +14,7 @@ import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/ui/widgets/unzip_dialog.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
@@ -33,7 +34,7 @@ class RomService {
   }
 
   static Future openDownloadedRom(RomLibraryItem download) async {
-    var intents = _intents;
+    EmulatorLaunchResult emulatorLaunchResult = EmulatorLaunchResult.success;
     if (db == null) {
       return;
     }
@@ -75,7 +76,7 @@ class RomService {
     updateLibraryItem();
     provider.setGameRunning(download.rom.slug, true);
     if (Platform.isAndroid) {
-      await EmulatorService.launchEmulator(
+      emulatorLaunchResult = await EmulatorService.launchEmulator(
           emulatorBinary, download.filePath ?? "");
     } else {
       var process = await Process.start(emulatorBinary, launchParams);
@@ -87,6 +88,33 @@ class RomService {
       provider.setGameRunning(download.rom.slug, false);
       print("Stopped playtime tracking for ${download.rom.slug}");
     }
+
+    if (Platform.isAndroid &&
+        emulatorLaunchResult == EmulatorLaunchResult.needsUncompression) {
+      AlertsService.showAlert(
+          navigatorKey.currentContext!,
+          "Rom needs uncompression",
+          "The selected emulator requires the ROM to be uncompressed before launching, do you want to extract it now?",
+          acceptTitle: "Yes", callback: () {
+        extractRom(download);
+      });
+    }
+  }
+
+  static Future extractRom(RomLibraryItem downloadedRom) async {
+    var resultFile = await UnzipDialog.show(
+        navigatorKey.currentContext!, File(downloadedRom.filePath ?? ""));
+    if (resultFile == null) {
+      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
+          exception: Exception("Failed to extract ROM from zip file."));
+      return;
+    }
+    var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,
+        listen: false);
+    downloadedRom.filePath = resultFile.path;
+    provider.updateLibraryItem(downloadedRom);
+    AlertsService.showSnackbar(
+        navigatorKey.currentContext!, "ROM extracted successfully!");
   }
 
   static String normalizeRomTitle(String input) {

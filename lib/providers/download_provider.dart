@@ -139,6 +139,15 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadInfo = _formatProgressInfo(p);
       print("Download info: ${info.downloadInfo}");
       notifyListeners();
+      if (Platform.isAndroid) {
+        NotificationsService.showNotification(
+          title: 'Downloading ${rom.name}',
+          body: '${info.downloadInfo}',
+          image: rom.portrait,
+          progressPercent: info.downloadPercent,
+          tag: rom.slug,
+        );
+      }
       return;
     }
 
@@ -160,7 +169,6 @@ class DownloadProvider extends ChangeNotifier {
       print("Download completed: ${event.outputFilePath}");
       _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
       _registerCompletedDownload(info, rom, event.outputFilePath ?? "");
-
       _disposeActive(handle.id);
       notifyListeners();
       return;
@@ -173,6 +181,13 @@ class DownloadProvider extends ChangeNotifier {
       Future.delayed(Duration(seconds: 2), () {
         _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
         notifyListeners();
+        NotificationsService.showNotification(
+          title: 'Failed to download ${rom.name}',
+          body:
+              '${StringHelper.truncateWithEllipsis(event.message ?? "Unknown error", 100)}',
+          image: rom.portrait,
+          tag: rom.slug,
+        );
       });
     }
   }
@@ -233,14 +248,12 @@ class DownloadProvider extends ChangeNotifier {
     libraryItem.filePath = path;
     libraryItem.downloadedAt = DateTime.now();
     await libraryProvider.updateLibraryItem(libraryItem);
-    var notificationsEnabledSetting =
-        await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
-    if (notificationsEnabledSetting == true) {
-      await NotificationsService.showNotification(
-          title: 'Download completed',
-          body: '${rom.name} has been downloaded successfully.',
-          image: rom.portrait);
-    }
+    await NotificationsService.showNotification(
+      title: 'Download completed',
+      body: '${rom.name} has been downloaded successfully.',
+      image: rom.portrait,
+      tag: rom.slug,
+    );
   }
 
   void _disposeActive(String? id) {

@@ -106,6 +106,14 @@ class StringHelper {
     return input.replaceAll(invalidChars, '_');
   }
 
+  static String truncateWithEllipsis(String input, int maxLength) {
+    if (input.length <= maxLength) {
+      return input;
+    } else {
+      return input.substring(0, maxLength - 3) + '...';
+    }
+  }
+
   static String hash20(String input) =>
       sha1.convert(utf8.encode(input)).toString().substring(0, 20);
 }
