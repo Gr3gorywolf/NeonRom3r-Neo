@@ -17,9 +17,14 @@ class NotificationsService {
   static const String _channelId = 'yamata_launcher_channel';
   static const String _channelName = 'yamata_launcher Notifications';
   static const String _channelDescription = 'Notifications for Yamata Launcher';
+  static final Map<String, int> _tagIds = {};
 
   static void _onDidReceiveNotificationResponse(
       NotificationResponse notificationResponse) {}
+  static int getIdForTag(String tag) {
+    return _tagIds.putIfAbsent(
+        tag, () => DateTime.now().millisecondsSinceEpoch ~/ 1000);
+  }
 
   static Future<void> init() async {
     final packageInfo = await PackageInfo.fromPlatform();
@@ -91,8 +96,9 @@ class NotificationsService {
       linux: linuxDetails,
     );
     var id = tag != null
-        ? tag.hashCode
+        ? getIdForTag(tag)
         : DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
     await _notifications.show(
       id,
       title,
@@ -102,29 +108,24 @@ class NotificationsService {
   }
 
   static Future<void> cancelNotificationByTag(String tag) async {
-    await _notifications.cancel(tag.hashCode);
+    final id = _tagIds[tag];
+    if (id != null) {
+      await _notifications.cancel(id, tag: tag);
+    }
   }
 
   // android
 
   static Future<AndroidNotificationDetails> _androidDetails(
-      String? image, int? progressPercent, String? tag) async {
+    String? image,
+    int? progressPercent,
+    String? tag,
+  ) async {
+    BigPictureStyleInformation? styleInfo;
+
     if (image != null && File(image).existsSync()) {
-      return AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        tag: tag,
-        channelDescription: _channelDescription,
-        groupKey: 'yamata_launcher_group',
-        styleInformation: BigPictureStyleInformation(
-          FilePathAndroidBitmap(image),
-        ),
-        importance: Importance.max,
-        priority: Priority.high,
-        indeterminate: progressPercent == 0,
-        maxProgress: 100,
-        progress: progressPercent ?? 0,
-        showProgress: progressPercent != null,
+      styleInfo = BigPictureStyleInformation(
+        FilePathAndroidBitmap(image),
       );
     }
 
@@ -134,8 +135,12 @@ class NotificationsService {
       tag: tag,
       groupKey: 'yamata_launcher_group',
       channelDescription: _channelDescription,
+      styleInformation: styleInfo,
       importance: Importance.max,
       priority: Priority.high,
+      autoCancel: progressPercent == null,
+      playSound: progressPercent == null,
+      ongoing: progressPercent != null,
       indeterminate: progressPercent == 0,
       maxProgress: 100,
       progress: progressPercent ?? 0,
