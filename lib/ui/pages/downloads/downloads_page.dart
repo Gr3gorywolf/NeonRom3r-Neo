@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
@@ -28,6 +29,65 @@ class _DownloadsPageState extends State<DownloadsPage> {
     super.initState();
   }
 
+  bool getIsRomDownloading(RomInfo rom) {
+    var downloadProvider = Provider.of<DownloadProvider>(context);
+    return downloadProvider.isRomDownloading(rom);
+  }
+
+  getFilters(roms) => [
+        ToolBarFilterGroup(groupName: "Consoles", filters: [
+          ...ConsoleService.getConsoles()
+              .where((console) => this
+                  ._downloadedRoms
+                  .any((library) => library.rom.console == console.slug))
+              .map((console) => ToolBarFilterElement(
+                  label: console.name ?? "",
+                  field: 'rom.console',
+                  value: console.slug ?? ""))
+              .toList(),
+        ]),
+        ToolBarFilterGroup(
+          groupName: 'Download Status',
+          filters: [
+            ToolBarFilterElement(
+                label: "Ongoing",
+                field: 'downloadStatus',
+                value: "true",
+                matcher: (libraryRom) {
+                  return getIsRomDownloading(libraryRom.rom);
+                }),
+            ToolBarFilterElement(
+                label: "Downloaded",
+                field: 'isDownloaded',
+                value: "true",
+                matcher: (libraryRom) {
+                  return !getIsRomDownloading(libraryRom.rom);
+                }),
+          ],
+        ),
+        ToolBarFilterGroup(
+          groupName: 'Availability',
+          filters: [
+            ToolBarFilterElement(
+                label: "Installed",
+                field: 'filePath',
+                value: "true",
+                matcher: (rom) {
+                  return rom.filePath != null && rom.filePath!.isNotEmpty;
+                }),
+            ToolBarFilterElement(
+                label: "Never Played",
+                field: 'lastPlayedAt',
+                value: "true",
+                matcher: (rom) {
+                  return rom.lastPlayedAt == null;
+                }),
+            ToolBarFilterElement(
+                label: "Favorite", field: 'isFavorite', value: "true"),
+          ],
+        ),
+      ];
+
   void compileDownloadedRoms() {
     var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
     var downloadSourcesProvider =
@@ -37,7 +97,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         .compileRomDownloadSources(downloads.map((e) => e.rom).toList());
   }
 
-  List<RomInfo> get _downloadedRoms {
+  List<RomLibraryItem> get _downloadedRoms {
     var provider = LibraryProvider.of(context);
     var romDownloadInfos = DownloadProvider.of(context)
         .activeDownloadInfos
@@ -47,8 +107,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
     var downloadedRoms = provider.getDownloads();
 
     return [
-      ...downloadingRoms.map((e) => e.rom).toList().reversed,
-      ...downloadedRoms.map((e) => e.rom).toList().reversed,
+      ...downloadingRoms.toList().reversed,
+      ...downloadedRoms
+          .where((rom) => !getIsRomDownloading(rom.rom))
+          .toList()
+          .reversed,
     ];
   }
 
@@ -58,10 +121,12 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   List<RomInfo> get filteredDownloads {
     if (filterValues == null) {
-      return this._downloadedRoms;
+      return this._downloadedRoms.map((e) => e.rom).toList();
     }
-    return FilterHelpers.handleDynamicFilter<RomInfo>(
-        this._downloadedRoms, filterValues!);
+    return FilterHelpers.handleDynamicFilter<RomLibraryItem>(
+            this._downloadedRoms, filterValues!)
+        .map((e) => e.rom)
+        .toList();
   }
 
   @override
@@ -74,22 +139,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
           });
         },
         initialValues: ToolbarValue(filters: [], search: ''),
-        settings: ToolbarSettings(title: "Downloads", sorts: [
-          ToolBarSortByElement(
-              label: 'Name', field: 'name', value: ToolBarSortByType.ascending),
-        ], filters: [
-          ToolBarFilterGroup(groupName: "Consoles", filters: [
-            ...ConsoleService.getConsoles()
-                .where((console) => this
-                    ._downloadedRoms
-                    .any((rom) => rom.console == console.slug))
-                .map((console) => ToolBarFilterElement(
-                    label: console.name ?? "",
-                    field: 'console',
-                    value: console.slug ?? ""))
-                .toList(),
-          ]),
-        ]),
+        settings: ToolbarSettings(
+            title: "Downloads",
+            sorts: [
+              ToolBarSortByElement(
+                  label: 'Name',
+                  field: 'name',
+                  value: ToolBarSortByType.ascending),
+            ],
+            filters: getFilters(_downloadedRoms)),
       ),
       body: (hasDownloads
           ? Column(

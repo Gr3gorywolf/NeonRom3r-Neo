@@ -32,6 +32,39 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
   ToolbarValue? filterValues = _initialToolbarValues;
 
+  List<ToolBarFilterGroup> getFilters(List<RomLibraryItem> roms) => [
+        ToolBarFilterGroup(
+          groupName: 'Consoles',
+          filters: roms.map((e) => e.rom.console).toSet().map((console) {
+            return ToolBarFilterElement(
+                label: ConsoleService.getConsoleFromName(console)?.name ?? "",
+                field: 'rom.console',
+                value: console);
+          }).toList(),
+        ),
+        ToolBarFilterGroup(
+          groupName: 'Availability',
+          filters: [
+            ToolBarFilterElement(
+                label: "Installed",
+                field: 'filePath',
+                value: "true",
+                matcher: (rom) {
+                  return rom.filePath != null && rom.filePath!.isNotEmpty;
+                }),
+            ToolBarFilterElement(
+                label: "Never Played",
+                field: 'lastPlayedAt',
+                value: "true",
+                matcher: (rom) {
+                  return rom.lastPlayedAt == null;
+                }),
+            ToolBarFilterElement(
+                label: "Favorite", field: 'isFavorite', value: "true"),
+          ],
+        ),
+      ];
+
   initState() {
     Future.microtask(() {
       var libraryProvider =
@@ -51,7 +84,8 @@ class _LibraryPageState extends State<LibraryPage> {
     var getFilteredRoms = () {
       if (filterValues == null) return roms.map((e) => e.rom).toList();
       return FilterHelpers.handleDynamicFilter<RomLibraryItem>(
-              roms, filterValues!)
+              roms, filterValues!,
+              nameField: 'rom.name')
           .map((e) => e.rom)
           .toList();
     };
@@ -65,25 +99,7 @@ class _LibraryPageState extends State<LibraryPage> {
         },
         settings: ToolbarSettings(
           title: "Library",
-          filters: [
-            ToolBarFilterGroup(
-              groupName: 'Consoles',
-              filters: roms.map((e) => e.rom.console).toSet().map((console) {
-                return ToolBarFilterElement(
-                    label:
-                        ConsoleService.getConsoleFromName(console)?.name ?? "",
-                    field: 'rom.console',
-                    value: console);
-              }).toList(),
-            ),
-            ToolBarFilterGroup(
-              groupName: 'Availability',
-              filters: [
-                ToolBarFilterElement(
-                    label: "Favorite", field: 'isFavorite', value: "true"),
-              ],
-            ),
-          ],
+          filters: getFilters(roms),
           sorts: [
             ToolBarSortByElement(
                 label: 'Name',

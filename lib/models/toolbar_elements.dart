@@ -33,6 +33,12 @@ class ToolBarFilterElement {
   String label;
   String field;
   String value;
-  ToolBarFilterElement(
-      {required this.label, required this.field, required this.value});
+  bool Function(dynamic rom)? matcher;
+
+  ToolBarFilterElement({
+    required this.label,
+    required this.field,
+    required this.value,
+    this.matcher,
+  });
 }

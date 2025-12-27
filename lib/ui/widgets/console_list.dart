@@ -9,24 +9,17 @@ import 'console_card.dart';
 class ConsoleList extends StatefulWidget {
   Function(Console) onConsoleSelected;
   Console? selectedConsole;
-  List<Console>? consoles;
+  List<Console> consoles;
   ConsoleList(
-      {required this.onConsoleSelected, this.selectedConsole, this.consoles});
+      {required this.onConsoleSelected,
+      this.selectedConsole,
+      required this.consoles});
 
   @override
   _ConsoleListState createState() => _ConsoleListState();
 }
 
 class _ConsoleListState extends State<ConsoleList> {
-  List<Console>? _consoles = ConsoleService.getConsoles();
-  @override
-  void initState() {
-    super.initState();
-    if (widget.consoles != null) {
-      _consoles = widget.consoles;
-    }
-  }
-
   Color? getItemBackgroundColor(Console console) {
     if (widget.selectedConsole != null) {
       if (console.slug == widget.selectedConsole!.slug) {

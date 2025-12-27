@@ -19,14 +19,14 @@ class FilterHelpers {
 
   static List<T> handleDynamicFilter<T extends JsonSerializable>(
     List<T> subjects,
-    ToolbarValue filters, {
+    ToolbarValue toolbarValue, {
     String nameField = 'name',
   }) {
     List<T> filteredSubjects = subjects;
-    final sort = filters.sortBy;
+    final sort = toolbarValue.sortBy;
 
-    if (filters.search.isNotEmpty) {
-      final searchLower = filters.search.toLowerCase();
+    if (toolbarValue.search.isNotEmpty) {
+      final searchLower = toolbarValue.search.toLowerCase();
 
       filteredSubjects = filteredSubjects.where((subject) {
         final value = _getValueByPath(subject.toJson(), nameField)?.toString();
@@ -34,10 +34,27 @@ class FilterHelpers {
       }).toList();
     }
 
-    for (final filter in filters.filters) {
+    if (toolbarValue.filters.isNotEmpty) {
+      final Map<String, List<ToolBarFilterElement>> grouped = {};
+
+      for (final f in toolbarValue.filters) {
+        grouped.putIfAbsent(f.field, () => []).add(f);
+      }
+
       filteredSubjects = filteredSubjects.where((subject) {
-        final value = _getValueByPath(subject.toJson(), filter.field);
-        return value?.toString() == filter.value;
+        for (final entry in grouped.entries) {
+          final groupFilters = entry.value;
+          final groupMatch = groupFilters.any((f) {
+            if (f.matcher != null) return f.matcher!(subject);
+            final value = _getValueByPath(subject.toJson(), f.field);
+            return value?.toString() == f.value;
+          });
+
+          if (!groupMatch) {
+            return false;
+          }
+        }
+        return true;
       }).toList();
     }
 
