@@ -20,24 +20,24 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
         message:
             "The console source must be a valid URL pointing to a JSON file containing console definitions.");
     if (result != null && result.isNotEmpty) {
-      try {
-        final source = await ConsoleSourcesRepository().fetchSource(result);
-        if (source != null) {
-          source.downloadUrl = result;
-          bool added = await ConsoleService.addConsoleSource(source);
-          if (added) {
-            setState(() {});
-            AlertsService.showSnackbar(
-                context, "Console source added successfully.");
-          } else {
-            AlertsService.showErrorSnackbar(context,
-                exception: Exception("Console source already exists."));
-          }
+      var loading = AlertsService.showLoadingAlert(
+          context,
+          "Downloading console source...",
+          "Please wait while the console source is being downloaded...");
+      final source = await ConsoleSourcesRepository().fetchSource(result);
+      loading.close();
+      if (source != null) {
+        source.downloadUrl = result;
+        bool added = await ConsoleService.addConsoleSource(source);
+        if (added) {
+          setState(() {});
+          AlertsService.showSnackbar(
+              context, "Console source added successfully.");
         } else {
           AlertsService.showErrorSnackbar(context,
-              exception: Exception("Failed to fetch console source."));
+              exception: Exception("Console source already exists."));
         }
-      } catch (e) {
+      } else {
         AlertsService.showErrorSnackbar(context,
             exception: Exception("Failed to fetch console source."));
       }
@@ -51,8 +51,13 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
           exception: Exception("Failed to fetch console source."));
       return;
     }
+    var loading = AlertsService.showLoadingAlert(
+        context,
+        "Updating console source...",
+        "Please wait while the console source is being updated...");
     final updatedSource =
         await ConsoleSourcesRepository().fetchSource(source.downloadUrl ?? "");
+    loading.close();
     if (updatedSource != null) {
       updatedSource.downloadUrl = source.downloadUrl;
       bool added = await ConsoleService.updateConsoleSource(updatedSource);
@@ -106,8 +111,7 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
                   margin:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    title: Text(
-                        (source.name ?? "") + " " + (source.altName ?? "")),
+                    title: Text((source.altName ?? "")),
                     subtitle:
                         Opacity(opacity: 0.7, child: Text(source.slug ?? "")),
                     trailing: Row(

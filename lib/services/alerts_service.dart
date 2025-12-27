@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 
 class AlertsService {
+  static Flushbar? _currentSnackbar;
   static showSnackbar(BuildContext ctx, String message,
       {String? title,
       IconData? icon,
       int duration = 2,
       FlushbarPosition? position = null,
-      Function? onTap}) {
+      Function? onTap}) async {
     if (icon == null) {
       icon = Icons.info;
     }
@@ -19,7 +21,7 @@ class AlertsService {
           ? FlushbarPosition.TOP
           : FlushbarPosition.BOTTOM;
     }
-    Flushbar(
+    _currentSnackbar = await Flushbar(
       margin: EdgeInsets.all(8),
       borderRadius: BorderRadius.circular(8),
       duration: Duration(seconds: duration),
@@ -40,7 +42,7 @@ class AlertsService {
   }
 
   static showErrorSnackbar(BuildContext ctx,
-      {Exception? exception, FlushbarPosition? position = null}) {
+      {Exception? exception, FlushbarPosition? position = null}) async {
     var title = "Error";
     var text = "Wow, an unexpected error happened";
     if (exception != null) {
@@ -51,7 +53,7 @@ class AlertsService {
           ? FlushbarPosition.TOP
           : FlushbarPosition.BOTTOM;
     }
-    Flushbar(
+    _currentSnackbar = await Flushbar(
       margin: EdgeInsets.all(8),
       borderRadius: BorderRadius.circular(8),
       duration: Duration(seconds: 4),
@@ -118,6 +120,35 @@ class AlertsService {
     return completer.future;
   }
 
+  static _DialogHandle showLoadingAlert(
+      BuildContext ctx, String title, String text) {
+    showDialog(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (cont) {
+          return AlertDialog(
+            title: Text(title, style: Theme.of(ctx).textTheme.titleMedium),
+            content: Container(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: Row(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Expanded(child: Text(text)),
+                  ],
+                )),
+          );
+        });
+    final navigator = Navigator.of(ctx, rootNavigator: true);
+    return _DialogHandle(() {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+    });
+  }
+
   static showAlert(BuildContext ctx, String title, String text,
       {Function? callback = null,
       Function? onClose = null,
@@ -173,5 +204,18 @@ class AlertsService {
             ],
           );
         });
+  }
+}
+
+class _DialogHandle {
+  bool _closed = false;
+  final VoidCallback _onClose;
+
+  _DialogHandle(this._onClose);
+
+  void close() {
+    if (_closed) return;
+    _onClose();
+    _closed = true;
   }
 }

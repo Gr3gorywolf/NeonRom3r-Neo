@@ -34,8 +34,10 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
     if (result == null || result.isEmpty) {
       return;
     }
+    var loadingHandle = AlertsService.showLoadingAlert(context,
+        "Fetching Source", "Please wait while the source is being fetched...");
     final source = await DownloadSourcesRepository().fetchSource(result);
-
+    loadingHandle.close();
     if (source != null) {
       source.sourceInfo.downloadUrl = result;
       final provider =

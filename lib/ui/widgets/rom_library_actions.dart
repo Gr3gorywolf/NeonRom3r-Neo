@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:sembast/sembast.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/ui/pages/rom_settings_dialog/rom_settings_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -71,11 +73,27 @@ class RomLibraryActions extends StatelessWidget {
     }
 
     handleOpenFolder() async {
-      var romFolder = p.dirname(_libraryDetails?.filePath ?? "");
-      final uri = Uri.file(romFolder);
+      final romFolder = p.dirname(_libraryDetails?.filePath ?? '');
 
-      if (!await launchUrl(uri)) {
-        throw Exception('Failed to open folder $romFolder');
+      if (romFolder.isEmpty) return;
+      if (Platform.isAndroid) {
+        var intentUri = await IntentsAndroidInterface.getIntentUri(romFolder);
+        final intent = AndroidIntent(
+          action: 'android.intent.action.VIEW',
+          data: intentUri,
+          flags: <int>[
+            0x10000000, // FLAG_ACTIVITY_NEW_TASK
+            0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
+          ],
+          type: 'vnd.android.document/directory',
+        );
+
+        await intent.launch();
+      } else {
+        final uri = Uri.file(romFolder);
+        if (!await launchUrl(uri)) {
+          throw Exception('Failed to open folder $romFolder');
+        }
       }
     }
 

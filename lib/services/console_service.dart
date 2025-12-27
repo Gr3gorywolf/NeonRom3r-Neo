@@ -60,7 +60,7 @@ class ConsoleService {
     var index = consolesFromExternalSources.indexWhere((element) =>
         element.slug == source.console.slug &&
         element.altName == source.console.altName);
-    consolesFromExternalSources.add(source.console);
+    consolesFromExternalSources[index] = source.console;
     String jsonString = json.encode(source.toJson());
     await consoleFile.writeAsString(jsonString);
     return true;
