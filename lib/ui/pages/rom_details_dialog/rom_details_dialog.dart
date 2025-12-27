@@ -46,13 +46,26 @@ class _RomDetailsDialogState extends State<RomDetailsDialog> {
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(12),
-                  child: RomDetailsBottomSheet(
-                    widget.rom,
+                child: Column(children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(12),
+                      child: RomDetailsBottomSheet(
+                        widget.rom,
+                      ),
+                    ),
+                  )
+                ]),
               ));
         });
   }
