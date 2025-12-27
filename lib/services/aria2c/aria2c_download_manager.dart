@@ -6,6 +6,7 @@ import 'dart:isolate';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/constants/torrents_constants.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
@@ -75,8 +76,8 @@ _UriType _detectUriType(String uri) {
   return _UriType.direct;
 }
 
-List<String> _getCertParams(String? certPath) {
-  List<String> params = [];
+List<String> _getTorrentAndCertParams(String? certPath) {
+  List<String> params = ['--bt-tracker="${BT_TRACKERS.join(',')}"'];
   if (certPath != null) {
     params.add("--ca-certificate=${certPath}");
     var dhtPath = "${p.dirname(certPath!)}/dht.dat";
@@ -85,6 +86,8 @@ List<String> _getCertParams(String? certPath) {
       if (!dhtFile.existsSync()) {
         dhtFile.createSync();
       }
+      params.add("--bt-require-crypto=true");
+      params.add("--disable-ipv6=true");
       params.add("--dht-file-path=${dhtPath}");
       params.add("--dht-file-path6=${p.dirname(certPath!)}/dht6.dat");
       params.addAll(DHT_SOURCES_PARAMS);
@@ -282,7 +285,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
 
     if (uriType == _UriType.direct) {
-      var certArgs = _getCertParams(args.certPath);
+      var certArgs = _getTorrentAndCertParams(args.certPath);
       var url = args.uri ?? "";
       if (url.contains("http")) {
         url = await _handleRedirects(url);
@@ -430,7 +433,9 @@ Future<String> _resolveTorrent({
   void Function(Process)? onRunning,
   bool Function()? isAborted,
 }) async {
-  final cache = Directory(torrentsPath ?? "")..createSync(recursive: true);
+  var uriHash = StringHelper.hash20(uri);
+  final cache = Directory(torrentsPath ?? "" + "/${uriHash}")
+    ..createSync(recursive: true);
 
   // CASE 1: Remote or local .torrent → download to cache
   if (uri.toLowerCase().endsWith('.torrent')) {
@@ -482,9 +487,9 @@ Future<String> _resolveTorrent({
     throw StateError('Invalid torrent URI');
   }
 
-  final path = p.join(cache.path, '${StringHelper.hash20(uri)}.torrent');
+  final path = p.join(cache.path, '${uriHash}.torrent');
   if (await File(path).exists()) return path;
-  var certArgs = _getCertParams(certPath);
+  var certArgs = _getTorrentAndCertParams(certPath);
   final proc = await Process.start(
     aria2cPath!,
     [
@@ -510,6 +515,10 @@ Future<String> _resolveTorrent({
   final torrent = cache
       .listSync()
       .whereType<File>()
+      .where((f) => f
+          .statSync()
+          .modified
+          .isAfter(DateTime.now().subtract(Duration(minutes: 2))))
       .firstWhere((f) => f.path.endsWith('.torrent'));
 
   await torrent.rename(path);
@@ -529,7 +538,7 @@ Future<Map<int, String>> _showFiles({
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
-  var certArgs = _getCertParams(certPath);
+  var certArgs = _getTorrentAndCertParams(certPath);
   final proc = await Process.start(
     aria2cPath,
     ['--show-files', torrentPath, ...certArgs],
@@ -565,7 +574,7 @@ Future<void> _downloadSelectedFile({
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
-  var certArgs = _getCertParams(certPath);
+  var certArgs = _getTorrentAndCertParams(certPath);
   final proc = await Process.start(
     aria2cPath,
     [

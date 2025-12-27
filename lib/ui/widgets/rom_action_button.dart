@@ -53,6 +53,20 @@ class RomActionButton extends StatelessWidget {
       await libraryProvider.updateLibraryItem(libraryItem);
     }
 
+    handleDownloadRom() async {
+      final romSource = await showDialog<DownloadSourceRom>(
+        context: context,
+        builder: (_) => RomDownloadSourcesDialog(rom: rom),
+      );
+
+      if (romSource == null) return;
+
+      await libraryProvider.addRomToLibrary(rom);
+
+      DownloadService().downloadRom(context, rom, romSource);
+      AlertsService.showSnackbar(context, "Download started", duration: 3);
+    }
+
     Future<void> handleButtonPress() async {
       if (isPlaying) return;
 
@@ -86,16 +100,14 @@ class RomActionButton extends StatelessWidget {
           }
         },
             cancelable: true,
-            additionalAction: TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return RomDownloadSourcesDialog(rom: rom);
-                      });
-                },
-                child: Text("Re-download")));
+            additionalAction: hasDownloadSources
+                ? TextButton(
+                    onPressed: () async {
+                      await Navigator.of(context).maybePop();
+                      handleDownloadRom();
+                    },
+                    child: Text("Re-download"))
+                : null);
         return;
       }
 
@@ -106,17 +118,7 @@ class RomActionButton extends StatelessWidget {
       }
 
       if (hasDownloadSources) {
-        final romSource = await showDialog<DownloadSourceRom>(
-          context: context,
-          builder: (_) => RomDownloadSourcesDialog(rom: rom),
-        );
-
-        if (romSource == null) return;
-
-        await libraryProvider.addRomToLibrary(rom);
-
-        DownloadService().downloadRom(context, rom, romSource);
-        AlertsService.showSnackbar(context, "Download started", duration: 3);
+        handleDownloadRom();
       }
     }
 

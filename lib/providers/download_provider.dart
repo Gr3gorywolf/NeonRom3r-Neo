@@ -59,9 +59,7 @@ class DownloadProvider extends ChangeNotifier {
 
   DownloadInfo? getDownloadInfo(RomInfo? rom) {
     try {
-      return _activeDownloadInfos
-          .where((e) => e.romSlug == rom!.slug && !e.isCompleted)
-          .first;
+      return _activeDownloadInfos.where((e) => e.romSlug == rom!.slug).first;
     } catch (_) {
       return null;
     }

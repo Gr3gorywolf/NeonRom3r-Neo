@@ -160,6 +160,7 @@ class AlertsService {
         barrierDismissible: cancelable,
         builder: (cont) {
           return AlertDialog(
+            actionsAlignment: MainAxisAlignment.end,
             title: Text(
               title,
               style: TextStyle(color: Colors.green),
@@ -183,7 +184,7 @@ class AlertsService {
               SizedBox(
                 width: 10,
               ),
-              additionalAction ?? Container(),
+              additionalAction ?? SizedBox(),
               TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);

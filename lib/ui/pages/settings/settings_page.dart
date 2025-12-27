@@ -302,6 +302,7 @@ class _SwitchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon),
+      onTap: () => onChanged(!value),
       trailing: Switch(value: value, onChanged: onChanged),
       title: Text(title),
       subtitle: Opacity(opacity: 0.7, child: Text(subtitle)),
