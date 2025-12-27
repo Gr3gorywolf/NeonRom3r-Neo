@@ -11,6 +11,7 @@ import 'package:yamata_launcher/ui/widgets/no_downloads_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
 
 class DownloadsPage extends StatefulWidget {
@@ -79,6 +80,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
         ], filters: [
           ToolBarFilterGroup(groupName: "Consoles", filters: [
             ...ConsoleService.getConsoles()
+                .where((console) => this
+                    ._downloadedRoms
+                    .any((rom) => rom.console == console.slug))
                 .map((console) => ToolBarFilterElement(
                     label: console.name ?? "",
                     field: 'console',
@@ -94,6 +98,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   child: RomList(
                       isLoading: false,
                       showConsole: true,
+                      initialViewMode: ViewModeToggleMode.list,
                       roms: filteredDownloads
                           .map(((e) => e))
                           .toList()

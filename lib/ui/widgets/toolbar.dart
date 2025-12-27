@@ -174,7 +174,10 @@ class _ToolbarState extends State<Toolbar> {
               enabled: false,
               child: Text(
                 group.groupName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.primary),
               ),
             ),
           );
@@ -194,8 +197,6 @@ class _ToolbarState extends State<Toolbar> {
               ),
             );
           }
-
-          entries.add(const PopupMenuDivider());
         }
 
         return entries;

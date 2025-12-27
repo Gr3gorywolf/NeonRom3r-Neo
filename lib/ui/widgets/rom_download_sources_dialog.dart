@@ -1,9 +1,15 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 
 class RomDownloadSourcesDialog extends StatelessWidget {
   final RomInfo rom;
@@ -27,6 +33,18 @@ class RomDownloadSourcesDialog extends StatelessWidget {
           sourceTitle: source.sourceInfo!.title,
         ));
       }
+    }
+
+    locateAndAddToLibrary() async {
+      final file = await FileSystemService.locateFile();
+      if (file == null) return;
+      var provider = Provider.of<LibraryProvider>(context, listen: false);
+      var item = provider.addRomToLibrary(rom);
+      item.filePath = file;
+      await provider.updateLibraryItem(item);
+      await Navigator.of(context).maybePop();
+      AlertsService.showSnackbar(
+          navigatorKey.currentContext!, "Rom file located successfully");
     }
 
     return AlertDialog(
@@ -68,6 +86,10 @@ class RomDownloadSourcesDialog extends StatelessWidget {
               ),
       ),
       actions: [
+        TextButton(
+          onPressed: locateAndAddToLibrary,
+          child: const Text('Locate rom file'),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Close'),

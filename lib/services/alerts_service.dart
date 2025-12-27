@@ -183,16 +183,7 @@ class AlertsService {
               SizedBox(
                 width: 10,
               ),
-              if (additionalAction != null)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    additionalAction,
-                    SizedBox(
-                      width: 10,
-                    ),
-                  ],
-                ),
+              additionalAction ?? Container(),
               TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);

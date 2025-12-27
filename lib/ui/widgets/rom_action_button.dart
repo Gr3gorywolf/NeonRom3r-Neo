@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:animate_do/animate_do.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/models/download_info.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
@@ -6,6 +9,7 @@ import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/ui/widgets/download_spinner.dart';
 import 'package:yamata_launcher/ui/widgets/rom_download_sources_dialog.dart';
 import 'package:yamata_launcher/services/download_service.dart';
@@ -24,55 +28,103 @@ class RomActionButton extends StatelessWidget {
   RomActionButton(this.rom, {this.size = RomActionButtonSize.medium});
   @override
   Widget build(BuildContext context) {
-    var _provider = DownloadProvider.of(context);
+    var provider = DownloadProvider.of(context);
     var libraryProvider = Provider.of<LibraryProvider>(context);
+    var downloadSourcesProvider = Provider.of<DownloadSourcesProvider>(context);
 
     var libraryItem = libraryProvider.getLibraryItem(rom.slug);
-    var _download_sources_provider =
-        Provider.of<DownloadSourcesProvider>(context);
-    var _isDownloading = _provider.isRomDownloading(rom);
-    var _isPlaying = libraryProvider.isGameRunning(rom.slug);
-    var _isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
-    var _has_download_sources =
-        _download_sources_provider.getRomSources(rom.slug).isNotEmpty;
+
+    var isDownloading = provider.isRomDownloading(rom);
+    var isPlaying = libraryProvider.isGameRunning(rom.slug);
+    var isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
+    var hasDownloadSources =
+        downloadSourcesProvider.getRomSources(rom.slug).isNotEmpty;
+
+    bool getFileExist() {
+      if (isReadyToPlay) {
+        return File(libraryItem!.filePath!).existsSync();
+      }
+      return false;
+    }
+
+    handleUpdateRomInLibrary(String filePath) async {
+      if (libraryItem == null) return;
+      libraryItem.filePath = filePath;
+      await libraryProvider.updateLibraryItem(libraryItem);
+    }
+
+    Future<void> handleButtonPress() async {
+      if (isPlaying) return;
+
+      if (isDownloading) {
+        AlertsService.showAlert(
+          context,
+          "Warning",
+          "You are sure you want to cancel this download?",
+          acceptTitle: "Yes",
+          callback: () {
+            Provider.of<DownloadProvider>(context, listen: false)
+                .abortDownload(provider.getDownloadInfo(rom)!);
+
+            AlertsService.showSnackbar(context, "Download cancelled");
+          },
+          cancelable: true,
+        );
+        return;
+      }
+
+      if (isReadyToPlay && !getFileExist()) {
+        AlertsService.showAlert(context, "File not found",
+            "Rom file not found. Please re-download the rom or locate the file.",
+            acceptTitle: "Locate", callback: () async {
+          var file = await FileSystemService.locateFile();
+          if (file != null) {
+            await handleUpdateRomInLibrary(file);
+            await Navigator.of(context).maybePop();
+            AlertsService.showSnackbar(
+                context, "Rom file located successfully");
+          }
+        },
+            cancelable: true,
+            additionalAction: TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return RomDownloadSourcesDialog(rom: rom);
+                      });
+                },
+                child: Text("Re-download")));
+        return;
+      }
+
+      if (isReadyToPlay && libraryItem != null) {
+        RomService.openDownloadedRom(libraryItem);
+        AlertsService.showSnackbar(context, "Rom launched");
+        return;
+      }
+
+      if (hasDownloadSources) {
+        final romSource = await showDialog<DownloadSourceRom>(
+          context: context,
+          builder: (_) => RomDownloadSourcesDialog(rom: rom),
+        );
+
+        if (romSource == null) return;
+
+        await libraryProvider.addRomToLibrary(rom);
+
+        DownloadService().downloadRom(context, rom, romSource);
+        AlertsService.showSnackbar(context, "Download started", duration: 3);
+      }
+    }
 
     double horizontalPadding;
     double verticalPadding;
     double iconSize;
     double fontSize;
     double spacing;
-
-    var icon = Icons.cloud_off_rounded;
-    var text = "No downloads";
-
-    handleCancelDownload() {
-      AlertsService.showAlert(
-          context, "Warning", "You are sure you want to cancel this download?",
-          acceptTitle: "Yes", callback: () {
-        Provider.of<DownloadProvider>(context, listen: false)
-            .abortDownload(_provider.getDownloadInfo(rom)!);
-        AlertsService.showSnackbar(context, "Download cancelled");
-      }, cancelable: true);
-    }
-
-    handleShowDownload() async {
-      final romSource = await showDialog<DownloadSourceRom>(
-        context: context,
-        builder: (_) => RomDownloadSourcesDialog(
-          rom: rom,
-        ),
-      );
-      if (romSource == null) {
-        return;
-      }
-      await libraryProvider.addRomToLibrary(rom);
-      DownloadService().downloadRom(context, rom, romSource);
-      AlertsService.showSnackbar(context, "Download started", duration: 3);
-    }
-
-    handleOpenRom(RomLibraryItem download) async {
-      RomService.openDownloadedRom(download);
-    }
 
     switch (size) {
       case RomActionButtonSize.small:
@@ -98,54 +150,46 @@ class RomActionButton extends StatelessWidget {
         spacing = 3;
         break;
     }
-    if (_isPlaying) {
+
+    // ⭐ padding separado
+    final padding = EdgeInsets.symmetric(
+      horizontal: horizontalPadding,
+      vertical: verticalPadding,
+    );
+
+    var icon = Icons.cloud_off_rounded;
+    var text = "No downloads";
+
+    if (isPlaying) {
       icon = Icons.videogame_asset;
       text = "Playing";
-    } else if (_isDownloading) {
+    } else if (isDownloading) {
       icon = Icons.stop;
       text = "Cancel";
-    } else if (_isReadyToPlay) {
-      icon = Icons.play_arrow_outlined;
-      text = "Play";
-    } else if (_has_download_sources) {
+    } else if (isReadyToPlay) {
+      if (getFileExist()) {
+        icon = Icons.play_arrow_outlined;
+        text = "Play";
+      } else {
+        icon = Icons.folder_off;
+        text = "File not found";
+      }
+    } else if (hasDownloadSources) {
       icon = Icons.cloud_download_outlined;
       text = "Download";
     }
 
-    return ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding, vertical: verticalPadding)),
-        onPressed:
-            (_has_download_sources || _isReadyToPlay || _isDownloading) &&
-                    !_isPlaying
-                ? () => {
-                      if (_isDownloading)
-                        {handleCancelDownload()}
-                      else if (_isReadyToPlay && libraryItem != null)
-                        {
-                          RomService.openDownloadedRom(libraryItem),
-                          AlertsService.showSnackbar(context, "Rom launched")
-                        }
-                      else
-                        {
-                          handleShowDownload(),
-                        }
-                    }
-                : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, size: iconSize),
-            SizedBox(
-              width: spacing,
-            ),
-            Text(text,
-                style:
-                    TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600)),
-          ],
-        ));
+    return ElevatedButton.icon(
+      icon: Icon(icon, size: iconSize),
+      label: Text(
+        text,
+        style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+      ),
+      style: ElevatedButton.styleFrom(padding: padding),
+      onPressed:
+          (hasDownloadSources || isReadyToPlay || isDownloading) && !isPlaying
+              ? handleButtonPress
+              : null,
+    );
   }
 }

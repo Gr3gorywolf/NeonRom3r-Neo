@@ -1,17 +1,22 @@
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/duration_picker_dialog.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
 
 class RomSettingsDialog extends StatelessWidget {
   final RomInfo rom;
@@ -25,13 +30,19 @@ class RomSettingsDialog extends StatelessWidget {
     var _downloadPath = libraryItem?.filePath ?? "";
     var overrideEmulator = libraryItem?.overrideEmulator ?? "";
     launchParameters.text = libraryItem?.openParams ?? "";
-    var fileExists = _downloadPath.isNotEmpty;
-    _pickRomPath() async {
-      final selectedFiles =
-          await FilePicker.platform.pickFiles(type: FileType.any);
+    var hasPath = _downloadPath.isNotEmpty;
 
-      if (selectedFiles == null || libraryItem == null) return;
-      libraryItem.filePath = selectedFiles.files.first.path ?? "";
+    _getFileExist() {
+      if (hasPath) {
+        return File(libraryItem!.filePath!).existsSync();
+      }
+      return false;
+    }
+
+    _pickRomPath() async {
+      var file = await FileSystemService.locateFile();
+      if (file == null || libraryItem == null) return;
+      libraryItem.filePath = file;
       await provider.updateLibraryItem(libraryItem);
     }
 
@@ -65,6 +76,31 @@ class RomSettingsDialog extends StatelessWidget {
       if (libraryItem != null) {
         libraryItem.overrideEmulator = "";
         await provider.updateLibraryItem(libraryItem);
+      }
+    }
+
+    _handleOpenFolder() async {
+      final romFolder = p.dirname(libraryItem?.filePath ?? '');
+
+      if (romFolder.isEmpty) return;
+      if (Platform.isAndroid) {
+        var intentUri = await IntentsAndroidInterface.getIntentUri(romFolder);
+        final intent = AndroidIntent(
+          action: 'android.intent.action.VIEW',
+          data: intentUri,
+          flags: <int>[
+            0x10000000, // FLAG_ACTIVITY_NEW_TASK
+            0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
+          ],
+          type: 'vnd.android.document/directory',
+        );
+
+        await intent.launch();
+      } else {
+        final uri = Uri.file(romFolder);
+        if (!await launchUrl(uri)) {
+          throw Exception('Failed to open folder $romFolder');
+        }
       }
     }
 
@@ -128,6 +164,7 @@ class RomSettingsDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _SettingItem(
+                padding: EdgeInsets.only(bottom: 0),
                 title: "Rom path",
                 content: Text(
                     _downloadPath.isEmpty ? "Not downloaded" : _downloadPath),
@@ -143,6 +180,23 @@ class RomSettingsDialog extends StatelessWidget {
                   IconButton(icon: Icon(Icons.edit), onPressed: _pickRomPath)
                 ],
               ),
+              ...!_downloadPath.isEmpty
+                  ? [
+                      !_getFileExist()
+                          ? Padding(
+                              padding: const EdgeInsets.only(left: 5),
+                              child: Text("The file cannot be found on disk",
+                                  style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w500)),
+                            )
+                          : TextButton.icon(
+                              onPressed: _handleOpenFolder,
+                              label: Text("Open Rom Path"),
+                              icon: Icon(Icons.folder_open)),
+                      SizedBox(height: 10),
+                    ]
+                  : [],
               _SettingItem(
                 title: "Emulator override",
                 content: Text(overrideEmulator.isEmpty
@@ -232,11 +286,11 @@ class RomSettingsDialog extends StatelessWidget {
                   ]),
               _DangerSettingItem(
                   title: "Delete files",
-                  enabled: fileExists,
+                  enabled: hasPath,
                   content: Text(
                       "Permanently delete the file from storage. The library entry will not be removed."),
                   icon: Icons.dangerous,
-                  actions: fileExists
+                  actions: hasPath
                       ? [
                           IconButton(
                               icon: Icon(
@@ -265,6 +319,7 @@ class _SettingItem extends StatelessWidget {
   final Widget content;
   final String? helperText;
   final IconData icon;
+  final EdgeInsetsGeometry? padding;
   final List<IconButton> actions;
 
   const _SettingItem(
@@ -272,12 +327,13 @@ class _SettingItem extends StatelessWidget {
       required this.content,
       this.helperText,
       required this.icon,
-      required this.actions});
+      required this.actions,
+      this.padding});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: padding ?? const EdgeInsets.only(bottom: 10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

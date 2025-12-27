@@ -27,8 +27,8 @@ class RomsRepository {
           for (var rom in json.decode(file)['games']) {
             roms[rom['slug'] ?? ""] = RomInfo.fromJson(rom);
           }
+          retrievedFromCache = true;
         }
-        retrievedFromCache = true;
       }
     }
 

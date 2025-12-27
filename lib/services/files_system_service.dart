@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
@@ -71,6 +72,13 @@ class FileSystemService {
 
   static get emulatorIntentsFilePath {
     return _appSupportPath + "/emulatorIntents.json";
+  }
+
+  static Future<String?> locateFile() async {
+    final selectedFiles =
+        await FilePicker.platform.pickFiles(type: FileType.any);
+    if (selectedFiles == null || selectedFiles.files.isEmpty) return null;
+    return selectedFiles.files.first.path!;
   }
 
   static setupDownloadsPath() async {

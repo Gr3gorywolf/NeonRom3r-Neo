@@ -72,7 +72,7 @@ class _LibraryPageState extends State<LibraryPage> {
                 return ToolBarFilterElement(
                     label:
                         ConsoleService.getConsoleFromName(console)?.name ?? "",
-                    field: 'rom.console.slug',
+                    field: 'rom.console',
                     value: console);
               }).toList(),
             ),

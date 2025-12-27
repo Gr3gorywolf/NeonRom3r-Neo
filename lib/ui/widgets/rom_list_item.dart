@@ -156,7 +156,7 @@ class RomListItem extends StatelessWidget {
                         ),
                         Positioned(
                           right: 0,
-                          bottom: 7,
+                          bottom: 10,
                           child: Opacity(
                             opacity: 0.7,
                             child: Text(
@@ -167,10 +167,7 @@ class RomListItem extends StatelessWidget {
                         Positioned(
                           right: 0,
                           top: 0,
-                          child: RomLibraryActions(
-                            rom: romItem,
-                            size: RomLibraryActionSize.small,
-                          ),
+                          child: RomLibraryActions(rom: romItem),
                         )
                       ],
                     ),

@@ -23,7 +23,6 @@ class RomLibraryActions extends StatelessWidget {
   Widget build(BuildContext context) {
     var libraryProvider = Provider.of<LibraryProvider>(context);
     var _libraryDetails = libraryProvider.getLibraryItem(rom.slug);
-    var isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
     var isFavorite = (_libraryDetails?.isFavorite ?? false) == true;
     double? minimumSize = 35;
     double? iconSize = 22;
@@ -38,13 +37,6 @@ class RomLibraryActions extends StatelessWidget {
       minimumSize = 40;
       iconSize = 26;
       contentWidth = 40;
-    }
-
-    getFileExist() {
-      if (isReadyToPlay) {
-        return File(_libraryDetails!.filePath!).existsSync();
-      }
-      return false;
     }
 
     handleToggleLike() {
@@ -70,31 +62,6 @@ class RomLibraryActions extends StatelessWidget {
           builder: (dialog) {
             return RomSettingsDialog(rom: rom);
           });
-    }
-
-    handleOpenFolder() async {
-      final romFolder = p.dirname(_libraryDetails?.filePath ?? '');
-
-      if (romFolder.isEmpty) return;
-      if (Platform.isAndroid) {
-        var intentUri = await IntentsAndroidInterface.getIntentUri(romFolder);
-        final intent = AndroidIntent(
-          action: 'android.intent.action.VIEW',
-          data: intentUri,
-          flags: <int>[
-            0x10000000, // FLAG_ACTIVITY_NEW_TASK
-            0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-          ],
-          type: 'vnd.android.document/directory',
-        );
-
-        await intent.launch();
-      } else {
-        final uri = Uri.file(romFolder);
-        if (!await launchUrl(uri)) {
-          throw Exception('Failed to open folder $romFolder');
-        }
-      }
     }
 
     iconButtonStyle() {
@@ -151,20 +118,6 @@ class RomLibraryActions extends StatelessWidget {
             color: Colors.grey,
           ),
         ),
-        SizedBox(
-          width: spacing,
-        ),
-        if (isReadyToPlay)
-          Container(
-            width: contentWidth,
-            child: IconButton(
-              iconSize: iconSize,
-              style: iconButtonStyle(),
-              icon: Icon(getFileExist() ? Icons.folder : Icons.folder_off),
-              onPressed: handleOpenFolder,
-              color: getFileExist() ? Colors.grey : Colors.red,
-            ),
-          ),
       ],
     );
   }

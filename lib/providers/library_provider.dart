@@ -72,8 +72,14 @@ class LibraryProvider extends ChangeNotifier {
     return _libraryItems[romSlug];
   }
 
-  addRomToLibrary(RomInfo rom) async {
-    addLibraryItem(RomLibraryItem(rom: rom, addedAt: DateTime.now()));
+  RomLibraryItem addRomToLibrary(RomInfo rom) {
+    var libraryItem = RomLibraryItem(rom: rom, addedAt: DateTime.now());
+    var foundLibraryItem = _libraryItems[rom.slug];
+    if (foundLibraryItem != null) {
+      return foundLibraryItem;
+    }
+    addLibraryItem(libraryItem);
+    return libraryItem;
   }
 
   addLibraryItem(RomLibraryItem item) async {
