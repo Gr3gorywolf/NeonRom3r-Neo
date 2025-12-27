@@ -434,12 +434,13 @@ Future<String> _resolveTorrent({
   bool Function()? isAborted,
 }) async {
   var uriHash = StringHelper.hash20(uri);
-  final cache = Directory(torrentsPath ?? "" + "/${uriHash}")
+  final cache = Directory((torrentsPath ?? "") + "/${uriHash}")
     ..createSync(recursive: true);
 
   // CASE 1: Remote or local .torrent → download to cache
   if (uri.toLowerCase().endsWith('.torrent')) {
-    final targetPath = p.join(cache.path, p.basename(uri));
+    final targetPath =
+        p.join(cache.path, StringHelper.hash20(uri), p.basename(uri));
 
     // Skip download if already cached
     if (await File(targetPath).exists()) {
