@@ -6,6 +6,7 @@ import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/ui/pages/rom_details_dialog/rom_details_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/rom_action_button.dart';
 import 'package:yamata_launcher/ui/widgets/rom_library_actions.dart';
+import 'package:yamata_launcher/ui/widgets/rom_rating.dart';
 import 'package:yamata_launcher/ui/widgets/rom_thumbnail.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,14 @@ class RomListItem extends StatelessWidget {
     var libraryProvider = Provider.of<LibraryProvider>(context);
     var _downloadInfo = _provider.getDownloadInfo(romItem);
     var _libraryDetails = libraryProvider.getLibraryItem(romItem.slug);
+    var gameplayThumbnail = RomThumbnail(
+      this.romItem!,
+      customUrl: this.romItem!.gameplayCovers != null &&
+              this.romItem!.gameplayCovers!.isNotEmpty
+          ? this.romItem!.gameplayCovers!.first
+          : null,
+      timeout: Duration(milliseconds: 60),
+    );
     var thumbnail = RomThumbnail(
       this.romItem!,
       timeout: Duration(milliseconds: 60),
@@ -64,6 +73,8 @@ class RomListItem extends StatelessWidget {
           minimumSize: Size(35, 35));
     }
 
+    buildRating({String? rating, double size = 10}) {}
+
     /// List Item View
     if (itemType == RomListItemType.listItem) {
       return InkWell(
@@ -81,12 +92,23 @@ class RomListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    child: ClipRRect(
-                        child: thumbnail,
-                        borderRadius: BorderRadius.circular(6)),
+                  Stack(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        child: ClipRRect(
+                            child: thumbnail,
+                            borderRadius: BorderRadius.circular(6)),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: RomRating(
+                          rating: romItem!.rating,
+                        ),
+                      )
+                    ],
                   ),
                   SizedBox(
                     width: 12,
@@ -195,13 +217,41 @@ class RomListItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      height: 200,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
-                        child: thumbnail,
-                      ),
+                    Stack(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 200,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.all(Radius.circular(6)),
+                            child:
+                                Opacity(opacity: 0.5, child: gameplayThumbnail),
+                          ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          top: 0,
+                          child: Center(
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              child: ClipRRect(
+                                  child: thumbnail,
+                                  borderRadius: BorderRadius.circular(6)),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: RomRating(
+                            rating: romItem!.rating,
+                            size: 12,
+                          ),
+                        )
+                      ],
                     ),
                     SizedBox(
                       height: 7,

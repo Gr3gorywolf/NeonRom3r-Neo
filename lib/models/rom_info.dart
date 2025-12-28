@@ -7,6 +7,7 @@ class RomInfo implements JsonSerializable {
   String name = "";
   String? portrait;
   String? logo;
+  String? rating;
   String? releaseDate;
   String? titleImage;
   List<String>? gameplayCovers;
@@ -18,6 +19,7 @@ class RomInfo implements JsonSerializable {
     required this.name,
     this.portrait,
     this.logo,
+    this.rating,
     this.titleImage,
     this.releaseDate,
     this.gameplayCovers,
@@ -36,6 +38,7 @@ class RomInfo implements JsonSerializable {
     slug = json['slug'];
     detailsUrl = json['detailsUrl'];
     releaseDate = json['releaseDate'];
+    rating = json['rating'];
   }
 
   Map<String, dynamic> toJson() {
@@ -49,6 +52,7 @@ class RomInfo implements JsonSerializable {
     data['slug'] = this.slug;
     data['detailsUrl'] = this.detailsUrl;
     data['releaseDate'] = this.releaseDate;
+    data['rating'] = this.rating;
     return data;
   }
 }

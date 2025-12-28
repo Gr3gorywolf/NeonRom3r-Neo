@@ -10,6 +10,7 @@ import 'package:yamata_launcher/ui/widgets/Images_carousel.dart';
 import 'package:yamata_launcher/ui/widgets/rom_action_button.dart';
 import 'package:yamata_launcher/ui/widgets/rom_download_sources_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/rom_library_actions.dart';
+import 'package:yamata_launcher/ui/widgets/rom_rating.dart';
 import 'package:yamata_launcher/ui/widgets/rom_thumbnail.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:provider/provider.dart';
@@ -86,6 +87,14 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
     final isSmallScreen = screenWidth < 500;
 
     final thumbnail = RomThumbnail(widget.rom);
+    var gameplayThumbnail = RomThumbnail(
+      widget.rom!,
+      customUrl: widget.rom!.gameplayCovers != null &&
+              widget.rom!.gameplayCovers!.isNotEmpty
+          ? widget.rom!.gameplayCovers!.first
+          : null,
+      timeout: Duration(milliseconds: 60),
+    );
     final provider = DownloadProvider.of(context);
     final libraryProvider = LibraryProvider.of(context);
     final downloadInfo = provider.getDownloadInfo(widget.rom);
@@ -153,13 +162,43 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 180,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: thumbnail,
-                    ),
+                  Stack(
+                    children: [
+                      Opacity(
+                        opacity: 0.7,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 200,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: gameplayThumbnail,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        top: 0,
+                        child: Center(
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            child: ClipRRect(
+                                child: thumbnail,
+                                borderRadius: BorderRadius.circular(6)),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: RomRating(
+                          rating: widget.rom.rating,
+                          size: 14,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   detailsContent,
@@ -168,13 +207,25 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
             : Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SizedBox(
-                    width: 170,
-                    height: 228,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: thumbnail,
-                    ),
+                  Stack(
+                    children: [
+                      SizedBox(
+                        width: 170,
+                        height: 228,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: thumbnail,
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: RomRating(
+                          rating: widget.rom.rating,
+                          size: 14,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 20),
                   Expanded(child: detailsContent),

@@ -14,8 +14,10 @@ class RomThumbnail extends StatefulWidget {
   RomInfo info;
   double height;
   double width;
+  String? customUrl;
   Duration? timeout;
-  RomThumbnail(this.info, {this.height = 50, this.width = 50, this.timeout});
+  RomThumbnail(this.info,
+      {this.height = 50, this.width = 50, this.timeout, this.customUrl});
 
   @override
   State<RomThumbnail> createState() => _RomThumbnailState();
@@ -50,6 +52,7 @@ class _RomThumbnailState extends State<RomThumbnail> {
 
   @override
   Widget build(BuildContext context) {
+    var url = widget.customUrl ?? widget.info.portrait;
     if (!timeoutEnded) {
       return Skeletonizer.zone(
         enabled: true,
@@ -63,7 +66,7 @@ class _RomThumbnailState extends State<RomThumbnail> {
       );
     }
     return Image.network(
-      widget.info?.portrait ?? "",
+      url ?? "",
       errorBuilder: (context, obj, trace) {
         var cachedImg = getCatchedImage();
         if (cachedImg != null) {
