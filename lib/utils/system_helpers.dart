@@ -14,6 +14,10 @@ class SystemHelpers {
     return binary;
   }
 
+  static String getFileExtension(String fileName) {
+    return fileName.split('.').last;
+  }
+
   static String get aria2cAssetBinary {
     var aria2cBinary = "aria2c";
     if (Platform.isWindows) {

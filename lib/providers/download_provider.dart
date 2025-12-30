@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/database/daos/library_dao.dart';
@@ -22,8 +23,10 @@ import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/download_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/extraction_service.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:toast/toast.dart';
+import 'package:yamata_launcher/utils/system_helpers.dart';
 
 class _ActiveAria2Download {
   RomInfo? rom;
@@ -113,7 +116,13 @@ class DownloadProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  abortDownload(DownloadInfo info) {
+  abortDownload(DownloadInfo info) async {
+    if (info.isUncompressing) {
+      await ExtractionService.cancel(info.downloadId ?? "");
+      _activeDownloadInfos
+          .removeWhere((element) => element.downloadId == info.downloadId);
+      return;
+    }
     final active = _aria2cDownloadProcesses[info.downloadId];
     if (active != null) {
       _activeDownloadInfos
@@ -178,7 +187,6 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadPercent = 100;
       info.downloadInfo = 'Download completed';
       print("Download completed: ${event.outputFilePath}");
-      _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
       _registerCompletedDownload(info, rom, event.outputFilePath ?? "");
       _disposeActive(handle.id);
       notifyListeners();
@@ -201,6 +209,99 @@ class DownloadProvider extends ChangeNotifier {
         );
       });
     }
+  }
+
+  void _registerCompletedDownload(
+      DownloadInfo download, RomInfo rom, String path) async {
+    BuildContext? context = navigatorKey.currentContext;
+    if (context == null) {
+      return;
+    }
+    var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    var libraryItem = libraryProvider.getLibraryItem(rom.slug);
+    if (libraryItem == null) {
+      libraryItem = RomLibraryItem(
+        rom: rom,
+        filePath: path,
+        downloadedAt: DateTime.now(),
+        addedAt: DateTime.now(),
+      );
+      await libraryProvider.addLibraryItem(libraryItem);
+      return;
+    }
+    libraryItem.filePath = path;
+    libraryItem.downloadedAt = DateTime.now();
+    await libraryProvider.updateLibraryItem(libraryItem);
+    await NotificationsService.showNotification(
+      title: 'Download completed',
+      body: '${rom.name} has been downloaded successfully.',
+      image: rom.portrait,
+      tag: rom.slug,
+    );
+    var fileExtension = SystemHelpers.getFileExtension(path).toLowerCase();
+    var extractionEnabled =
+        SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
+    if (extractionEnabled == true &&
+        VALID_COMPRESSED_EXTENSIONS.contains(fileExtension)) {
+      _handleUncompression(download, rom, path);
+    } else {
+      _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(download));
+    }
+  }
+
+  void _handleUncompression(
+    DownloadInfo download,
+    RomInfo rom,
+    String path,
+  ) async {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    final libraryProvider =
+        Provider.of<LibraryProvider>(context, listen: false);
+
+    final libraryItem = libraryProvider.getLibraryItem(download.romSlug);
+
+    final file = File(path);
+    final parentDir = file.parent;
+
+    final (id, progressStream) = await ExtractionService.enqueueExtraction(
+      input: file,
+      output: parentDir,
+      extractionId: download.downloadId,
+    );
+
+    progressStream.listen((progress) {
+      download.isUncompressing = true;
+
+      if (progress < 0) {
+        _setQueuedState(download);
+      } else {
+        _setUncompressingState(
+          download: download,
+          progress: progress,
+          rom: rom,
+        );
+
+        if (progress >= 100) {
+          _finishUncompression(
+            download: download,
+            rom: rom,
+            zipFile: file,
+            outputDir: parentDir,
+            libraryItem: libraryItem,
+            libraryProvider: libraryProvider,
+          );
+        }
+      }
+
+      notifyListeners();
+    });
+  }
+
+  void _disposeActive(String? id) {
+    final active = _aria2cDownloadProcesses.remove(id);
+    active?.sub?.cancel();
   }
 
   /// ========================================================================
@@ -238,37 +339,67 @@ class DownloadProvider extends ChangeNotifier {
     return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 
-  void _registerCompletedDownload(
-      DownloadInfo download, RomInfo rom, String path) async {
-    BuildContext? context = navigatorKey.currentContext;
-    if (context == null) {
-      return;
-    }
-    var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
-    var libraryItem = libraryProvider.getLibraryItem(rom.slug);
-    if (libraryItem == null) {
-      libraryItem = RomLibraryItem(
-        rom: rom,
-        filePath: path,
-        downloadedAt: DateTime.now(),
-        addedAt: DateTime.now(),
+  void _setQueuedState(DownloadInfo download) {
+    download.downloadPercent = 0;
+    download.downloadInfo = "Queued for uncompression...";
+  }
+
+  void _setUncompressingState({
+    required DownloadInfo download,
+    required double progress,
+    required RomInfo rom,
+  }) {
+    download.downloadPercent = progress.toInt();
+    download.downloadInfo = "Uncompressing...";
+
+    if (Platform.isAndroid) {
+      NotificationsService.showNotification(
+        title: 'Extracting ${rom.name}',
+        body: download.downloadInfo ?? "",
+        image: rom.portrait,
+        progressPercent: download.downloadPercent,
+        tag: rom.slug,
       );
-      await libraryProvider.addLibraryItem(libraryItem);
-      return;
     }
-    libraryItem.filePath = path;
-    libraryItem.downloadedAt = DateTime.now();
-    await libraryProvider.updateLibraryItem(libraryItem);
-    await NotificationsService.showNotification(
-      title: 'Download completed',
-      body: '${rom.name} has been downloaded successfully.',
+  }
+
+  void _finishUncompression({
+    required DownloadInfo download,
+    required RomInfo rom,
+    required File zipFile,
+    required Directory outputDir,
+    required RomLibraryItem? libraryItem,
+    required LibraryProvider libraryProvider,
+  }) {
+    download.downloadPercent = 100;
+    download.downloadInfo = "Extraction completed.";
+
+    // look for extracted ROM
+    for (var file in outputDir.listSync()) {
+      final ext = file.path.split('.').last.toLowerCase();
+
+      if (VALID_ROM_EXTENSIONS.contains(ext)) {
+        if (libraryItem != null) {
+          libraryItem.filePath = file.path;
+          libraryProvider.updateLibraryItem(libraryItem);
+        }
+
+        // delete zip
+        if (zipFile.existsSync()) {
+          zipFile.deleteSync();
+        }
+
+        break;
+      }
+    }
+
+    NotificationsService.showNotification(
+      title: download.downloadInfo ?? "",
+      body: '${rom.name} is ready to play!',
       image: rom.portrait,
       tag: rom.slug,
     );
-  }
 
-  void _disposeActive(String? id) {
-    final active = _aria2cDownloadProcesses.remove(id);
-    active?.sub?.cancel();
+    _activeDownloadInfos.remove(download);
   }
 }

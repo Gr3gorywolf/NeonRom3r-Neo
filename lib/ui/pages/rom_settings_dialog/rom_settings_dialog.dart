@@ -39,6 +39,13 @@ class RomSettingsDialog extends StatelessWidget {
       return false;
     }
 
+    _getFileCanBeExtracted() {
+      if (!hasPath) return false;
+      if (!_getFileExist()) return false;
+      var fileExtension = p.extension(libraryItem!.filePath!).toLowerCase();
+      return VALID_COMPRESSED_EXTENSIONS.contains(fileExtension);
+    }
+
     _pickRomPath() async {
       var file = await FileSystemService.locateFile();
       if (file == null || libraryItem == null) return;
@@ -102,6 +109,10 @@ class RomSettingsDialog extends StatelessWidget {
           throw Exception('Failed to open folder $romFolder');
         }
       }
+    }
+
+    _handleExtractRom() async {
+      await RomService.extractRom(libraryItem!);
     }
 
     _removeFromLibrary() async {
@@ -190,10 +201,20 @@ class RomSettingsDialog extends StatelessWidget {
                                       color: Colors.redAccent,
                                       fontWeight: FontWeight.w500)),
                             )
-                          : TextButton.icon(
-                              onPressed: _handleOpenFolder,
-                              label: Text("Open Rom Path"),
-                              icon: Icon(Icons.folder_open)),
+                          : Row(
+                              children: [
+                                TextButton.icon(
+                                    onPressed: _handleOpenFolder,
+                                    label: Text("Open Rom Path"),
+                                    icon: Icon(Icons.folder_open)),
+                                SizedBox(width: 10),
+                                if (_getFileCanBeExtracted())
+                                  TextButton.icon(
+                                      onPressed: _handleExtractRom,
+                                      label: Text("Extract Rom"),
+                                      icon: Icon(Icons.folder_zip)),
+                              ],
+                            ),
                       SizedBox(height: 10),
                     ]
                   : [],

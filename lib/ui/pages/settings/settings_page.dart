@@ -28,6 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _prefixConsoleSlug = false;
   bool _enableNotifications = false;
   bool _enableImageCaching = false;
+  bool _extractRomsAfterDownload = false;
 
   @override
   void initState() {
@@ -49,6 +50,8 @@ class _SettingsPageState extends State<SettingsPage> {
         await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
     _enableImageCaching =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_IMAGE_CACHING);
+    _extractRomsAfterDownload =
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
 
     setState(() {});
   }
@@ -69,6 +72,9 @@ class _SettingsPageState extends State<SettingsPage> {
           break;
         case SettingsKeys.ENABLE_IMAGE_CACHING:
           _enableImageCaching = value as bool;
+          break;
+        case SettingsKeys.ENABLE_EXTRACTION:
+          _extractRomsAfterDownload = value as bool;
           break;
         default:
           break;
@@ -136,6 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Sources section
             const _SectionHeader(title: 'Sources'),
             _NavigationTile(
               icon: Icons.download_sharp,
@@ -159,6 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) =>
                   _setSetting(SettingsKeys.ENABLE_NOTIFICATIONS, v),
             ),
+            // Path section
             const _SectionHeader(title: 'Paths'),
             ListTile(
               leading: const Icon(Icons.folder),
@@ -176,6 +184,17 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) =>
                   _setSetting(SettingsKeys.PREFIX_CONSOLE_SLUG, v),
             ),
+            // Downloads section
+            const _SectionHeader(title: 'Downloads'),
+            _SwitchTile(
+              icon: Icons.drive_file_move,
+              title: 'Extract roms after download',
+              subtitle:
+                  "If the downloaded file is compressed, it will be extracted automatically",
+              value: _extractRomsAfterDownload,
+              onChanged: (v) => _setSetting(SettingsKeys.ENABLE_EXTRACTION, v),
+            ),
+            // Roms & Emulators section
             const _SectionHeader(title: 'Roms & Emulators'),
             _NavigationTile(
               icon: Icons.gamepad,

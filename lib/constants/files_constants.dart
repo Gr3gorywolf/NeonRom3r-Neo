@@ -106,8 +106,6 @@ const VALID_ROM_EXTENSIONS = [
   'gdi', // Dreamcast
 
   // Arcade
-  'zip', // MAME
-  '7z', // MAME
   'chd', // MAME (HDD / CD)
   'rom', // Arcade generic
 
@@ -115,6 +113,9 @@ const VALID_ROM_EXTENSIONS = [
   'exe', // DOS / PC
   'com', // DOS
   'dsk', // Amstrad / Apple II
+  'chd',
+  'cso',
+  'rvz',
 ];
 
 const VALID_COMPRESSED_EXTENSIONS = [

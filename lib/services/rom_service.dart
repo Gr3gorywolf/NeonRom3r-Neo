@@ -15,7 +15,7 @@ import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
-import 'package:yamata_launcher/ui/widgets/unzip_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/extraction_dialog.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
@@ -103,7 +103,7 @@ class RomService {
   }
 
   static Future extractRom(RomLibraryItem downloadedRom) async {
-    var resultFile = await UnzipDialog.show(
+    var resultFile = await ExtractionDialog.show(
         navigatorKey.currentContext!, File(downloadedRom.filePath ?? ""));
     if (resultFile == null) {
       AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
