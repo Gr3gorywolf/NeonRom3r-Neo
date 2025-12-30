@@ -241,8 +241,6 @@ class DownloadProvider extends ChangeNotifier {
     var fileExtension = SystemHelpers.getFileExtension(path).toLowerCase();
     var extractionEnabled =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
-    print(
-        "extractionEnabled: $extractionEnabled, fileExtension: $fileExtension");
     if (extractionEnabled == true &&
         VALID_COMPRESSED_EXTENSIONS.contains(fileExtension)) {
       _handleExtractRom(download, rom, path);
@@ -374,7 +372,7 @@ class DownloadProvider extends ChangeNotifier {
     required Directory outputDir,
     required RomLibraryItem? libraryItem,
     required LibraryProvider libraryProvider,
-  }) {
+  }) async {
     download.downloadPercent = 100;
     download.downloadInfo = "Extraction completed.";
 
@@ -389,10 +387,12 @@ class DownloadProvider extends ChangeNotifier {
         }
 
         // delete zip
+        await Future.delayed(Duration(milliseconds: 500));
         if (zipFile.existsSync()) {
-          zipFile.deleteSync();
+          try {
+            zipFile.deleteSync();
+          } catch (e) {}
         }
-
         break;
       }
     }
