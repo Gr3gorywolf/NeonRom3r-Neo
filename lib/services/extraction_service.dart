@@ -63,7 +63,7 @@ class ExtractionService {
     return (id, progressController.stream);
   }
 
-  static Future<Stream<double>> extractOnce(
+  static Future<(Stream<double> progress, Function cancel)> extractOnce(
       {required File input, required Directory output}) async {
     final receivePort = ReceivePort();
     final progressController = StreamController<double>.broadcast();
@@ -77,7 +77,19 @@ class ExtractionService {
         _controlPorts[id] = message;
       }
     });
-    await Isolate.spawn(
+
+    void cancel() async {
+      final ctrl = _controlPorts[id];
+      if (ctrl != null) {
+        ctrl.send({"type": "cancel"});
+      }
+      await Future.delayed(Duration(milliseconds: 100));
+      receivePort.close();
+      _controlPorts.remove(id);
+      progressController.close();
+    }
+
+    Isolate isolate = await Isolate.spawn(
       _isolateUncompress,
       {
         "events": receivePort.sendPort,
@@ -87,20 +99,23 @@ class ExtractionService {
         "output": output.path,
       },
     );
-    // Listen for control port from isolate
-    await for (final message in receivePort) {
-      if (message is double) {
-        progressController.add(message);
+    Future.microtask(() async {
+      progressController.add(-1);
+      // Listen for control port from isolate
+      await for (final message in receivePort) {
+        if (message is double) {
+          progressController.add(message);
 
-        if (message >= 100) {
-          receivePort.close();
-          _controlPorts.remove(id);
-          progressController.close();
+          if (message >= 100) {
+            receivePort.close();
+            _controlPorts.remove(id);
+            progressController.close();
+          }
         }
       }
-    }
+    });
 
-    return progressController.stream;
+    return (progressController.stream, cancel);
   }
 
   /// Cancel a running (or queued) task
@@ -181,18 +196,17 @@ class ExtractionService {
     bool cancelled = false;
 
     final controlReceiver = ReceivePort();
+    final inputStream = InputFileStream(inputPath);
     controlAnnounce.send(controlReceiver.sendPort);
+    final archive = ZipDecoder().decodeStream(inputStream);
     controlReceiver.listen((msg) {
       if (msg is Map && msg["type"] == "cancel") {
         cancelled = true;
+        inputStream.closeSync();
       }
     });
-
-    final inputStream = InputFileStream(inputPath);
-
     try {
       events.send(0.0);
-      final archive = ZipDecoder().decodeStream(inputStream);
       await ExtractionHelper().extractArchiveToDiskWithProgress(
           archive, outputPath, onProgress: (progress) {
         events.send(progress);

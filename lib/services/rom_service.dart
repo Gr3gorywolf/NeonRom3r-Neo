@@ -114,8 +114,10 @@ class RomService {
         listen: false);
     downloadedRom.filePath = resultFile.path;
     provider.updateLibraryItem(downloadedRom);
-    AlertsService.showSnackbar(
-        navigatorKey.currentContext!, "ROM extracted successfully!");
+    Future.microtask(() {
+      AlertsService.showSnackbar(
+          navigatorKey.currentContext!, "ROM extracted successfully!");
+    });
   }
 
   static String normalizeRomTitle(String input) {

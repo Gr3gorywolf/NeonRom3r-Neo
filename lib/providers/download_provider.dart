@@ -240,16 +240,18 @@ class DownloadProvider extends ChangeNotifier {
     );
     var fileExtension = SystemHelpers.getFileExtension(path).toLowerCase();
     var extractionEnabled =
-        SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
+        await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
+    print(
+        "extractionEnabled: $extractionEnabled, fileExtension: $fileExtension");
     if (extractionEnabled == true &&
         VALID_COMPRESSED_EXTENSIONS.contains(fileExtension)) {
-      _handleUncompression(download, rom, path);
+      _handleExtractRom(download, rom, path);
     } else {
       _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(download));
     }
   }
 
-  void _handleUncompression(
+  void _handleExtractRom(
     DownloadInfo download,
     RomInfo rom,
     String path,
@@ -264,7 +266,7 @@ class DownloadProvider extends ChangeNotifier {
 
     final file = File(path);
     final parentDir = file.parent;
-
+    var ended = false;
     final (id, progressStream) = await ExtractionService.enqueueExtraction(
       input: file,
       output: parentDir,
@@ -275,16 +277,18 @@ class DownloadProvider extends ChangeNotifier {
       download.isUncompressing = true;
 
       if (progress < 0) {
-        _setQueuedState(download);
+        _setExtractionQueuedState(download);
       } else {
-        _setUncompressingState(
+        _setRomExtractionState(
           download: download,
           progress: progress,
           rom: rom,
         );
 
         if (progress >= 100) {
-          _finishUncompression(
+          if (ended) return;
+          ended = true;
+          _onExtractionEnded(
             download: download,
             rom: rom,
             zipFile: file,
@@ -339,12 +343,12 @@ class DownloadProvider extends ChangeNotifier {
     return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 
-  void _setQueuedState(DownloadInfo download) {
+  void _setExtractionQueuedState(DownloadInfo download) {
     download.downloadPercent = 0;
     download.downloadInfo = "Queued for uncompression...";
   }
 
-  void _setUncompressingState({
+  void _setRomExtractionState({
     required DownloadInfo download,
     required double progress,
     required RomInfo rom,
@@ -363,7 +367,7 @@ class DownloadProvider extends ChangeNotifier {
     }
   }
 
-  void _finishUncompression({
+  void _onExtractionEnded({
     required DownloadInfo download,
     required RomInfo rom,
     required File zipFile,

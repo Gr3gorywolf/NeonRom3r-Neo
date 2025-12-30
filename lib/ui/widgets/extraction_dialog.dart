@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
@@ -23,35 +24,39 @@ class ExtractionDialog extends StatefulWidget {
 }
 
 class _ExtractionDialogState extends State<ExtractionDialog> {
-  double progress = 0;
+  double progress = 0.0;
   String status = "Preparing…";
+  Function? cancel;
+  var isCompleting = false;
 
   @override
   void initState() {
     super.initState();
-    _unzip();
+    if (mounted) {
+      _unzip();
+    }
   }
 
   Future<void> _unzip() async {
-    var stream = await ExtractionService.extractOnce(
+    var (stream, cancelFn) = await ExtractionService.extractOnce(
         input: widget.zipFile, output: widget.zipFile.parent);
-    File? firstFile;
-    await for (var event in stream) {
+    cancel = cancelFn;
+    stream.listen((event) {
       if (event < 0) {
         setState(() {
           status = "Preparing…";
         });
-        continue;
+        return;
       }
       setState(() {
-        progress = event;
+        progress = event.ceilToDouble();
         status = "Unzipping… ${progress.toStringAsFixed(2)}%";
       });
-      if (progress >= 100) {
-        await _handleComplete();
-        break;
+      if (progress >= 100 && !isCompleting) {
+        isCompleting = true;
+        _handleComplete();
       }
-    }
+    });
   }
 
   _handleComplete() async {
@@ -65,6 +70,11 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
         break;
       }
     }
+
+    try {
+      await Future.delayed(Duration(milliseconds: 500));
+      await widget.zipFile.delete();
+    } catch (e) {}
     Navigator.of(context).pop(extractedFile);
   }
 
@@ -75,11 +85,20 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LinearProgressIndicator(value: progress),
+          LinearProgressIndicator(value: progress / 100),
           const SizedBox(height: 12),
           Text(status, maxLines: 2, overflow: TextOverflow.ellipsis),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            cancel!();
+            Navigator.of(context).pop();
+          },
+          child: const Text("Cancel"),
+        ),
+      ],
     );
   }
 }

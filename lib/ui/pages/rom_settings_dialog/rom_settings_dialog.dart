@@ -14,6 +14,7 @@ import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/duration_picker_dialog.dart';
+import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as p;
@@ -42,7 +43,8 @@ class RomSettingsDialog extends StatelessWidget {
     _getFileCanBeExtracted() {
       if (!hasPath) return false;
       if (!_getFileExist()) return false;
-      var fileExtension = p.extension(libraryItem!.filePath!).toLowerCase();
+      var fileExtension =
+          SystemHelpers.getFileExtension(libraryItem!.filePath!).toLowerCase();
       return VALID_COMPRESSED_EXTENSIONS.contains(fileExtension);
     }
 
@@ -205,9 +207,8 @@ class RomSettingsDialog extends StatelessWidget {
                               children: [
                                 TextButton.icon(
                                     onPressed: _handleOpenFolder,
-                                    label: Text("Open Rom Path"),
+                                    label: Text("Open Folder"),
                                     icon: Icon(Icons.folder_open)),
-                                SizedBox(width: 10),
                                 if (_getFileCanBeExtracted())
                                   TextButton.icon(
                                       onPressed: _handleExtractRom,
