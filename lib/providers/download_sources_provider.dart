@@ -24,20 +24,23 @@ bool _isRomMatch(
   DownloadSourceRom sourceRom,
   RomInfo rom,
 ) {
+  var sourceRomTitleClear = sourceRom.title_clean ?? "";
+  var romTitleClear = rom.slug.replaceAll("${rom.console}-", "");
+  if (sourceRomTitleClear.isEmpty) return false;
   if (sourceRom.console != rom.console) return false;
 
-  if ((rom.console + "-" + (sourceRom.title_clean ?? "")) == rom.slug) {
+  if (sourceRom.title_clean == romTitleClear) {
     return true;
   }
   if ((sourceRom.title_clean ?? "")[0] != rom.name[0]) {
     return false;
   }
-  if (rom.slug.contains(sourceRom.title_clean!)) {
+  if (sourceRomTitleClear.contains(romTitleClear)) {
     return true;
   }
   final normalizedRomName = RomService.normalizeRomTitle(rom.name);
   return StringHelper.hasMinConsecutiveMatch(
-    sourceRom.title_clean!,
+    sourceRomTitleClear,
     normalizedRomName,
     minLength: normalizedRomName.length,
   );
