@@ -274,14 +274,15 @@ class DownloadProvider extends ChangeNotifier {
       input: file,
       output: parentDir,
       extractionId: download.downloadId,
+      onError: (error) {
+        _activeDownloadInfos.remove(download);
+        notifyListeners();
+      },
     );
 
     progressStream.listen((progress) {
       download.isExtracting = true;
-      if (progress == -2) {
-        _activeDownloadInfos.remove(download);
-        notifyListeners();
-      } else if (progress < 0) {
+      if (progress == -1) {
         _setExtractionQueuedState(download);
       } else {
         _setRomExtractionState(

@@ -40,7 +40,7 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
     var (stream, cancelFn) = await ExtractionService.extractOnce(
         input: widget.zipFile,
         output: widget.zipFile.parent,
-        onError: () {
+        onError: (data) {
           if (mounted) {
             Navigator.of(context).pop();
           }

@@ -16,6 +16,7 @@ class _QueueItem {
   final Directory output;
   final Completer<void> completer;
   final StreamController<double> progressController;
+  final void Function(Object error)? onError;
 
   _QueueItem({
     required this.id,
@@ -23,6 +24,7 @@ class _QueueItem {
     required this.output,
     required this.completer,
     required this.progressController,
+    this.onError,
   });
 }
 
@@ -35,15 +37,19 @@ class ExtractionService {
 
   ExtractionService();
 
-  static Future<(String id, Stream<double> progress)> enqueueExtraction(
-      {required File input,
-      required Directory output,
-      String? extractionId}) async {
+  static Future<(String id, Stream<double> progress)> enqueueExtraction({
+    required File input,
+    required Directory output,
+    String? extractionId,
+    void Function(Object error)? onError,
+  }) async {
     final id = extractionId ?? DateTime.now().microsecondsSinceEpoch.toString();
+
     if (maxConcurrent == 0) {
       maxConcurrent = await SettingsService()
           .get<int>(SettingsKeys.MAX_CONCURRENT_EXTRACTIONS);
     }
+
     final completer = Completer<void>();
     final progressController = StreamController<double>.broadcast();
 
@@ -53,10 +59,13 @@ class ExtractionService {
       output: output,
       completer: completer,
       progressController: progressController,
+      onError: onError,
     );
+
     _queue.add(item);
     _tryRunNext();
-    Future.delayed(Duration(milliseconds: 200), () {
+
+    Future.delayed(const Duration(milliseconds: 200), () {
       progressController.add(-1);
     });
 
@@ -65,17 +74,19 @@ class ExtractionService {
     return (id, progressController.stream);
   }
 
-  static Future<(Stream<double> progress, Function cancel)> extractOnce(
-      {required File input,
-      required Directory output,
-      Function? onError}) async {
+  static Future<(Stream<double> progress, Function cancel)> extractOnce({
+    required File input,
+    required Directory output,
+    Function(Object error)? onError,
+  }) async {
     final receivePort = ReceivePort();
     final progressController = StreamController<double>.broadcast();
 
     final id = DateTime.now().microsecondsSinceEpoch.toString();
-
     final controlPort = ReceivePort();
+
     progressController.add(0.0);
+
     controlPort.listen((message) {
       if (message is SendPort) {
         _controlPorts[id] = message;
@@ -87,49 +98,49 @@ class ExtractionService {
       if (ctrl != null) {
         ctrl.send({"type": "cancel"});
       }
-      await Future.delayed(Duration(milliseconds: 100));
+
+      await Future.delayed(const Duration(milliseconds: 100));
       receivePort.close();
       _controlPorts.remove(id);
-      progressController.close();
+      await progressController.close();
     }
 
     Isolate? isolate;
-    var params = {
+
+    final params = {
       "events": receivePort.sendPort,
       "control": controlPort.sendPort,
       "id": id,
       "input": input.path,
       "output": output.path,
     };
+
     if (Platform.isAndroid) {
       _isolateUncompress(params);
     } else {
-      isolate = await Isolate.spawn(
-        _isolateUncompress,
-        params,
-      );
+      isolate = await Isolate.spawn(_isolateUncompress, params);
     }
+
     Future.microtask(() async {
       progressController.add(-1);
-      // Listen for control port from isolate
+
       await for (final message in receivePort) {
         if (message is double) {
-          print("received message: $message");
           progressController.add(message);
           if (message == -2.0) {
             isolate?.kill(priority: Isolate.immediate);
-            await Future.delayed(Duration(milliseconds: 500));
             receivePort.close();
             _controlPorts.remove(id);
-            progressController.close();
-            onError!();
+            progressController.addError('Extraction failed');
+            await progressController.close();
+            onError?.call('Extraction failed');
             return;
           }
 
           if (message >= 100) {
             receivePort.close();
             _controlPorts.remove(id);
-            progressController.close();
+            await progressController.close();
           }
         }
       }
@@ -138,20 +149,22 @@ class ExtractionService {
     return (progressController.stream, cancel);
   }
 
-  /// Cancel a running (or queued) task
   static Future<void> cancel(String id) async {
-    // Remove from queue if not started yet
     final idx = _queue.indexWhere((q) => q.id == id);
+
     if (idx != -1) {
       final job = _queue.removeAt(idx);
+
       job.progressController.add(0);
       job.progressController.close();
       job.completer.complete();
+
+      job.onError?.call('Cancelled before start');
+
       _tryRunNext();
       return;
     }
 
-    // If running, notify isolate via control port
     final ctrl = _controlPorts[id];
     if (ctrl != null) {
       ctrl.send({"type": "cancel"});
@@ -159,13 +172,12 @@ class ExtractionService {
   }
 
   static void _tryRunNext() {
-    print("Running: $_running, Queue length: ${_queue.length}");
     if (_running >= maxConcurrent) return;
     if (_queue.isEmpty) return;
 
     final job = _queue.removeAt(0);
     _running++;
-    print("Running job ${job.id}");
+
     _runJob(job).whenComplete(() {
       _running--;
       _tryRunNext();
@@ -175,31 +187,39 @@ class ExtractionService {
   static Future<void> _runJob(_QueueItem job) async {
     final receivePort = ReceivePort();
     final controlPort = ReceivePort();
+
     job.progressController.add(0.0);
+
     controlPort.listen((message) {
       if (message is SendPort) {
         _controlPorts[job.id] = message;
       }
     });
-    var params = {
+
+    final params = {
       "events": receivePort.sendPort,
       "control": controlPort.sendPort,
       "id": job.id,
       "input": job.input.path,
       "output": job.output.path,
     };
+
     if (Platform.isAndroid) {
       _isolateUncompress(params);
     } else {
-      await Isolate.spawn(
-        _isolateUncompress,
-        params,
-      );
+      await Isolate.spawn(_isolateUncompress, params);
     }
-    // Listen for control port from isolate
+
     await for (final message in receivePort) {
       if (message is double) {
         job.progressController.add(message);
+        if (message == -2.0) {
+          job.completer.completeError('Extraction failed');
+          receivePort.close();
+          _controlPorts.remove(job.id);
+          job.onError?.call('Extraction failed');
+          return;
+        }
 
         if (message >= 100) {
           job.completer.complete();
@@ -210,7 +230,6 @@ class ExtractionService {
     }
   }
 
-  /// Runs inside isolate
   static Future<void> _isolateUncompress(Map data) async {
     final events = data["events"] as SendPort;
     final controlAnnounce = data["control"] as SendPort;
@@ -218,63 +237,73 @@ class ExtractionService {
     final inputPath = data["input"] as String;
     final outputPath = data["output"] as String;
 
-    bool cancelled = false;
-
     if (Platform.isAndroid) {
       final zipFile = File(inputPath);
       final destinationDir = Directory(outputPath);
+
       try {
         await flutter_archive.ZipFile.extractToDirectory(
-            zipFile: zipFile,
-            destinationDir: destinationDir,
-            onExtracting: (zipEntry, progress) {
-              print(
-                  "Extracting ${zipEntry.name}: ${progress.toStringAsFixed(1)}%");
-              final progressInt = progress.floor();
-              if (progressInt >= 100 || progressInt % 2 != 0)
-                return flutter_archive.ZipFileOperation.includeItem;
-              events.send(progressInt.toDouble());
+          zipFile: zipFile,
+          destinationDir: destinationDir,
+          onExtracting: (zipEntry, progress) {
+            final progressInt = progress.floor();
+            if (progressInt >= 100 || progressInt % 2 != 0) {
               return flutter_archive.ZipFileOperation.includeItem;
-            });
-        await Future.delayed(Duration(milliseconds: 500));
+            }
+            events.send(progressInt.toDouble());
+            return flutter_archive.ZipFileOperation.includeItem;
+          },
+        );
+
+        await Future.delayed(const Duration(milliseconds: 500));
         events.send(100.0);
       } catch (e) {
         print("Extraction error: $e");
         events.send(-2.0);
       }
-      await Future.delayed(Duration(milliseconds: 500));
+
+      await Future.delayed(const Duration(milliseconds: 500));
       return;
     }
 
     final controlReceiver = ReceivePort();
     final inputStream = InputFileStream(inputPath);
+
     try {
       controlAnnounce.send(controlReceiver.sendPort);
       events.send(0.0);
+
       controlReceiver.listen((msg) {
         if (msg is Map && msg["type"] == "cancel") {
-          cancelled = true;
-          inputStream.closeSync();
+          try {
+            inputStream.closeSync();
+          } catch (e) {
+            print("Failed to close input stream: $e");
+          }
         }
       });
+
       final archive = ZipDecoder().decodeStream(inputStream, verify: false);
-      var result = await ExtractionHelper().extractArchiveToDiskWithProgress(
-          archive, outputPath, onProgress: (progress) {
-        final progressInt = progress.floor();
-        if (progress >= 100) return;
-        if (progressInt % 2 != 0) return;
-        events.send(progressInt.toDouble());
-      });
+
+      final result = await ExtractionHelper().extractArchiveToDiskWithProgress(
+        archive,
+        outputPath,
+        onProgress: (progress) {
+          final progressInt = progress.floor();
+          if (progress >= 100) return;
+          if (progressInt % 2 != 0) return;
+          events.send(progressInt.toDouble());
+        },
+      );
+
       if (result == false) {
         events.send(-2.0);
         return;
       }
-      await Future.delayed(Duration(milliseconds: 500), () {
-        if (!cancelled) {
-          events.send(100.0);
-        } else {
-          events.send(0.0);
-        }
+
+      await Future.delayed(const Duration(milliseconds: 500), () {
+        events.send(100.0);
+
         try {
           inputStream.closeSync();
         } catch (e) {
