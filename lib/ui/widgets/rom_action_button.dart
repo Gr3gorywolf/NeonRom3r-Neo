@@ -34,6 +34,9 @@ class RomActionButton extends StatelessWidget {
 
     var libraryItem = libraryProvider.getLibraryItem(rom.slug);
 
+    var isCompilingSource =
+        downloadSourcesProvider.isRomCompilingDownloadSources(rom.slug);
+
     var isDownloading = provider.isRomDownloading(rom);
     var isPlaying = libraryProvider.isGameRunning(rom.slug);
     var isReadyToPlay = libraryProvider.isRomReadyToPlay(rom.slug);
@@ -179,6 +182,9 @@ class RomActionButton extends StatelessWidget {
     } else if (hasDownloadSources) {
       icon = Icons.cloud_download_outlined;
       text = "Download";
+    } else if (isCompilingSource) {
+      icon = Icons.hourglass_top;
+      text = "Loading...";
     }
 
     return ElevatedButton.icon(

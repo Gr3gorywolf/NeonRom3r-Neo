@@ -117,7 +117,7 @@ class DownloadProvider extends ChangeNotifier {
   }
 
   abortDownload(DownloadInfo info) async {
-    if (info.isUncompressing) {
+    if (info.isExtracting) {
       await ExtractionService.cancel(info.downloadId ?? "");
       _activeDownloadInfos
           .removeWhere((element) => element.downloadId == info.downloadId);
@@ -271,7 +271,7 @@ class DownloadProvider extends ChangeNotifier {
     );
 
     progressStream.listen((progress) {
-      download.isUncompressing = true;
+      download.isExtracting = true;
 
       if (progress < 0) {
         _setExtractionQueuedState(download);
@@ -340,7 +340,7 @@ class DownloadProvider extends ChangeNotifier {
 
   void _setExtractionQueuedState(DownloadInfo download) {
     download.downloadPercent = 0;
-    download.downloadInfo = "Queued for uncompression...";
+    download.downloadInfo = "Queued for extraction...";
   }
 
   void _setRomExtractionState({
@@ -349,11 +349,13 @@ class DownloadProvider extends ChangeNotifier {
     required RomInfo rom,
   }) {
     download.downloadPercent = progress.toInt();
-    download.downloadInfo = "Uncompressing...";
+    var progressLabel = progress > 0 ? progress.toStringAsFixed(1) + "%" : "";
+    var state = progress > 0 ? "Extracting" : "Reading compressed file";
+    download.downloadInfo = "${state}... ${progressLabel}";
 
     if (Platform.isAndroid) {
       NotificationsService.showNotification(
-        title: 'Extracting ${rom.name}',
+        title: '${state} ${progress == 0 ? "for" : ""} ${rom.name}',
         body: download.downloadInfo ?? "",
         image: rom.portrait,
         progressPercent: download.downloadPercent,

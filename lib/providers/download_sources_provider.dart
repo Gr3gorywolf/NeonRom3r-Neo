@@ -90,6 +90,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
 
   List<DownloadSourceWithDownloads> _downloadSources = [];
   final Map<String, List<DownloadSource>> _romSources = {};
+  final Set<String> _compilingRoms = {};
   bool _initialized = false;
 
   List<DownloadSourceWithDownloads> get downloadSources => _downloadSources;
@@ -100,6 +101,10 @@ class DownloadSourcesProvider extends ChangeNotifier {
     _downloadSources = await DownloadSourcesService.getDownloadSources();
     _initialized = true;
     notifyListeners();
+  }
+
+  bool isRomCompilingDownloadSources(String romSlug) {
+    return _compilingRoms.contains(romSlug);
   }
 
   List<DownloadSource> getRomSources(String romSlug) {
@@ -139,17 +144,16 @@ class DownloadSourcesProvider extends ChangeNotifier {
         roms.where((rom) => _romSources[rom.slug] == null).toList();
 
     if (romsToCompile.isEmpty) return;
-    print("Compiling download sources for ${romsToCompile.length} roms");
+    _compilingRoms.addAll(romsToCompile.map((e) => e.slug));
+    notifyListeners();
     final payload = _CompilePayload(
       roms: romsToCompile,
       sources: List.unmodifiable(_downloadSources),
     );
-    print("Builded payload, starting isolate...");
     final Map<String, List<DownloadSource>> compiled =
         await compute(_compileRomSourcesIsolate, payload);
-    print(compiled.length);
     _romSources.addAll(compiled);
-
+    _compilingRoms.removeAll(romsToCompile.map((e) => e.slug));
     notifyListeners();
   }
 

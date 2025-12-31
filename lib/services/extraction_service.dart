@@ -209,9 +209,10 @@ class ExtractionService {
     try {
       await ExtractionHelper().extractArchiveToDiskWithProgress(
           archive, outputPath, onProgress: (progress) {
+        final progressInt = progress.floor();
         if (progress >= 100) return;
-        if (progress % 2 != 0) return;
-        events.send(progress);
+        if (progressInt % 2 != 0) return;
+        events.send(progressInt.toDouble());
       });
       await Future.delayed(Duration(milliseconds: 500), () {
         try {
