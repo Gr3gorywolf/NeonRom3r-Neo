@@ -25,14 +25,14 @@ bool _isRomMatch(
   RomInfo rom,
 ) {
   var sourceRomTitleClear = sourceRom.title_clean ?? "";
-  var romTitleClear = rom.slug.replaceAll("${rom.console}-", "");
-  if (sourceRomTitleClear.isEmpty) return false;
+  var romTitleClear = rom.slug.replaceFirst("${rom.console}-", "");
+  if (sourceRomTitleClear.isEmpty || romTitleClear.isEmpty) return false;
   if (sourceRom.console != rom.console) return false;
 
   if (sourceRom.title_clean == romTitleClear) {
     return true;
   }
-  if ((sourceRom.title_clean ?? "")[0] != rom.name[0]) {
+  if (sourceRomTitleClear[0] != romTitleClear[0]) {
     return false;
   }
   if (sourceRomTitleClear.contains(romTitleClear)) {
