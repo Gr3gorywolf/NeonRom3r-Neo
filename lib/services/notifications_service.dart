@@ -140,9 +140,6 @@ class NotificationsService {
       priority: Priority.high,
       autoCancel: progressPercent == null,
       playSound: progressPercent == null,
-      sound: progressPercent == null
-          ? const RawResourceAndroidNotificationSound('notification')
-          : null,
       ongoing: progressPercent != null,
       indeterminate: progressPercent == 0,
       maxProgress: 100,

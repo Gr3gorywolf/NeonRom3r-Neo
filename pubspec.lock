@@ -177,11 +177,28 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.0.5"
+  filesystem_picker:
+    dependency: "direct main"
+    description:
+      path: package
+      ref: master
+      resolved-ref: "66ab46f942ae42af67abda848b9e08cca47e5d68"
+      url: "https://github.com/Iconica-Development/filesystem_picker.git"
+    source: git
+    version: "4.1.2"
   flutter:
     dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_archive:
+    dependency: "direct main"
+    description:
+      name: flutter_archive
+      sha256: "5ca235f304c12bf468979235f400f79846d204169d715939e39197106f5fc970"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.3"
   flutter_downloader:
     dependency: "direct main"
     description:
@@ -344,6 +361,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  media_scanner:
+    dependency: "direct main"
+    description:
+      name: media_scanner
+      sha256: "9cce7e8c3558ee8af8c7bf05f90d4e2b2f509bf2b9206489ab4d112bad8afb48"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   meta:
     dependency: transitive
     description:

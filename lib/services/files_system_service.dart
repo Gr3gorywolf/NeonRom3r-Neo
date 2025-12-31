@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
@@ -75,6 +77,21 @@ class FileSystemService {
   }
 
   static Future<String?> locateFile() async {
+    if (Platform.isAndroid) {
+      // TODO: lookup for the internal and external storage directories
+      Directory? storageDir;
+      return await FilesystemPicker.open(
+        title: 'Select a file',
+        context: navigatorKey.currentContext!,
+        rootDirectory: storageDir ?? Directory("/storage/emulated/0/"),
+        fsType: FilesystemType.file,
+        pickText: 'Select this file',
+        contextActions: [
+          FilesystemPickerNewFolderContextAction(),
+        ],
+      );
+    }
+
     final selectedFiles =
         await FilePicker.platform.pickFiles(type: FileType.any);
     if (selectedFiles == null || selectedFiles.files.isEmpty) return null;

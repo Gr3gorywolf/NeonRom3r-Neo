@@ -25,7 +25,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   @override
   void initState() {
-    compileDownloadedRoms();
+    Future.microtask(() => {compileDownloadedRoms()});
     super.initState();
   }
 

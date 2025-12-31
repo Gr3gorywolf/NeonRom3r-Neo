@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/app_theme.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
@@ -44,20 +45,28 @@ class MyApp extends StatelessWidget {
         ),
       ],
       builder: (context, wg) {
-        return MaterialApp(
-            title: 'yamata_launcher',
-            theme: appTheme,
-            navigatorKey: navigatorKey,
-            home: Builder(
-              builder: (ctx) {
-                var _appProvider = AppProvider.of(ctx);
-                if (_appProvider.isAppLoaded) {
-                  return MainLayout();
-                } else {
-                  return SplashcreenPage();
-                }
-              },
-            ));
+        return FilesystemPickerDefaultOptions(
+          fileTileSelectMode: FileTileSelectMode.wholeTile,
+          theme: FilesystemPickerTheme(
+            topBar: FilesystemPickerTopBarThemeData(
+              backgroundColor: appTheme.colorScheme.primary,
+            ),
+          ),
+          child: MaterialApp(
+              title: 'yamata_launcher',
+              theme: appTheme,
+              navigatorKey: navigatorKey,
+              home: Builder(
+                builder: (ctx) {
+                  var _appProvider = AppProvider.of(ctx);
+                  if (_appProvider.isAppLoaded) {
+                    return MainLayout();
+                  } else {
+                    return SplashcreenPage();
+                  }
+                },
+              )),
+        );
       },
     );
   }

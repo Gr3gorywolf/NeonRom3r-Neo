@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:media_scanner/media_scanner.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
@@ -231,6 +232,10 @@ class DownloadProvider extends ChangeNotifier {
     }
     libraryItem.filePath = path;
     libraryItem.downloadedAt = DateTime.now();
+    if (Platform.isAndroid) {
+      MediaScanner.loadMedia(path: path);
+      MediaScanner.loadMedia(path: File(path).parent.path);
+    }
     await libraryProvider.updateLibraryItem(libraryItem);
     await NotificationsService.showNotification(
       title: 'Download completed',
@@ -238,6 +243,7 @@ class DownloadProvider extends ChangeNotifier {
       image: rom.portrait,
       tag: rom.slug,
     );
+    notifyListeners();
     var fileExtension = SystemHelpers.getFileExtension(path).toLowerCase();
     var extractionEnabled =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
@@ -272,8 +278,10 @@ class DownloadProvider extends ChangeNotifier {
 
     progressStream.listen((progress) {
       download.isExtracting = true;
-
-      if (progress < 0) {
+      if (progress == -2) {
+        _activeDownloadInfos.remove(download);
+        notifyListeners();
+      } else if (progress < 0) {
         _setExtractionQueuedState(download);
       } else {
         _setRomExtractionState(
@@ -354,6 +362,10 @@ class DownloadProvider extends ChangeNotifier {
     download.downloadInfo = "${state}... ${progressLabel}";
 
     if (Platform.isAndroid) {
+      if (progress >= 100) {
+        NotificationsService.cancelNotificationByTag(rom.slug);
+        return;
+      }
       NotificationsService.showNotification(
         title: '${state} ${progress == 0 ? "for" : ""} ${rom.name}',
         body: download.downloadInfo ?? "",
@@ -382,6 +394,10 @@ class DownloadProvider extends ChangeNotifier {
       if (VALID_ROM_EXTENSIONS.contains(ext)) {
         if (libraryItem != null) {
           libraryItem.filePath = file.path;
+          if (Platform.isAndroid) {
+            MediaScanner.loadMedia(path: file.path);
+            MediaScanner.loadMedia(path: file.parent.path);
+          }
           libraryProvider.updateLibraryItem(libraryItem);
         }
 

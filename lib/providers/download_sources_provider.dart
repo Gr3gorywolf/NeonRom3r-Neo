@@ -53,13 +53,15 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
   Stopwatch stopwatch = new Stopwatch()..start();
   print("Isolate: Compiling download sources for ${payload.roms.length} roms");
   var romConsoles = payload.roms.map((e) => e.console).toSet();
+
   Map<String, List<DownloadSourceWithDownloads>> sourcesByConsole = {};
   for (final console in romConsoles) {
     sourcesByConsole[console] = payload.sources.map((source) {
-      source.downloads = source.downloads!
-          .where((sourceRom) => sourceRom.console == console)
-          .toList();
-      return source;
+      return DownloadSourceWithDownloads(
+          sourceInfo: source.sourceInfo,
+          downloads: source.downloads!
+              .where((sourceRom) => sourceRom.console == console)
+              .toList());
     }).toList();
   }
   for (final rom in payload.roms) {
@@ -76,7 +78,7 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
           continue;
         }
         result[rom.slug] = [...foundSource, source.sourceInfo];
-      } else if (!result.containsKey(rom.slug)) {
+      } else if (result[rom.slug] == null) {
         result[rom.slug] = [];
       }
     }

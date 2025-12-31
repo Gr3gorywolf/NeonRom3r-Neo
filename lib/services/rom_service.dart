@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:media_scanner/media_scanner.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
 import 'package:yamata_launcher/database/daos/library_dao.dart';
@@ -113,6 +114,10 @@ class RomService {
     var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,
         listen: false);
     downloadedRom.filePath = resultFile.path;
+    if (Platform.isAndroid) {
+      MediaScanner.loadMedia(path: resultFile.path);
+      MediaScanner.loadMedia(path: resultFile.parent.path);
+    }
     provider.updateLibraryItem(downloadedRom);
     Future.microtask(() {
       AlertsService.showSnackbar(

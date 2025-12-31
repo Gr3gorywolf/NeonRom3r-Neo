@@ -4,9 +4,11 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
+import 'package:flutter/widgets.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/utils/extraction_helper.dart';
+import 'package:flutter_archive/flutter_archive.dart' as flutter_archive;
 
 class _QueueItem {
   final String id;
@@ -64,7 +66,9 @@ class ExtractionService {
   }
 
   static Future<(Stream<double> progress, Function cancel)> extractOnce(
-      {required File input, required Directory output}) async {
+      {required File input,
+      required Directory output,
+      Function? onError}) async {
     final receivePort = ReceivePort();
     final progressController = StreamController<double>.broadcast();
 
@@ -89,22 +93,38 @@ class ExtractionService {
       progressController.close();
     }
 
-    Isolate isolate = await Isolate.spawn(
-      _isolateUncompress,
-      {
-        "events": receivePort.sendPort,
-        "control": controlPort.sendPort,
-        "id": id,
-        "input": input.path,
-        "output": output.path,
-      },
-    );
+    Isolate? isolate;
+    var params = {
+      "events": receivePort.sendPort,
+      "control": controlPort.sendPort,
+      "id": id,
+      "input": input.path,
+      "output": output.path,
+    };
+    if (Platform.isAndroid) {
+      _isolateUncompress(params);
+    } else {
+      isolate = await Isolate.spawn(
+        _isolateUncompress,
+        params,
+      );
+    }
     Future.microtask(() async {
       progressController.add(-1);
       // Listen for control port from isolate
       await for (final message in receivePort) {
         if (message is double) {
+          print("received message: $message");
           progressController.add(message);
+          if (message == -2.0) {
+            isolate?.kill(priority: Isolate.immediate);
+            await Future.delayed(Duration(milliseconds: 500));
+            receivePort.close();
+            _controlPorts.remove(id);
+            progressController.close();
+            onError!();
+            return;
+          }
 
           if (message >= 100) {
             receivePort.close();
@@ -161,16 +181,21 @@ class ExtractionService {
         _controlPorts[job.id] = message;
       }
     });
-    await Isolate.spawn(
-      _isolateUncompress,
-      {
-        "events": receivePort.sendPort,
-        "control": controlPort.sendPort,
-        "id": job.id,
-        "input": job.input.path,
-        "output": job.output.path,
-      },
-    );
+    var params = {
+      "events": receivePort.sendPort,
+      "control": controlPort.sendPort,
+      "id": job.id,
+      "input": job.input.path,
+      "output": job.output.path,
+    };
+    if (Platform.isAndroid) {
+      _isolateUncompress(params);
+    } else {
+      await Isolate.spawn(
+        _isolateUncompress,
+        params,
+      );
+    }
     // Listen for control port from isolate
     await for (final message in receivePort) {
       if (message is double) {
@@ -195,35 +220,70 @@ class ExtractionService {
 
     bool cancelled = false;
 
+    if (Platform.isAndroid) {
+      final zipFile = File(inputPath);
+      final destinationDir = Directory(outputPath);
+      try {
+        await flutter_archive.ZipFile.extractToDirectory(
+            zipFile: zipFile,
+            destinationDir: destinationDir,
+            onExtracting: (zipEntry, progress) {
+              print(
+                  "Extracting ${zipEntry.name}: ${progress.toStringAsFixed(1)}%");
+              final progressInt = progress.floor();
+              if (progressInt >= 100 || progressInt % 2 != 0)
+                return flutter_archive.ZipFileOperation.includeItem;
+              events.send(progressInt.toDouble());
+              return flutter_archive.ZipFileOperation.includeItem;
+            });
+        await Future.delayed(Duration(milliseconds: 500));
+        events.send(100.0);
+      } catch (e) {
+        print("Extraction error: $e");
+        events.send(-2.0);
+      }
+      await Future.delayed(Duration(milliseconds: 500));
+      return;
+    }
+
     final controlReceiver = ReceivePort();
     final inputStream = InputFileStream(inputPath);
-    controlAnnounce.send(controlReceiver.sendPort);
-    events.send(0.0);
-    final archive = ZipDecoder().decodeStream(inputStream);
-    controlReceiver.listen((msg) {
-      if (msg is Map && msg["type"] == "cancel") {
-        cancelled = true;
-        inputStream.closeSync();
-      }
-    });
     try {
-      await ExtractionHelper().extractArchiveToDiskWithProgress(
+      controlAnnounce.send(controlReceiver.sendPort);
+      events.send(0.0);
+      controlReceiver.listen((msg) {
+        if (msg is Map && msg["type"] == "cancel") {
+          cancelled = true;
+          inputStream.closeSync();
+        }
+      });
+      final archive = ZipDecoder().decodeStream(inputStream, verify: false);
+      var result = await ExtractionHelper().extractArchiveToDiskWithProgress(
           archive, outputPath, onProgress: (progress) {
         final progressInt = progress.floor();
         if (progress >= 100) return;
         if (progressInt % 2 != 0) return;
         events.send(progressInt.toDouble());
       });
+      if (result == false) {
+        events.send(-2.0);
+        return;
+      }
       await Future.delayed(Duration(milliseconds: 500), () {
-        try {
-          inputStream.closeSync();
-        } catch (e) {}
         if (!cancelled) {
           events.send(100.0);
         } else {
           events.send(0.0);
         }
+        try {
+          inputStream.closeSync();
+        } catch (e) {
+          print("Failed to close input stream: $e");
+        }
       });
-    } finally {}
+    } catch (e) {
+      print("Extraction error: $e");
+      events.send(-2.0);
+    }
   }
 }

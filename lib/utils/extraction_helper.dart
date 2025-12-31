@@ -24,7 +24,7 @@ class ExtractionHelper {
     return true;
   }
 
-  Future<void> extractArchiveToDiskWithProgress(
+  Future<bool> extractArchiveToDiskWithProgress(
     Archive archive,
     String outputPath, {
     int? bufferSize,
@@ -80,8 +80,6 @@ class ExtractionHelper {
       final output = OutputFileStream(filePath, bufferSize: fileBufferSize);
 
       try {
-        // instead of writeContent() (no progress),
-        // we chunk manually from file.content
         final content = file.content as List<int>;
 
         const chunk = 32 * 1024;
@@ -98,8 +96,10 @@ class ExtractionHelper {
 
           onProgress(progress);
         }
-      } catch (_) {
-        // swallow error like upstream method
+      } catch (e) {
+        print("Extraction error on extraction helper: $e");
+        onProgress(-2.0);
+        return false;
       }
 
       await output.close();
@@ -107,5 +107,6 @@ class ExtractionHelper {
 
     // ensure final 100%
     onProgress(100.0);
+    return true;
   }
 }

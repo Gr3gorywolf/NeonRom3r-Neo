@@ -76,8 +76,12 @@ _UriType _detectUriType(String uri) {
   return _UriType.direct;
 }
 
-List<String> _getTorrentAndCertParams(String? certPath) {
-  List<String> params = ['--bt-tracker="${BT_TRACKERS.join(',')}"'];
+List<String> _getCommonArgs(String? certPath) {
+  List<String> params = [
+    '--bt-tracker="${BT_TRACKERS.join(',')}"',
+    "--auto-file-renaming=false",
+    "--allow-overwrite=true"
+  ];
   if (certPath != null) {
     params.add("--ca-certificate=${certPath}");
     var dhtPath = "${p.dirname(certPath!)}/dht.dat";
@@ -285,7 +289,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
 
     if (uriType == _UriType.direct) {
-      var certArgs = _getTorrentAndCertParams(args.certPath);
+      var certArgs = _getCommonArgs(args.certPath);
       var url = args.uri ?? "";
       if (url.contains("http")) {
         url = await _handleRedirects(url);
@@ -490,7 +494,7 @@ Future<String> _resolveTorrent({
 
   final path = p.join(cache.path, '${uriHash}.torrent');
   if (await File(path).exists()) return path;
-  var certArgs = _getTorrentAndCertParams(certPath);
+  var certArgs = _getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath!,
     [
@@ -539,7 +543,7 @@ Future<Map<int, String>> _showFiles({
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
-  var certArgs = _getTorrentAndCertParams(certPath);
+  var certArgs = _getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath,
     ['--show-files', torrentPath, ...certArgs],
@@ -575,7 +579,7 @@ Future<void> _downloadSelectedFile({
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
-  var certArgs = _getTorrentAndCertParams(certPath);
+  var certArgs = _getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath,
     [

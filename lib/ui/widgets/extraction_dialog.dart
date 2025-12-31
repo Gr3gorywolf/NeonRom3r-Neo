@@ -38,7 +38,13 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
 
   Future<void> _unzip() async {
     var (stream, cancelFn) = await ExtractionService.extractOnce(
-        input: widget.zipFile, output: widget.zipFile.parent);
+        input: widget.zipFile,
+        output: widget.zipFile.parent,
+        onError: () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+        });
     cancel = cancelFn;
     stream.listen((event) {
       if (event < 0) {
