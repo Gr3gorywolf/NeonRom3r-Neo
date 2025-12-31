@@ -73,7 +73,7 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
           continue;
         }
         result[rom.slug] = [...foundSource, source.sourceInfo];
-      } else {
+      } else if (!result.containsKey(rom.slug)) {
         result[rom.slug] = [];
       }
     }

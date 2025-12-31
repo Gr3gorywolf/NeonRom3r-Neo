@@ -41,9 +41,9 @@ class _MainLayoutState extends State<MainLayout> {
 
     _getLogo() {
       if (isMediumScreen) {
-        return AssetsService.getSvgImage("logo-orig", size: 80);
+        return AssetsService.getSvgImage("logo-orig", size: 65);
       } else {
-        return AssetsService.getImage("logolarge", size: 80, width: 180);
+        return Center(child: AssetsService.getSvgImage("logo-orig", size: 100));
       }
     }
 

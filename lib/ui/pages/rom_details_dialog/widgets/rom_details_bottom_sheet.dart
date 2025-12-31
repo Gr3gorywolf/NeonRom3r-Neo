@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/hltb.dart';
+import 'package:yamata_launcher/models/launchbox_rom_details.dart';
 import 'package:yamata_launcher/models/tgdb.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/repository/rom_details_repository.dart';
@@ -34,16 +35,15 @@ class RomDetailsBottomSheet extends StatefulWidget {
 
 class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
   bool isFetchingHltbDetails = false;
-  bool isFetchingTgdbDetails = false;
-
+  bool isFetchingLaunchboxDetails = false;
   HltbEntry? hltbInfo;
-  TgdbGameDetail? tgdbInfo;
+  LaunchboxRomDetails? launchboxInfo;
 
   @override
   void initState() {
     super.initState();
     fetchHltbInfo();
-    fetchTgdbInfo();
+    fetchLaunchbox();
   }
 
   void fetchHltbInfo() async {
@@ -56,13 +56,13 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
       });
   }
 
-  void fetchTgdbInfo() async {
-    setState(() => isFetchingTgdbDetails = true);
-    final data = await RomDetailsRepository().fetchTgdbData(widget.rom);
+  void fetchLaunchbox() async {
+    setState(() => isFetchingLaunchboxDetails = true);
+    final data = await RomDetailsRepository().fetchLaunchboxDetails(widget.rom);
     if (mounted)
       setState(() {
-        tgdbInfo = data;
-        isFetchingTgdbDetails = false;
+        launchboxInfo = data;
+        isFetchingLaunchboxDetails = false;
       });
   }
 
@@ -71,12 +71,28 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
     return "${hours}h";
   }
 
+  String get gameSummary {
+    if (launchboxInfo == null) return "";
+    var infos = [
+      if (launchboxInfo?.maxPlayers != null)
+        if (launchboxInfo?.esrb != null) "${launchboxInfo!.esrb}",
+      "${launchboxInfo!.maxPlayers} Players",
+      if (launchboxInfo?.cooperative == true) "Co-op",
+      if (launchboxInfo?.genres != null && launchboxInfo!.genres!.isNotEmpty)
+        "Genres: ${launchboxInfo!.genres!.join(", ")}",
+    ];
+    return infos
+        .where((info) =>
+            info.isNotEmpty && !info.contains("No information available"))
+        .join(", ");
+  }
+
   String get description {
+    if (launchboxInfo?.description?.isNotEmpty == true) {
+      return launchboxInfo?.description ?? "";
+    }
     if (hltbInfo?.description.isNotEmpty == true) {
       return hltbInfo!.description;
-    }
-    if (tgdbInfo?.description.isNotEmpty == true) {
-      return tgdbInfo!.description;
     }
     return "No description available.";
   }
@@ -142,7 +158,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
         ),
         const SizedBox(height: 10),
         Skeletonizer(
-          enabled: isFetchingHltbDetails,
+          enabled: isFetchingLaunchboxDetails,
           child: Text(
             description,
             maxLines: 5,
@@ -151,6 +167,18 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
+        const SizedBox(height: 10),
+        if (gameSummary.isNotEmpty)
+          Skeletonizer(
+            enabled: isFetchingLaunchboxDetails,
+            child: Opacity(
+              opacity: 0.5,
+              child: Text(
+                gameSummary,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ),
       ],
     );
 
@@ -271,7 +299,7 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
         ),
         const SizedBox(height: 16),
         Skeletonizer(
-          enabled: isFetchingTgdbDetails,
+          enabled: isFetchingLaunchboxDetails,
           child: Text(
             "Screenshots",
             style: Theme.of(context).textTheme.titleMedium,
@@ -279,12 +307,13 @@ class _RomDetailsBottomSheetState extends State<RomDetailsBottomSheet> {
         ),
         const SizedBox(height: 10),
         Skeletonizer(
-          enabled: isFetchingTgdbDetails,
+          enabled: isFetchingLaunchboxDetails,
           child: ImagesCarousel(
             images: [
-              if (isFetchingTgdbDetails) "https://placehold.co/600x400.png",
-              ...(tgdbInfo?.screenshots ?? []),
-              ...(tgdbInfo?.titleScreens ?? []),
+              if (isFetchingLaunchboxDetails)
+                "https://placehold.co/600x400.png",
+              ...(widget.rom.gameplayCovers ?? []),
+              ...(launchboxInfo?.screenshots ?? []),
             ],
             height: 300,
           ),
