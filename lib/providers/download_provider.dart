@@ -264,7 +264,6 @@ class DownloadProvider extends ChangeNotifier {
 
     final file = File(path);
     final parentDir = file.parent;
-    var ended = false;
     final (id, progressStream) = await ExtractionService.enqueueExtraction(
       input: file,
       output: parentDir,
@@ -284,8 +283,6 @@ class DownloadProvider extends ChangeNotifier {
         );
 
         if (progress >= 100) {
-          if (ended) return;
-          ended = true;
           _onExtractionEnded(
             download: download,
             rom: rom,
@@ -387,7 +384,6 @@ class DownloadProvider extends ChangeNotifier {
         }
 
         // delete zip
-        await Future.delayed(Duration(milliseconds: 500));
         if (zipFile.existsSync()) {
           try {
             zipFile.deleteSync();
@@ -405,5 +401,6 @@ class DownloadProvider extends ChangeNotifier {
     );
 
     _activeDownloadInfos.remove(download);
+    notifyListeners();
   }
 }

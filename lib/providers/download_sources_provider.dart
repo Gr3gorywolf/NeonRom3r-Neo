@@ -20,32 +20,66 @@ class _CompilePayload {
   });
 }
 
+bool _isRomMatch(
+  DownloadSourceRom sourceRom,
+  RomInfo rom,
+) {
+  if (sourceRom.console != rom.console) return false;
+
+  if ((rom.console + "-" + (sourceRom.title_clean ?? "")) == rom.slug) {
+    return true;
+  }
+  if ((sourceRom.title_clean ?? "")[0] != rom.name[0]) {
+    return false;
+  }
+  if (rom.slug.contains(sourceRom.title_clean!)) {
+    return true;
+  }
+  final normalizedRomName = RomService.normalizeRomTitle(rom.name);
+  return StringHelper.hasMinConsecutiveMatch(
+    sourceRom.title_clean!,
+    normalizedRomName,
+    minLength: normalizedRomName.length,
+  );
+}
+
 Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
   _CompilePayload payload,
 ) {
   final Map<String, List<DownloadSource>> result = {};
-
+  Stopwatch stopwatch = new Stopwatch()..start();
+  print("Isolate: Compiling download sources for ${payload.roms.length} roms");
+  var romConsoles = payload.roms.map((e) => e.console).toSet();
+  Map<String, List<DownloadSourceWithDownloads>> sourcesByConsole = {};
+  for (final console in romConsoles) {
+    sourcesByConsole[console] = payload.sources.map((source) {
+      source.downloads = source.downloads!
+          .where((sourceRom) => sourceRom.console == console)
+          .toList();
+      return source;
+    }).toList();
+  }
   for (final rom in payload.roms) {
-    final normalizedRomName = RomService.normalizeRomTitle(rom.name);
-
-    for (final source in payload.sources) {
-      final hasMatch = source.downloads.any(
-        (sourceRom) {
-          if (sourceRom.console != rom.console) return false;
-          return StringHelper.hasMinConsecutiveMatch(
-            sourceRom.title_clean!,
-            normalizedRomName,
-            minLength: normalizedRomName.length,
-          );
-        },
-      );
+    var sourcesForConsole = sourcesByConsole[rom.console];
+    if (sourcesForConsole == null) continue;
+    for (final source in sourcesForConsole) {
+      final hasMatch =
+          source.downloads.any((sourceRom) => _isRomMatch(sourceRom, rom));
 
       if (hasMatch) {
-        result.putIfAbsent(rom.slug!, () => []).add(source.sourceInfo);
+        var foundSource = result[rom.slug];
+        if (foundSource == null) {
+          result[rom.slug] = [source.sourceInfo!];
+          continue;
+        }
+        result[rom.slug] = [...foundSource, source.sourceInfo];
+      } else {
+        result[rom.slug] = [];
       }
     }
   }
-
+  print("Finished compiling download sources in isolate in "
+      "${stopwatch.elapsed.inSeconds} seconds");
   return result;
 }
 
@@ -79,15 +113,7 @@ class DownloadSourcesProvider extends ChangeNotifier {
     final normalizedRomName = RomService.normalizeRomTitle(rom.name);
 
     return source.downloads
-        .where(
-          (sourceRom) =>
-              sourceRom.console == rom.console &&
-              StringHelper.hasMinConsecutiveMatch(
-                sourceRom.title_clean!,
-                normalizedRomName,
-                minLength: normalizedRomName.length,
-              ),
-        )
+        .where((sourceRom) => _isRomMatch(sourceRom, rom))
         .toList();
   }
 
@@ -110,18 +136,18 @@ class DownloadSourcesProvider extends ChangeNotifier {
     if (_downloadSources.isEmpty || roms.isEmpty) return;
 
     final romsToCompile =
-        roms.where((rom) => !_romSources.containsKey(rom.slug)).toList();
+        roms.where((rom) => _romSources[rom.slug] == null).toList();
 
     if (romsToCompile.isEmpty) return;
-
+    print("Compiling download sources for ${romsToCompile.length} roms");
     final payload = _CompilePayload(
       roms: romsToCompile,
       sources: List.unmodifiable(_downloadSources),
     );
-
+    print("Builded payload, starting isolate...");
     final Map<String, List<DownloadSource>> compiled =
         await compute(_compileRomSourcesIsolate, payload);
-
+    print(compiled.length);
     _romSources.addAll(compiled);
 
     notifyListeners();

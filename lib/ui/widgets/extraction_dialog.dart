@@ -27,7 +27,6 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
   double progress = 0.0;
   String status = "Preparing…";
   Function? cancel;
-  var isCompleting = false;
 
   @override
   void initState() {
@@ -52,8 +51,7 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
         progress = event.ceilToDouble();
         status = "Unzipping… ${progress.toStringAsFixed(2)}%";
       });
-      if (progress >= 100 && !isCompleting) {
-        isCompleting = true;
+      if (progress >= 100) {
         _handleComplete();
       }
     });
@@ -72,7 +70,6 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
     }
 
     try {
-      await Future.delayed(Duration(milliseconds: 500));
       await widget.zipFile.delete();
     } catch (e) {}
     Navigator.of(context).pop(extractedFile);

@@ -198,6 +198,7 @@ class ExtractionService {
     final controlReceiver = ReceivePort();
     final inputStream = InputFileStream(inputPath);
     controlAnnounce.send(controlReceiver.sendPort);
+    events.send(0.0);
     final archive = ZipDecoder().decodeStream(inputStream);
     controlReceiver.listen((msg) {
       if (msg is Map && msg["type"] == "cancel") {
@@ -206,18 +207,22 @@ class ExtractionService {
       }
     });
     try {
-      events.send(0.0);
       await ExtractionHelper().extractArchiveToDiskWithProgress(
           archive, outputPath, onProgress: (progress) {
+        if (progress >= 100) return;
+        if (progress % 2 != 0) return;
         events.send(progress);
       });
-      if (!cancelled) {
-        events.send(100.0);
-      } else {
-        events.send(0.0);
-      }
-    } finally {
-      inputStream.closeSync();
-    }
+      await Future.delayed(Duration(milliseconds: 500), () {
+        try {
+          inputStream.closeSync();
+        } catch (e) {}
+        if (!cancelled) {
+          events.send(100.0);
+        } else {
+          events.send(0.0);
+        }
+      });
+    } finally {}
   }
 }
