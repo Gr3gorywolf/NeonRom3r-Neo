@@ -15,7 +15,6 @@ import 'package:yamata_launcher/ui/pages/home/home_page.dart';
 import 'package:yamata_launcher/ui/pages/settings/settings_page.dart';
 import 'package:yamata_launcher/ui/pages/splashcreen/splashcreen_page.dart';
 import 'package:yamata_launcher/ui/widgets/console_list.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:yamata_launcher/services/download_service.dart';
 
 import 'ui/pages/main_layout/main_layout.dart';

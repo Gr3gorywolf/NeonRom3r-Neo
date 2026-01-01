@@ -116,7 +116,7 @@ class ExtractionService {
     };
 
     if (Platform.isAndroid) {
-      _isolateUncompress(params);
+      _uncompress(params);
     } else {
       isolate = await Isolate.spawn(_isolateUncompress, params);
     }
@@ -205,7 +205,7 @@ class ExtractionService {
     };
 
     if (Platform.isAndroid) {
-      _isolateUncompress(params);
+      _uncompress(params);
     } else {
       await Isolate.spawn(_isolateUncompress, params);
     }
@@ -230,41 +230,42 @@ class ExtractionService {
     }
   }
 
+  static Future<void> _uncompress(Map data) async {
+    final events = data["events"] as SendPort;
+    final inputPath = data["input"] as String;
+    final outputPath = data["output"] as String;
+    final zipFile = File(inputPath);
+    final destinationDir = Directory(outputPath);
+
+    try {
+      events.send(25.0);
+      await flutter_archive.ZipFile.extractToDirectory(
+        zipFile: zipFile,
+        destinationDir: destinationDir,
+        onExtracting: (zipEntry, progress) {
+          final progressInt = progress.floor();
+          if (progressInt >= 100 || progressInt % 2 != 0) {
+            return flutter_archive.ZipFileOperation.includeItem;
+          }
+          return flutter_archive.ZipFileOperation.includeItem;
+        },
+      );
+      await Future.delayed(const Duration(milliseconds: 500));
+      events.send(100.0);
+    } catch (e) {
+      print("Extraction error: $e");
+      events.send(-2.0);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
   static Future<void> _isolateUncompress(Map data) async {
     final events = data["events"] as SendPort;
     final controlAnnounce = data["control"] as SendPort;
 
     final inputPath = data["input"] as String;
     final outputPath = data["output"] as String;
-
-    if (Platform.isAndroid) {
-      final zipFile = File(inputPath);
-      final destinationDir = Directory(outputPath);
-
-      try {
-        await flutter_archive.ZipFile.extractToDirectory(
-          zipFile: zipFile,
-          destinationDir: destinationDir,
-          onExtracting: (zipEntry, progress) {
-            final progressInt = progress.floor();
-            if (progressInt >= 100 || progressInt % 2 != 0) {
-              return flutter_archive.ZipFileOperation.includeItem;
-            }
-            events.send(progressInt.toDouble());
-            return flutter_archive.ZipFileOperation.includeItem;
-          },
-        );
-
-        await Future.delayed(const Duration(milliseconds: 500));
-        events.send(100.0);
-      } catch (e) {
-        print("Extraction error: $e");
-        events.send(-2.0);
-      }
-
-      await Future.delayed(const Duration(milliseconds: 500));
-      return;
-    }
 
     final controlReceiver = ReceivePort();
     final inputStream = InputFileStream(inputPath);

@@ -44,7 +44,6 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   }
 
   Future initPlugins() async {
-    await DownloadService().initDownloader();
     await NotificationsService.init();
     if (Platform.isAndroid) {
       await Aria2cAndroidInterface.init();

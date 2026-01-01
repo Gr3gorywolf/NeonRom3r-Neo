@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
+import 'package:yamata_launcher/services/native/system_paths_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,6 +18,7 @@ class FileSystemService {
   static String _appSupportPath = "";
   static String? _downloadsPath;
   static String? _appDocsPath = "";
+  static SystemPaths? _systemPaths;
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
@@ -78,14 +81,30 @@ class FileSystemService {
 
   static Future<String?> locateFile() async {
     if (Platform.isAndroid) {
-      // TODO: lookup for the internal and external storage directories
-      Directory? storageDir;
+      var internalDirectory = _systemPaths?.internalPath != null
+          ? Directory(_systemPaths!.internalPath)
+          : Directory("/storage/emulated/0/");
       return await FilesystemPicker.open(
         title: 'Select a file',
         context: navigatorKey.currentContext!,
-        rootDirectory: storageDir ?? Directory("/storage/emulated/0/"),
         fsType: FilesystemType.file,
         pickText: 'Select this file',
+        shortcuts: [
+          FilesystemPickerShortcut(
+              name: 'Internal Card',
+              path: internalDirectory,
+              icon: Icons.phone_android),
+          if (_systemPaths?.externalSdCardPath != null)
+            FilesystemPickerShortcut(
+                name: 'External Card',
+                path: Directory(_systemPaths?.externalSdCardPath ?? ""),
+                icon: Icons.sd_card),
+          if (_systemPaths?.downloadsPath != null)
+            FilesystemPickerShortcut(
+                name: 'Downloads',
+                path: Directory(_systemPaths?.downloadsPath ?? ""),
+                icon: Icons.download),
+        ],
         contextActions: [
           FilesystemPickerNewFolderContextAction(),
         ],
@@ -101,7 +120,9 @@ class FileSystemService {
   static setupDownloadsPath() async {
     var path = await SettingsService().get<String>(SettingsKeys.DOWNLOAD_PATH);
     if (path.isEmpty) {
-      _downloadsPath = (await getDownloadsDirectory())?.path ?? null;
+      _downloadsPath = _systemPaths?.downloadsPath ??
+          (await getDownloadsDirectory())?.path ??
+          null;
       await SettingsService()
           .set<String>(SettingsKeys.DOWNLOAD_PATH, downloadsPath);
       return;
@@ -155,12 +176,21 @@ class FileSystemService {
     rootPath = Directory.current.path;
     _appSupportPath = (await getApplicationSupportDirectory()).path;
     _appDocsPath = (await getApplicationDocumentsDirectory()).path;
-    print("Root path initialized to: " + rootPath);
     _rootPath = rootPath;
+  }
+
+  static _initAndroidSystemPaths() async {
+    if (!Platform.isAndroid) return;
+    try {
+      _systemPaths = await SystemPathsAndroidInterface.getSystemPaths();
+    } catch (e) {
+      print("Error getting system paths: " + e.toString());
+    }
   }
 
   //initializer
   static initPaths() async {
+    await _initAndroidSystemPaths();
     await _initRootPath();
     await setupDownloadsPath();
     await setupAria2c();

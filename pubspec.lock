@@ -199,14 +199,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
-  flutter_downloader:
-    dependency: "direct main"
-    description:
-      name: flutter_downloader
-      sha256: "00c05d81c6e19d20aee87b9a089eb77d14455946478f57cb075f736d24377466"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.7.4"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -247,14 +239,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.19"
-  flutter_search_bar:
-    dependency: "direct main"
-    description:
-      name: flutter_search_bar
-      sha256: "6bc1d82c4caf04f40a9386833d5e2a8d947c89fee5c4c1e735957851677d1012"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   flutter_svg:
     dependency: "direct main"
     description:

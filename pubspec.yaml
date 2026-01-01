@@ -23,8 +23,6 @@ environment:
 dependencies:
   animate_do: ^3.0.2
   provider: ^6.1.5+1
-  flutter_search_bar: ^3.0.0
-  flutter_downloader: ^1.7.4
   permission_handler: ^11.0.1
   toast: ^0.3.0
   device_apps: ^2.2.0

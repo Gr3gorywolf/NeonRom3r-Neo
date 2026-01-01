@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
@@ -20,13 +19,6 @@ import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'aria2c/aria2c_download_manager.dart';
 
 class DownloadService {
-  initDownloader() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    if (Platform.isAndroid) {
-      await FlutterDownloader.initialize(debug: false);
-    }
-  }
-
   Future<Map<String, String>> fetchDownloadHeaders(url) async {
     var client = new http.Client();
     try {

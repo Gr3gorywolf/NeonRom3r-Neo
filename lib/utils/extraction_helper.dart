@@ -36,7 +36,6 @@ class ExtractionHelper {
       outDir.createSync(recursive: true);
     }
 
-    // ---- calculate total bytes for progress ----
     final totalBytes = archive.files.fold<int>(
       0,
       (sum, f) => sum + (f.size ?? 0),
@@ -52,7 +51,6 @@ class ExtractionHelper {
         continue;
       }
 
-      // ---- symbolic link ----
       if (entry.isSymbolicLink) {
         if (!_isValidSymLink(outputPath, entry)) {
           continue;
@@ -64,13 +62,11 @@ class ExtractionHelper {
         continue;
       }
 
-      // ---- directory ----
       if (entry.isDirectory) {
         await Directory(filePath).create(recursive: true);
         continue;
       }
 
-      // ---- regular file ----
       ArchiveFile file = entry;
 
       bufferSize ??= OutputFileStream.kDefaultBufferSize;

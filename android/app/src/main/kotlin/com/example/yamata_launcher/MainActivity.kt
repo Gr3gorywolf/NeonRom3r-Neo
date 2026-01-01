@@ -7,6 +7,8 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import androidx.core.content.FileProvider
+import androidx.core.content.ContextCompat
+import android.os.Environment
 import java.io.File
 
 class MainActivity : FlutterActivity() {
@@ -43,6 +45,43 @@ class MainActivity : FlutterActivity() {
                         result.success(uri.toString())
                     } catch (e: Exception) {
                         result.error("Failed to get intentUri", e.message, null)
+                    }
+                }
+
+                "getSystemPaths" -> {
+                    try {
+                     val context = applicationContext
+                    val internalPath = Environment.getExternalStorageDirectory().absolutePath
+
+                    val externalDirs = ContextCompat.getExternalFilesDirs(context, null)
+
+                    val externalSdCardPath = externalDirs
+                        .drop(1)
+                        .firstOrNull()
+                        ?.absolutePath
+                        ?.let { path ->
+                            val cutIndex = path.indexOf("/Android/")
+                            if (cutIndex != -1) path.substring(0, cutIndex) else path
+                        }
+
+                    val downloadsPath =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            ?.absolutePath
+
+                    val documentsPath =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                            ?.absolutePath
+
+                    val paths = mapOf(
+                        "internalPath" to internalPath,
+                        "externalSdCardPath" to externalSdCardPath,
+                        "downloadsPath" to downloadsPath,
+                        "documentsPath" to documentsPath
+                    )
+
+                    result.success(paths)
+                    } catch (e: Exception) {
+                        result.error("PATHS_ERROR", e.message, null)
                     }
                 }
 
