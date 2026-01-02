@@ -32,6 +32,10 @@ bool _isRomMatch(
   if (sourceRom.title_clean == romTitleClear) {
     return true;
   }
+  if (sourceRomTitleClear.contains("the") && romTitleClear.contains("the")) {
+    sourceRomTitleClear = sourceRomTitleClear.replaceAll("the", "").trim();
+    romTitleClear = romTitleClear.replaceAll("the", "").trim();
+  }
   if (sourceRomTitleClear[0] != romTitleClear[0]) {
     return false;
   }

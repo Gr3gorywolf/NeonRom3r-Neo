@@ -6,6 +6,7 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/widgets.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/utils/extraction_helper.dart';
 import 'package:flutter_archive/flutter_archive.dart' as flutter_archive;
@@ -234,22 +235,20 @@ class ExtractionService {
     final events = data["events"] as SendPort;
     final inputPath = data["input"] as String;
     final outputPath = data["output"] as String;
-    final zipFile = File(inputPath);
-    final destinationDir = Directory(outputPath);
 
     try {
-      events.send(25.0);
-      await flutter_archive.ZipFile.extractToDirectory(
-        zipFile: zipFile,
-        destinationDir: destinationDir,
-        onExtracting: (zipEntry, progress) {
+      var taskId = await SevenZipAndroidInterface.extract(
+        inputPath,
+        outputPath,
+        (progress) {
           final progressInt = progress.floor();
           if (progressInt >= 100 || progressInt % 2 != 0) {
-            return flutter_archive.ZipFileOperation.includeItem;
+            return;
           }
-          return flutter_archive.ZipFileOperation.includeItem;
+          events.send(progressInt.toDouble());
         },
       );
+      await SevenZipAndroidInterface.wait(taskId);
       await Future.delayed(const Duration(milliseconds: 500));
       events.send(100.0);
     } catch (e) {

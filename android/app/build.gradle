@@ -53,4 +53,5 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation "commons-io:commons-io:2.8.0"
     implementation "org.apache.commons:commons-compress:1.21"
+    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 }

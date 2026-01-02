@@ -75,9 +75,9 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
       }
     }
 
-    try {
-      await widget.zipFile.delete();
-    } catch (e) {}
+    // try {
+    //   await widget.zipFile.delete();
+    // } catch (e) {}
     Navigator.of(context).pop(extractedFile);
   }
 

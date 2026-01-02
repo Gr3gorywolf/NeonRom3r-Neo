@@ -48,7 +48,6 @@ dependencies:
   windows_notification: ^1.3.0
   archive: ^4.0.7
   media_scanner: ^2.2.0
-  flutter_archive: 6.0.3
   filesystem_picker:
     git:
       url: https://github.com/Iconica-Development/filesystem_picker.git

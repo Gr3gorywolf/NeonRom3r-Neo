@@ -1,6 +1,6 @@
 package com.example.yamata_launcher
 
-import com.example.yamata_launcher.utils.ZipUtils
+
 import android.content.Context
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
@@ -10,6 +10,8 @@ import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import android.os.Environment
 import java.io.File
+import com.example.yamata_launcher.utils.ZipUtils
+import com.example.yamata_launcher.utils.SevenZipHelper
 
 class MainActivity : FlutterActivity() {
 
@@ -20,19 +22,86 @@ class MainActivity : FlutterActivity() {
     private var baseName = "yamata"
     private var aria2cDirName = "aria2c"
     private var aria2cBinFile = "libaria2c.so"
+    private var lib7zaBinFile = "libp7zip.so"
     private var utilsName = "libutils.zip.so"
     private var certFileName = "libutils.so/yamata_launcher.pem"
-     private var certKeyFileName = "libutils.so/yamata_launcher.key"
+    private var certKeyFileName = "libutils.so/yamata_launcher.key"
+    private val extractTasks = mutableMapOf<String, Boolean>()
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(
+       val channel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL
-        ).setMethodCallHandler { call, result ->
+        )
+        channel.setMethodCallHandler { call, result ->
 
             when (call.method) {
+                 "extractArchive" -> {
+                    try {
+                        val input = call.argument<String>("inputPath")!!
+                        val output = call.argument<String>("outputPath")!!
+                        val taskId = call.argument<String>("taskId")!!
+                         extractTasks[taskId] = false
+                           Log.e(TAG, "Starting extraction thread for taskId: $taskId")
+                      Thread {
+                        try {
+                            Log.e(TAG, "Starting extraction for taskId: $taskId")
+                            SevenZipHelper.extract(
+                                input,
+                                output,
+                                isCancelled = { extractTasks[taskId] == true }
+                            ) { progress ->
+
+                                if (extractTasks[taskId] == true) return@extract
+                                Log.e(TAG, "Extraction progress: $progress")
+                                runOnUiThread {
+                                    channel.invokeMethod(
+                                        "extractProgress",
+                                        mapOf(
+                                            "progress" to progress,
+                                            "taskId" to taskId
+                                        )
+                                    )
+                                }
+                            }
+                            Log.e(TAG, "Extraction completed")
+                            runOnUiThread {
+                                channel.invokeMethod(
+                                    "extractCompleted",
+                                    mapOf("taskId" to taskId)
+                                )
+                            }
+
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Extraction error", e)
+                            runOnUiThread {
+                                channel.invokeMethod(
+                                    "extractError",
+                                    mapOf(
+                                        "taskId" to taskId,
+                                        "message" to (e.message ?: "Unknown error")
+                                    )
+                                )
+                            }
+
+                        } finally {
+                            extractTasks.remove(taskId)
+                        }
+                    }.start()
+                    result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to extract archive", e)
+                        result.error("ARGUMENT_ERROR", e.message, null)
+                    }
+                }
+
+                "cancelExtract" -> {
+                    val taskId = call.argument<String>("taskId")!!
+                    extractTasks[taskId] = true
+                    result.success(true)
+                }
                  "getIntentUriFromFile" -> {
                     try {
                         val path = call.argument<String>("path")!!
