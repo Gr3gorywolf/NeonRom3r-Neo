@@ -9,7 +9,6 @@ import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/utils/extraction_helper.dart';
-import 'package:flutter_archive/flutter_archive.dart' as flutter_archive;
 
 class _QueueItem {
   final String id;
