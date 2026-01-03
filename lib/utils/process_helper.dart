@@ -6,9 +6,10 @@ class ProcessHelper {
     required Process process,
     void Function(String)? onLog,
     void Function(String)? onProgress,
+    String? progressPrefix = '[#',
   }) {
     void handle(String line) {
-      if (onProgress != null && line.contains('[#')) {
+      if (onProgress != null && line.contains(progressPrefix!)) {
         onProgress(line);
       }
       onLog!(line);

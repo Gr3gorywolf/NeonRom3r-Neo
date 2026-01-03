@@ -120,6 +120,9 @@ class DownloadProvider extends ChangeNotifier {
   abortDownload(DownloadInfo info) async {
     if (info.isExtracting) {
       await ExtractionService.cancel(info.downloadId ?? "");
+      if (Platform.isAndroid) {
+        NotificationsService.cancelNotificationByTag(info.romSlug);
+      }
       _activeDownloadInfos
           .removeWhere((element) => element.downloadId == info.downloadId);
       return;
@@ -149,8 +152,6 @@ class DownloadProvider extends ChangeNotifier {
     Aria2DownloadHandle handle,
     DownloadInfo info,
   ) {
-    var infoIndex = _activeDownloadInfos
-        .indexWhere((element) => element.downloadId == info.downloadId);
     if (event is Aria2ProgressEvent) {
       final p = event.progress;
 

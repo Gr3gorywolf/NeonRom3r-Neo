@@ -31,4 +31,24 @@ class SystemHelpers {
     }
     return aria2cBinary;
   }
+
+  static String get SevenZipOutputBinary {
+    var sevenZipBinary = "7z";
+    if (Platform.isWindows) {
+      sevenZipBinary = "7z.exe";
+    }
+    return sevenZipBinary;
+  }
+
+  static String get SevenZipAssetBinary {
+    var sevenZipBinary = "7z";
+    if (Platform.isWindows) {
+      sevenZipBinary = "7z.exe";
+    } else if (Platform.isMacOS) {
+      sevenZipBinary = "7z-macos";
+    } else if (Platform.isLinux) {
+      sevenZipBinary = "7z-linux-${isArm ? 'arm' : 'x86'}";
+    }
+    return sevenZipBinary;
+  }
 }

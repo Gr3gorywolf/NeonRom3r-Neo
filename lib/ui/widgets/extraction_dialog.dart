@@ -27,6 +27,7 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
   double progress = 0.0;
   String status = "Preparing…";
   Function? cancel;
+  bool isCanceling = false;
 
   @override
   void initState() {
@@ -41,7 +42,7 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
         input: widget.zipFile,
         output: widget.zipFile.parent,
         onError: (data) {
-          if (mounted) {
+          if (!isCanceling) {
             Navigator.of(context).pop();
           }
         });
@@ -97,6 +98,7 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
         TextButton(
           onPressed: () {
             cancel!();
+            isCanceling = true;
             Navigator.of(context).pop();
           },
           child: const Text("Cancel"),

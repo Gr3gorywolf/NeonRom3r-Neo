@@ -55,6 +55,12 @@ class FileSystemService {
         SystemHelpers.aria2cOutputBinary;
   }
 
+  static get sevenZipPath {
+    return (_appSupportPath ?? "") +
+        "/7z/" +
+        SystemHelpers.SevenZipOutputBinary;
+  }
+
   static get torrentsCachePath {
     return cachePath + "/torrents";
   }
@@ -145,14 +151,35 @@ class FileSystemService {
       await aria2cDir.create(recursive: true);
     }
 
-    final byteData =
-        await rootBundle.load("assets/bin/${SystemHelpers.aria2cAssetBinary}");
+    final byteData = await rootBundle
+        .load("assets/bin/aria2c/${SystemHelpers.aria2cAssetBinary}");
     final bytes = byteData.buffer.asUint8List();
     await file.writeAsBytes(bytes, flush: true);
     if (!Platform.isWindows) {
       await Process.run('chmod', ['+x', file.path]);
     }
 
+    return file.path;
+  }
+
+  static setupSevenZip() async {
+    var sevenZipDir = Directory("${_appSupportPath}/7z");
+    final file =
+        File("${sevenZipDir.path}/${SystemHelpers.SevenZipOutputBinary}");
+    if (await file.exists()) {
+      return;
+    }
+    if (sevenZipDir.existsSync() == false) {
+      await sevenZipDir.create(recursive: true);
+    }
+
+    final byteData = await rootBundle
+        .load("assets/bin/7z/${SystemHelpers.SevenZipAssetBinary}");
+    final bytes = byteData.buffer.asUint8List();
+    await file.writeAsBytes(bytes, flush: true);
+    if (!Platform.isWindows) {
+      await Process.run('chmod', ['+x', file.path]);
+    }
     return file.path;
   }
 
@@ -193,7 +220,10 @@ class FileSystemService {
     await _initAndroidSystemPaths();
     await _initRootPath();
     await setupDownloadsPath();
-    await setupAria2c();
+    if (isDesktop) {
+      await setupAria2c();
+      await setupSevenZip();
+    }
 
     var paths = [
       downloadsPath,

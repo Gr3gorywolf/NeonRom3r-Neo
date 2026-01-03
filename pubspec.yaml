@@ -77,7 +77,8 @@ flutter:
       - assets/icons/
       - assets/icons/consoles/
       - assets/svgs/
-      - assets/bin/
+      - assets/bin/7z/
+      - assets/bin/aria2c/
 
 dependency_overrides:
   file: 6.1.4
