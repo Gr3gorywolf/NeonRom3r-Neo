@@ -74,16 +74,18 @@ class RomActionButton extends StatelessWidget {
       if (isPlaying) return;
 
       if (isDownloading) {
+        var downloadInfo = provider.getDownloadInfo(rom);
+        if (downloadInfo == null) return;
         AlertsService.showAlert(
           context,
           "Warning",
-          "You are sure you want to cancel this download?",
+          "You are sure you want to cancel this ${downloadInfo.isExtracting ? "extraction" : "download"}?",
           acceptTitle: "Yes",
           callback: () {
             Provider.of<DownloadProvider>(context, listen: false)
-                .abortDownload(provider.getDownloadInfo(rom)!);
-
-            AlertsService.showSnackbar(context, "Download cancelled");
+                .abortDownload(downloadInfo);
+            AlertsService.showSnackbar(context,
+                "${downloadInfo.isExtracting ? "Extraction" : "Download"} cancelled");
           },
           cancelable: true,
         );

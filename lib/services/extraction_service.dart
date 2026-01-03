@@ -2,15 +2,31 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:io';
 
-import 'package:archive/archive.dart';
-import 'package:archive/archive_io.dart';
-import 'package:flutter/widgets.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/services/seven-zip/seven_zip_console_handler.dart';
-import 'package:yamata_launcher/utils/extraction_helper.dart';
+
+/// Represents special extraction progress states.
+enum ExtractionSignal {
+  unknown(-1),
+  error(-2),
+  complete(100);
+
+  final double value;
+  const ExtractionSignal(this.value);
+}
+
+/// Helper utilities for working with progress values.
+class ExtractionProgress {
+  static bool isError(double value) => value == ExtractionSignal.error.value;
+
+  static bool isComplete(double value) =>
+      value >= ExtractionSignal.complete.value;
+
+  static double get unknown => ExtractionSignal.unknown.value;
+}
 
 class _QueueItem {
   final String id;
@@ -33,12 +49,13 @@ class _QueueItem {
 class ExtractionService {
   static int maxConcurrent = 0;
 
-  static List<_QueueItem> _queue = [];
-  static Map<String, SendPort> _controlPorts = {};
+  static final List<_QueueItem> _queue = <_QueueItem>[];
+  static final Map<String, SendPort> _controlPorts = <String, SendPort>{};
   static int _running = 0;
 
   ExtractionService();
 
+  /// Adds an extraction task to the queue.
   static Future<(String id, Stream<double> progress)> enqueueExtraction({
     required File input,
     required Directory output,
@@ -67,27 +84,36 @@ class ExtractionService {
     _queue.add(item);
     _tryRunNext();
 
+    // Emit "unknown progress" once the extraction starts.
     Future.delayed(const Duration(milliseconds: 200), () {
-      progressController.add(-1);
+      if (!progressController.isClosed) {
+        progressController.add(ExtractionProgress.unknown);
+      }
     });
 
-    completer.future.then((_) => progressController.close());
+    completer.future.whenComplete(() {
+      if (!progressController.isClosed) {
+        progressController.close();
+      }
+    });
 
     return (id, progressController.stream);
   }
 
-  static Future<(Stream<double> progress, Function cancel)> extractOnce({
+  /// Runs a single extraction immediately (not queued).
+  static Future<(Stream<double> progress, void Function() cancel)> extractOnce({
     required File input,
     required Directory output,
-    Function(Object error)? onError,
+    void Function(Object error)? onError,
   }) async {
-    final receivePort = ReceivePort();
+    final id = DateTime.now().microsecondsSinceEpoch.toString();
     final progressController = StreamController<double>.broadcast();
 
-    final id = DateTime.now().microsecondsSinceEpoch.toString();
+    progressController.add(0.0);
+
+    final receivePort = ReceivePort();
     final controlPort = ReceivePort();
     Isolate? isolate;
-    progressController.add(0.0);
 
     controlPort.listen((message) {
       if (message is SendPort) {
@@ -95,24 +121,13 @@ class ExtractionService {
       }
     });
 
-    void cancel() async {
-      final ctrl = _controlPorts[id];
-      if (ctrl != null) {
-        ctrl.send({"type": "cancel"});
-      }
-      if (Platform.isAndroid) {
-        await SevenZipAndroidInterface.cancelExtract(id);
-      }
-    }
-
-    final params = {
-      "events": receivePort.sendPort,
-      "control": controlPort.sendPort,
-      "id": id,
-      "input": input.path,
-      "output": output.path,
-      "sevenZipBinary": FileSystemService.sevenZipPath
-    };
+    final params = _buildParams(
+      id: id,
+      input: input,
+      output: output,
+      events: receivePort.sendPort,
+      control: controlPort.sendPort,
+    );
 
     if (Platform.isAndroid) {
       _uncompressAndroid(params);
@@ -120,47 +135,53 @@ class ExtractionService {
       isolate = await Isolate.spawn(_uncompress, params);
     }
 
-    Future.microtask(() async {
-      progressController.add(-1);
+    Future.microtask(() {
+      _listenToExtractionEvents(
+        id: id,
+        receivePort: receivePort,
+        progressController: progressController,
+        onError: onError,
+        isolate: isolate,
+        closeProgressOnDone: true,
+      );
 
-      await for (final message in receivePort) {
-        if (message is double) {
-          progressController.add(message);
-          if (message == -2.0) {
-            isolate?.kill(priority: Isolate.immediate);
-            receivePort.close();
-            _controlPorts.remove(id);
-            progressController.addError('Extraction failed');
-            await progressController.close();
-            onError!('Extraction failed');
-            return;
-          }
-
-          if (message >= 100) {
-            receivePort.close();
-            _controlPorts.remove(id);
-            await progressController.close();
-          }
-        }
-      }
+      progressController.add(ExtractionProgress.unknown);
     });
+
+    void cancel() async {
+      final ctrl = _controlPorts[id];
+      if (ctrl != null) {
+        ctrl.send({"type": "cancel"});
+      }
+
+      if (Platform.isAndroid) {
+        await SevenZipAndroidInterface.cancelExtract(id);
+      }
+    }
 
     return (progressController.stream, cancel);
   }
 
+  /// Cancels a queued or running extraction.
   static Future<void> cancel(String id) async {
     if (Platform.isAndroid) {
       await SevenZipAndroidInterface.cancelExtract(id);
     }
+
     final idx = _queue.indexWhere((q) => q.id == id);
     if (idx != -1) {
       final job = _queue.removeAt(idx);
-      job.progressController.add(0);
-      job.progressController.close();
-      job.completer.complete();
+
+      if (!job.progressController.isClosed) {
+        job.progressController.add(0);
+        job.progressController.close();
+      }
+
+      if (!job.completer.isCompleted) {
+        job.completer.complete();
+      }
 
       job.onError?.call('Cancelled before start');
-
       _tryRunNext();
       return;
     }
@@ -170,6 +191,8 @@ class ExtractionService {
       ctrl.send({"type": "cancel"});
     }
   }
+
+  // ---------------- Queue & concurrency ----------------
 
   static void _tryRunNext() {
     if (_running >= maxConcurrent) return;
@@ -196,40 +219,106 @@ class ExtractionService {
       }
     });
 
-    final params = {
-      "events": receivePort.sendPort,
-      "control": controlPort.sendPort,
-      "id": job.id,
-      "input": job.input.path,
-      "output": job.output.path,
-      "sevenZipBinary": FileSystemService.sevenZipPath,
-    };
+    final params = _buildParams(
+      id: job.id,
+      input: job.input,
+      output: job.output,
+      events: receivePort.sendPort,
+      control: controlPort.sendPort,
+    );
 
+    Isolate? isolate;
     if (Platform.isAndroid) {
       _uncompressAndroid(params);
     } else {
-      await Isolate.spawn(_uncompress, params);
+      isolate = await Isolate.spawn(_uncompress, params);
     }
 
+    await _listenToExtractionEvents(
+      id: job.id,
+      receivePort: receivePort,
+      progressController: job.progressController,
+      onError: job.onError,
+      isolate: isolate,
+      completer: job.completer,
+      closeProgressOnDone: false,
+    );
+  }
+
+  // ---------------- Shared helpers ----------------
+
+  static Map<String, Object> _buildParams({
+    required String id,
+    required File input,
+    required Directory output,
+    required SendPort events,
+    required SendPort control,
+  }) {
+    return {
+      "events": events,
+      "control": control,
+      "id": id,
+      "input": input.path,
+      "output": output.path,
+      "sevenZipBinary": FileSystemService.sevenZipPath,
+    };
+  }
+
+  static Future<void> _listenToExtractionEvents({
+    required String id,
+    required ReceivePort receivePort,
+    required StreamController<double> progressController,
+    Isolate? isolate,
+    Completer<void>? completer,
+    void Function(Object error)? onError,
+    required bool closeProgressOnDone,
+  }) async {
     await for (final message in receivePort) {
-      if (message is double) {
-        job.progressController.add(message);
-        if (message == -2.0) {
-          job.completer.completeError('Extraction failed');
-          receivePort.close();
-          _controlPorts.remove(job.id);
-          job.onError?.call('Extraction failed');
-          return;
+      if (message is! double) continue;
+
+      progressController.add(message);
+
+      // Failure
+      if (ExtractionProgress.isError(message)) {
+        isolate?.kill(priority: Isolate.immediate);
+        receivePort.close();
+        _controlPorts.remove(id);
+
+        const error = 'Extraction failed';
+
+        if (completer != null && !completer.isCompleted) {
+          completer.completeError(error);
         }
 
-        if (message >= 100) {
-          job.completer.complete();
-          receivePort.close();
-          _controlPorts.remove(job.id);
+        if (!progressController.isClosed) {
+          progressController.addError(error);
+          if (closeProgressOnDone) await progressController.close();
         }
+
+        onError?.call(error);
+        return;
+      }
+
+      // Completed
+      if (ExtractionProgress.isComplete(message)) {
+        isolate?.kill(priority: Isolate.immediate);
+        receivePort.close();
+        _controlPorts.remove(id);
+
+        if (completer != null && !completer.isCompleted) {
+          completer.complete();
+        }
+
+        if (closeProgressOnDone && !progressController.isClosed) {
+          await progressController.close();
+        }
+
+        return;
       }
     }
   }
+
+  // ---------------- Platform specific ----------------
 
   static Future<void> _uncompressAndroid(Map data) async {
     final events = data["events"] as SendPort;
@@ -243,19 +332,20 @@ class ExtractionService {
         outputPath,
         (progress) {
           final progressInt = progress.floor();
-          if (progressInt >= 100 || progressInt % 2 != 0) {
-            return;
-          }
+
+          if (progressInt >= 100 || progressInt.isOdd) return;
+
           events.send(progressInt.toDouble());
         },
         taskIdentifier: taskId,
       );
+
       await SevenZipAndroidInterface.wait(taskId);
       await Future.delayed(const Duration(milliseconds: 500));
-      events.send(100.0);
+      events.send(ExtractionSignal.complete.value);
     } catch (e) {
       print("Extraction error: $e");
-      events.send(-2.0);
+      events.send(ExtractionSignal.error.value);
     }
 
     await Future.delayed(const Duration(milliseconds: 500));
@@ -267,9 +357,12 @@ class ExtractionService {
     final sevenZipBinary = data["sevenZipBinary"] as String;
     final inputPath = data["input"] as String;
     final outputPath = data["output"] as String;
+
     final controlReceiver = ReceivePort();
     Process? extractionProcess;
+
     controlAnnounce.send(controlReceiver.sendPort);
+
     controlReceiver.listen((msg) {
       if (msg is Map && msg["type"] == "cancel") {
         print("Cancellation requested");
@@ -283,20 +376,24 @@ class ExtractionService {
 
     try {
       await SevenZipConsoleHandler().extractFile(
-          sevenZipBinary, inputPath, outputPath, onStart: (Process proc) {
-        extractionProcess = proc;
-      }, (progress) {
-        final progressInt = progress.floor();
-        if (progressInt >= 100 || progressInt % 2 != 0) {
-          return;
-        }
-        events.send(progressInt.toDouble());
-      });
+        sevenZipBinary,
+        inputPath,
+        outputPath,
+        (progress) {
+          final progressInt = progress.floor();
+          if (progressInt >= 100 || progressInt.isOdd) return;
+          events.send(progressInt.toDouble());
+        },
+        onStart: (Process proc) {
+          extractionProcess = proc;
+        },
+      );
+
       await Future.delayed(const Duration(milliseconds: 500));
-      events.send(100.0);
+      events.send(ExtractionSignal.complete.value);
     } catch (e) {
       print("Extraction error: $e");
-      events.send(-2.0);
+      events.send(ExtractionSignal.error.value);
     }
   }
 }
