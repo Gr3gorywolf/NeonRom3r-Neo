@@ -388,29 +388,19 @@ class DownloadProvider extends ChangeNotifier {
   }) async {
     download.downloadPercent = 100;
     download.downloadInfo = "Extraction completed.";
-
-    // look for extracted ROM
-    for (var file in outputDir.listSync()) {
-      final ext = file.path.split('.').last.toLowerCase();
-
-      if (VALID_ROM_EXTENSIONS.contains(ext)) {
-        if (libraryItem != null) {
-          libraryItem.filePath = file.path;
-          if (Platform.isAndroid) {
-            MediaScanner.loadMedia(path: file.path);
-            MediaScanner.loadMedia(path: file.parent.path);
-          }
-          libraryProvider.updateLibraryItem(libraryItem);
-        }
-
-        // delete zip
-        if (zipFile.existsSync()) {
-          try {
-            zipFile.deleteSync();
-          } catch (e) {}
-        }
-        break;
+    File? extractedFile = ExtractionService.getExtractedFile(outputDir.path);
+    if (extractedFile != null) {
+      if (Platform.isAndroid) {
+        MediaScanner.loadMedia(path: extractedFile.path);
+        MediaScanner.loadMedia(path: extractedFile.parent.path);
       }
+      if (libraryItem != null) {
+        libraryItem.filePath = extractedFile.path;
+        libraryProvider.updateLibraryItem(libraryItem);
+      }
+      try {
+        await zipFile.delete();
+      } catch (e) {}
     }
 
     NotificationsService.showNotification(

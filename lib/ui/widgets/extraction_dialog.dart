@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:archive/archive.dart';
+import 'package:media_scanner/media_scanner.dart';
 import 'package:path/path.dart' as p;
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/services/extraction_service.dart';
@@ -66,19 +67,16 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
 
   _handleComplete() async {
     var dir = widget.zipFile.parent;
-    File? extractedFile = null;
-    for (var file in dir.listSync(recursive: true)) {
-      if (file is File &&
-          VALID_ROM_EXTENSIONS
-              .contains(SystemHelpers.getFileExtension(file.path))) {
-        extractedFile = File(file.path);
-        break;
+    File? extractedFile = ExtractionService.getExtractedFile(dir.path);
+    if (extractedFile != null) {
+      if (Platform.isAndroid) {
+        MediaScanner.loadMedia(path: extractedFile.path);
+        MediaScanner.loadMedia(path: extractedFile.parent.path);
       }
+      try {
+        await widget.zipFile.delete();
+      } catch (e) {}
     }
-
-    // try {
-    //   await widget.zipFile.delete();
-    // } catch (e) {}
     Navigator.of(context).pop(extractedFile);
   }
 

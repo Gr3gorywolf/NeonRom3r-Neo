@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:io';
 
+import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/services/seven-zip/seven_zip_console_handler.dart';
+import 'package:yamata_launcher/utils/system_helpers.dart';
 
 /// Represents special extraction progress states.
 enum ExtractionSignal {
@@ -190,6 +192,21 @@ class ExtractionService {
     if (ctrl != null) {
       ctrl.send({"type": "cancel"});
     }
+  }
+
+  /// Searches for extracted ROM file in the output directory.
+  static File? getExtractedFile(String outputPath) {
+    final dir = Directory(outputPath);
+    File? extractedFile = null;
+    for (var file in dir.listSync(recursive: true)) {
+      if (file is File &&
+          VALID_ROM_EXTENSIONS
+              .contains(SystemHelpers.getFileExtension(file.path))) {
+        extractedFile = File(file.path);
+        break;
+      }
+    }
+    return extractedFile;
   }
 
   // ---------------- Queue & concurrency ----------------
