@@ -69,6 +69,7 @@ class NotificationsService {
       required String body,
       String? image,
       int? progressPercent,
+      bool silent = false,
       String? tag}) async {
     var notificationsEnabledSetting =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_NOTIFICATIONS);
@@ -85,7 +86,8 @@ class NotificationsService {
       return;
     }
 
-    final androidDetails = await _androidDetails(image, progressPercent, tag);
+    final androidDetails =
+        await _androidDetails(image, progressPercent, tag, silent);
     final darwinDetails = _darwinDetails(image);
     final linuxDetails = _linuxDetails(image);
 
@@ -98,7 +100,6 @@ class NotificationsService {
     var id = tag != null
         ? getIdForTag(tag)
         : DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
     await _notifications.show(
       id,
       title,
@@ -120,6 +121,7 @@ class NotificationsService {
     String? image,
     int? progressPercent,
     String? tag,
+    bool silent,
   ) async {
     BigPictureStyleInformation? styleInfo;
 
@@ -136,8 +138,9 @@ class NotificationsService {
       groupKey: 'yamata_launcher_group',
       channelDescription: _channelDescription,
       styleInformation: styleInfo,
-      importance: Importance.max,
-      priority: Priority.high,
+      importance: silent ? Importance.low : Importance.max,
+      silent: silent,
+      priority: silent ? Priority.low : Priority.high,
       autoCancel: progressPercent == null,
       playSound: progressPercent == null,
       ongoing: progressPercent != null,

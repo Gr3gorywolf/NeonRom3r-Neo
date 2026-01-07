@@ -125,6 +125,7 @@ class DownloadProvider extends ChangeNotifier {
       }
       _activeDownloadInfos
           .removeWhere((element) => element.downloadId == info.downloadId);
+      notifyListeners();
       return;
     }
     final active = _aria2cDownloadProcesses[info.downloadId];
@@ -167,6 +168,7 @@ class DownloadProvider extends ChangeNotifier {
           body: '${info.downloadInfo}',
           image: rom.portrait,
           progressPercent: info.downloadPercent,
+          silent: true,
           tag: rom.slug,
         );
       }
@@ -372,6 +374,7 @@ class DownloadProvider extends ChangeNotifier {
         title: '${state} ${progress == 0 ? "for" : ""} ${rom.name}',
         body: download.downloadInfo ?? "",
         image: rom.portrait,
+        silent: true,
         progressPercent: download.downloadPercent,
         tag: rom.slug,
       );

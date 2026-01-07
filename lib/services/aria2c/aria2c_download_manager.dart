@@ -80,7 +80,9 @@ List<String> _getCommonArgs(String? certPath) {
   List<String> params = [
     '--bt-tracker="${BT_TRACKERS.join(',')}"',
     "--auto-file-renaming=false",
-    "--allow-overwrite=true"
+    "--allow-overwrite=true",
+    "--summary-interval=3",
+    "--console-log-level=info",
   ];
   if (certPath != null) {
     params.add("--ca-certificate=${certPath}");
@@ -95,10 +97,10 @@ List<String> _getCommonArgs(String? certPath) {
       params.add("--dht-file-path=${dhtPath}");
       params.add("--dht-file-path6=${p.dirname(certPath!)}/dht6.dat");
       params.addAll(DHT_SOURCES_PARAMS);
+      params.addAll(
+          ["--async-dns=true", "--async-dns-server=1.1.1.1,8.8.8.8,8.8.4.4"]);
     }
   }
-  print(certPath);
-  print(params);
   return params;
 }
 

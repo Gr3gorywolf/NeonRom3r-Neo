@@ -203,9 +203,7 @@ class MainActivity : FlutterActivity() {
     }
 
     initialized = true
-
     val binaryFile = File(context.applicationInfo.nativeLibraryDir, aria2cBinFile)
-
     return mapOf(
         "certPath" to certFile.absolutePath,
         "binaryPath" to binaryFile.absolutePath
