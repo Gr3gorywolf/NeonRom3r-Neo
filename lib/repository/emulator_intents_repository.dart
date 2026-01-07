@@ -3,12 +3,21 @@ import 'dart:convert';
 import 'package:yamata_launcher/constants/app_constants.dart';
 import 'package:yamata_launcher/models/emulator_intent.dart';
 import 'package:yamata_launcher/services/cache_service.dart';
+import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/utils/cached_fetch.dart';
 import 'package:http/http.dart' as http;
 
 class EmulatorIntentsRepository {
-  Future<List<EmulatorIntent>?> fetchEmulatorIntents() async {
+  parseJsonFile(String jsonString, String path, String uri) {
+    jsonString = jsonString.replaceAll("{file.uri}", uri);
+    jsonString = jsonString.replaceAll("{file.path}", path);
+    return jsonDecode(jsonString);
+  }
+
+  Future<List<EmulatorIntent>?> fetchEmulatorIntents(
+      String console, String path) async {
     List<EmulatorIntent> emulatorsIntents = [];
+    var uri = await IntentsAndroidInterface.getIntentUri(path) ?? path;
     var cacheKey = "emulator-intents";
     var baseUrl = "${AppConstants.apiBasePath}/Configs/EmulatorIntents.json";
     var client = new http.Client();
@@ -20,7 +29,8 @@ class EmulatorIntentsRepository {
         var file = await CacheService.retrieveCacheFile("$cacheKey.json");
         if (file != null) {
           print(file);
-          for (var rom in json.decode(file)) {
+          var consoleIntents = parseJsonFile(file, path, uri)[console] ?? [];
+          for (var rom in consoleIntents) {
             emulatorsIntents.add(EmulatorIntent.fromJson(rom));
           }
         }
@@ -33,7 +43,8 @@ class EmulatorIntentsRepository {
       await CacheService.writeCacheFile("$cacheKey.json", res.body);
       await CacheService.setCacheSignature(
           cacheKey, res.headers['content-length'] ?? "");
-      for (var rom in json.decode(res.body)) {
+      var consoleIntents = parseJsonFile(res.body, path, uri)[console] ?? [];
+      for (var rom in consoleIntents) {
         emulatorsIntents.add(EmulatorIntent.fromJson(rom));
       }
     }

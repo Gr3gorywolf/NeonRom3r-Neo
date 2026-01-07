@@ -79,7 +79,7 @@ class RomService {
     provider.setGameRunning(download.rom.slug, true);
     if (Platform.isAndroid) {
       emulatorLaunchResult = await EmulatorService.launchEmulator(
-          emulatorBinary, download.filePath ?? "");
+          download.rom.console, emulatorBinary, download.filePath ?? "");
     } else {
       var process = await Process.start(emulatorBinary, launchParams);
       await process.exitCode;
