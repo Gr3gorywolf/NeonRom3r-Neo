@@ -30,12 +30,15 @@ class ConsoleConstants {
         name: "Nintendo DS", altName: "Nintendo - Nintendo DS", slug: "nds"),
     Console(
         name: "Nintendo 3DS", altName: "Nintendo - Nintendo 3DS", slug: "3ds"),
-    Console(name: "Virtual Boy", altName: "Nintendo - Virtual Boy", slug: "vb"),
+    Console(
+        name: "Virtual Boy",
+        altName: "Nintendo - Virtual Boy",
+        slug: "virtualboy"),
 
     // =========================
     // Sony
     // =========================
-    Console(name: "PlayStation", altName: "Sony - PlayStation", slug: "ps1"),
+    Console(name: "PlayStation", altName: "Sony - PlayStation", slug: "psx"),
     Console(
         name: "PlayStation 2", altName: "Sony - PlayStation 2", slug: "ps2"),
     Console(
@@ -47,7 +50,7 @@ class ConsoleConstants {
     Console(
         name: "PlayStation Vita",
         altName: "Sony - PlayStation Vita",
-        slug: "psvita"),
+        slug: "vita"),
     // =========================
     // Sega
     // =========================
@@ -80,12 +83,11 @@ class ConsoleConstants {
     // =========================
     // Others
     // =========================
-    Console(
-        name: "WonderSwan", altName: "Bandai - WonderSwan", slug: "wonderswan"),
+    Console(name: "WonderSwan", altName: "Bandai - WonderSwan", slug: "ws"),
     Console(
         name: "WonderSwan Color",
         altName: "Bandai - WonderSwan Color",
-        slug: "wonderswancolor"),
+        slug: "wsc"),
     Console(name: "Vectrex", altName: "GCE - Vectrex", slug: "vectrex"),
   ];
 }
