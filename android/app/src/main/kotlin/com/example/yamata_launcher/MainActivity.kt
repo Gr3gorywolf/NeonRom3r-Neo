@@ -12,6 +12,8 @@ import android.os.Environment
 import java.io.File
 import com.example.yamata_launcher.utils.ZipUtils
 import com.example.yamata_launcher.utils.SevenZipHelper
+import android.content.Intent
+import android.net.Uri
 
 class MainActivity : FlutterActivity() {
 
@@ -102,7 +104,7 @@ class MainActivity : FlutterActivity() {
                     extractTasks[taskId] = true
                     result.success(true)
                 }
-                 "getIntentUriFromFile" -> {
+                "getIntentUriFromFile" -> {
                     try {
                         val path = call.argument<String>("path")!!
                         val file = File(path)
@@ -114,6 +116,33 @@ class MainActivity : FlutterActivity() {
                         result.success(uri.toString())
                     } catch (e: Exception) {
                         result.error("Failed to get intentUri", e.message, null)
+                    }
+                }
+
+                "grantUriPermission" -> {
+                    try {
+                        val uriString = call.argument<String>("uri")
+                        val packageName = call.argument<String>("packageName")
+
+                        require(!uriString.isNullOrBlank()) { "uri is null or empty" }
+                        require(!packageName.isNullOrBlank()) { "packageName is null or empty" }
+
+                        val uri = Uri.parse(uriString)
+
+                        applicationContext.grantUriPermission(
+                            packageName,
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+
+                        result.success(true)
+
+                    } catch (e: Exception) {
+                        result.error(
+                            "GRANT_URI_PERMISSION_FAILED",
+                            e.message,
+                            null
+                        )
                     }
                 }
 

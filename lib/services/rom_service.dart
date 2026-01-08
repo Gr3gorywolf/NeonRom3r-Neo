@@ -95,8 +95,8 @@ class RomService {
         emulatorLaunchResult == EmulatorLaunchResult.needsUncompression) {
       AlertsService.showAlert(
           navigatorKey.currentContext!,
-          "Rom needs uncompression",
-          "The selected emulator requires the ROM to be uncompressed before launching, do you want to extract it now?",
+          "Rom needs to be extracted",
+          "The selected emulator requires the ROM to be extracted before launching, do you want to extract it now?",
           acceptTitle: "Yes", callback: () {
         extractRom(download);
       });

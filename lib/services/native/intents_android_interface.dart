@@ -5,6 +5,14 @@ class IntentsAndroidInterface {
   static String aria2cPath = "";
   static String certPath = "";
 
+  static Future<bool?> grantUriPermission(
+      String uri, String packageName) async {
+    var result = await _channel.invokeMethod<bool>(
+        'grantUriPermission', {'uri': uri, 'packageName': packageName});
+    print("Intent URI: $result");
+    return result;
+  }
+
   static Future<String?> getIntentUri(String filePath) async {
     var result = await _channel
         .invokeMethod<String>('getIntentUriFromFile', {'path': filePath});
