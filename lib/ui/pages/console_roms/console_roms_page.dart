@@ -5,6 +5,7 @@ import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/app_provider.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
+import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/repository/roms_repository.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
@@ -60,8 +61,8 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
   @override
   Widget build(BuildContext context) {
     var appProvider = Provider.of<AppProvider>(context);
-
-    final TextEditingController _controller = TextEditingController();
+    var downloadSourcesProvider = Provider.of<DownloadSourcesProvider>(context);
+    var libraryProvider = Provider.of<LibraryProvider>(context);
     return Scaffold(
       appBar: Toolbar(
         onChanged: (values) {
@@ -76,19 +77,49 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
                 label: 'Name',
                 field: 'name',
                 value: ToolBarSortByType.ascending)),
-        settings: ToolbarSettings(
-          title: widget.console.name,
-          sorts: [
-            ToolBarSortByElement(
-                label: 'Name',
-                field: 'name',
-                value: ToolBarSortByType.ascending),
-            ToolBarSortByElement(
-                label: 'Release Date',
-                field: 'releaseDate',
-                value: ToolBarSortByType.ascending),
-          ],
-        ),
+        settings: ToolbarSettings(title: widget.console.name, sorts: [
+          ToolBarSortByElement(
+              label: 'Name', field: 'name', value: ToolBarSortByType.ascending),
+          ToolBarSortByElement(
+              label: 'Release Date',
+              field: 'releaseDate',
+              value: ToolBarSortByType.ascending),
+        ], filters: [
+          ToolBarFilterGroup(
+            groupName: "Availability",
+            filters: [
+              ToolBarFilterElement(
+                  label: "Downloaded",
+                  field: "isDownloaded",
+                  value: "",
+                  matcher: (romInfo) {
+                    var libItem = libraryProvider.getLibraryItem(romInfo.slug);
+                    return libItem != null && libItem.downloadedAt != null;
+                  }),
+              ToolBarFilterElement(
+                label: "Not Downloaded",
+                field: "isNotDownloaded",
+                value: "",
+                matcher: (romInfo) {
+                  var libItem = libraryProvider.getLibraryItem(romInfo.slug);
+                  return libItem == null || libItem.downloadedAt == null;
+                },
+              ),
+              ToolBarFilterElement(
+                label: "Download Available",
+                field: "isDownloadAvailable",
+                value: "",
+                matcher: (romInfo) {
+                  return downloadSourcesProvider
+                          .isRomCompilingDownloadSources(romInfo.slug) ||
+                      downloadSourcesProvider
+                          .getRomSources(romInfo.slug)
+                          .isNotEmpty;
+                },
+              ),
+            ],
+          )
+        ]),
       ),
       body: RomList(
         isLoading: this._isLoading,
