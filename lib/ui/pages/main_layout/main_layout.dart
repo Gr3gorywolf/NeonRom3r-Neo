@@ -76,6 +76,7 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     final isSmallScreen = ScreenHelpers.isSmallScreen(context);
     final isMediumScreen = ScreenHelpers.isMediumScreen(context);
+    var canPop = _navigatorKeys[_currentIndex].currentState?.canPop() == false;
     const navigationItems = [
       {'icon': Icons.home, 'label': 'Home'},
       {'icon': Icons.collections_bookmark, 'label': 'Library'},
@@ -133,39 +134,47 @@ class _MainLayoutState extends State<MainLayout> {
       );
     }
 
-    return Scaffold(
-      body: isSmallScreen
-          ? IndexedStack(
-              index: _currentIndex,
-              children: tabs,
-            )
-          : buildDesktopLayout(),
-      bottomNavigationBar: isSmallScreen
-          ? Container(
-              padding: const EdgeInsets.only(top: 5),
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: grayBorderColor,
-                    width: 0.5,
+    return PopScope(
+      canPop: canPop,
+      onPopInvoked: (popHappened) {
+        if (!popHappened) {
+          _navigatorKeys[_currentIndex].currentState?.maybePop();
+        }
+      },
+      child: Scaffold(
+        body: isSmallScreen
+            ? IndexedStack(
+                index: _currentIndex,
+                children: tabs,
+              )
+            : buildDesktopLayout(),
+        bottomNavigationBar: isSmallScreen
+            ? Container(
+                padding: const EdgeInsets.only(top: 5),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: grayBorderColor,
+                      width: 0.5,
+                    ),
                   ),
                 ),
-              ),
-              child: BottomNavigationBar(
-                currentIndex: _currentIndex,
-                showUnselectedLabels: true,
-                onTap: _onTabSelected,
-                items: navigationItems
-                    .map(
-                      (item) => BottomNavigationBarItem(
-                        icon: Icon(item['icon'] as IconData),
-                        label: item['label'] as String,
-                      ),
-                    )
-                    .toList(),
-              ),
-            )
-          : null,
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  showUnselectedLabels: true,
+                  onTap: _onTabSelected,
+                  items: navigationItems
+                      .map(
+                        (item) => BottomNavigationBarItem(
+                          icon: Icon(item['icon'] as IconData),
+                          label: item['label'] as String,
+                        ),
+                      )
+                      .toList(),
+                ),
+              )
+            : null,
+      ),
     );
   }
 }
