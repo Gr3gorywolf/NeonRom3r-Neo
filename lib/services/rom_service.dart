@@ -75,16 +75,29 @@ class RomService {
     String emulatorBinary = download.overrideEmulator?.isNotEmpty ?? false
         ? download.overrideEmulator ?? ""
         : emulatorSetting.emulatorBinary;
+
     print("Launching emulator ${emulatorBinary} with params: $launchParams");
     updateLibraryItem();
     provider.setGameRunning(download.rom.slug, true);
-    if (Platform.isAndroid) {
-      emulatorLaunchResult = await EmulatorService.launchEmulator(
-          download.rom.console, emulatorBinary, download.filePath ?? "");
-    } else {
-      var process = await Process.start(emulatorBinary, launchParams);
-      await process.exitCode;
+    try {
+      if (Platform.isAndroid) {
+        emulatorLaunchResult = await EmulatorService.launchEmulator(
+            download.rom.console, emulatorBinary, download.filePath ?? "");
+      } else {
+        Process process;
+        if (Platform.isMacOS) {
+          process = await Process.start(
+              "open", ["-a", emulatorBinary, ...launchParams]);
+        } else {
+          process = await Process.start(emulatorBinary, launchParams);
+        }
+        await process.exitCode;
+      }
+    } catch (err) {
+      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
+          exception: Exception("Failed to open the rom"));
     }
+
     if (_activeGames[download.rom.slug] != null) {
       _activeGames[download.rom.slug]?.cancel();
       _activeGames.remove(download.rom.slug);

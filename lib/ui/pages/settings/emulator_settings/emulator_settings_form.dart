@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/models/emulator_setting.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
@@ -56,6 +57,7 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
     FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
       dialogTitle: "Select Emulator Binary",
       type: FileType.custom,
+      initialDirectory: Platform.isMacOS ? "/Applications" : null,
       allowedExtensions: VALID_EXECUTABLE_EXTENSIONS,
     );
     if (selectedFile != null) {
