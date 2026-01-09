@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
 import 'package:yamata_launcher/database/daos/library_dao.dart';
@@ -168,5 +169,38 @@ class RomService {
     }
 
     return "Not played yet";
+  }
+
+  /// Locate the largest valid ROM or compressed file in the given directory
+  static File? locateRomFile(Directory directory,
+      {bool skipCompressedFiles = false}) {
+    String? outputPath;
+    if (directory.existsSync()) {
+      // Find the largest valid ROM / compressed file
+      final validExtensions = {
+        ...VALID_COMPRESSED_ROM_EXTENSIONS,
+        ...VALID_ROM_EXTENSIONS,
+        ...(skipCompressedFiles ? [] : VALID_COMPRESSED_EXTENSIONS),
+      }.map((e) => '.${e.toLowerCase()}').toSet();
+
+      final files = directory
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) =>
+              validExtensions.any((ext) => f.path.toLowerCase().endsWith(ext)))
+          .toList();
+
+      if (files.isNotEmpty) {
+        files.sort(
+          (a, b) => b.lengthSync().compareTo(a.lengthSync()),
+        );
+
+        outputPath = files.first.path;
+      }
+    }
+    if (outputPath == null) {
+      return null;
+    }
+    return File(outputPath);
   }
 }

@@ -15,6 +15,7 @@ import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_download_manager.dart';
 import 'package:yamata_launcher/services/notifications_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:provider/provider.dart';
 
@@ -176,11 +177,6 @@ class DownloadProvider extends ChangeNotifier {
     }
 
     if (event is Aria2LogEvent) {
-      // if (event.line.trim().isEmpty) return;
-      // info.downloadInfo = event.line;
-      // _activeDownloadInfos[infoIndex].downloadInfo = event.line;
-      // notifyListeners();
-      print("event.line: ${event.line}");
       return;
     }
 
@@ -391,7 +387,8 @@ class DownloadProvider extends ChangeNotifier {
   }) async {
     download.downloadPercent = 100;
     download.downloadInfo = "Extraction completed.";
-    File? extractedFile = ExtractionService.getExtractedFile(outputDir.path);
+    File? extractedFile =
+        RomService.locateRomFile(outputDir, skipCompressedFiles: true);
     if (extractedFile != null) {
       if (Platform.isAndroid) {
         MediaScanner.loadMedia(path: extractedFile.path);

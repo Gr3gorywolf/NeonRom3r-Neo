@@ -6,6 +6,7 @@ import 'package:media_scanner/media_scanner.dart';
 import 'package:path/path.dart' as p;
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/services/extraction_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
 
 class ExtractionDialog extends StatefulWidget {
@@ -67,7 +68,8 @@ class _ExtractionDialogState extends State<ExtractionDialog> {
 
   _handleComplete() async {
     var dir = widget.zipFile.parent;
-    File? extractedFile = ExtractionService.getExtractedFile(dir.path);
+    File? extractedFile =
+        RomService.locateRomFile(dir, skipCompressedFiles: true);
     if (extractedFile != null) {
       if (Platform.isAndroid) {
         MediaScanner.loadMedia(path: extractedFile.path);

@@ -12,6 +12,7 @@ import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
+import 'package:path/path.dart' as p;
 
 class FileSystemService {
   static String _rootPath = "";
@@ -121,6 +122,41 @@ class FileSystemService {
         await FilePicker.platform.pickFiles(type: FileType.any);
     if (selectedFiles == null || selectedFiles.files.isEmpty) return null;
     return selectedFiles.files.first.path!;
+  }
+
+  /**
+   * Flattens all files in a directory by moving them to the root of the directory.
+   */
+  static Future<void> flattenDirectoryFiles(String rootPath) async {
+    final rootDir = Directory(rootPath);
+
+    if (!await rootDir.exists()) {
+      throw Exception("The directory doesnt exists: $rootPath");
+    }
+
+    final entities = rootDir.listSync(recursive: true, followLinks: false);
+
+    for (final entity in entities) {
+      if (entity is File) {
+        final fileName = p.basename(entity.path);
+        final targetPath = p.join(rootDir.path, fileName);
+
+        // If its on root, skip
+        if (p.dirname(entity.path) == rootDir.path) continue;
+
+        var finalTargetPath = targetPath;
+        var counter = 1;
+
+        // Avoid overwriting files
+        while (File(finalTargetPath).existsSync()) {
+          final name = p.basenameWithoutExtension(fileName);
+          final ext = p.extension(fileName);
+          finalTargetPath = p.join(rootDir.path, '$name ($counter)$ext');
+          counter++;
+        }
+        await entity.rename(finalTargetPath);
+      }
+    }
   }
 
   static setupDownloadsPath() async {

@@ -79,6 +79,7 @@ flutter:
       - assets/svgs/
       - assets/bin/7z/
       - assets/bin/aria2c/
+      - assets/data/
 
 dependency_overrides:
   file: 6.1.4

@@ -194,21 +194,6 @@ class ExtractionService {
     }
   }
 
-  /// Searches for extracted ROM file in the output directory.
-  static File? getExtractedFile(String outputPath) {
-    final dir = Directory(outputPath);
-    File? extractedFile = null;
-    for (var file in dir.listSync(recursive: true)) {
-      if (file is File &&
-          VALID_ROM_EXTENSIONS
-              .contains(SystemHelpers.getFileExtension(file.path))) {
-        extractedFile = File(file.path);
-        break;
-      }
-    }
-    return extractedFile;
-  }
-
   // ---------------- Queue & concurrency ----------------
 
   static void _tryRunNext() {

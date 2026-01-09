@@ -11,6 +11,7 @@ import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/utils/process_helper.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
@@ -328,7 +329,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     // =======================================================================
     // TORRENT / MAGNET FLOW
     // =======================================================================
-    final torrentPath = await _resolveTorrent(
+    final torrentPath = await _downloadTorrent(
       aria2cPath: args.aria2cPath,
       uri: args.uri!,
       onLog: log,
@@ -373,41 +374,28 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       outputPath = p.join(romDir.path, p.basename(relPath));
       final src = File(p.join(args.downloadPath!, relPath));
       final dst = File(outputPath);
-
       await src.rename(dst.path);
-
-      // Cleanup residual torrent files
-      final dir = Directory(args.downloadPath!);
-      await for (var entity in dir.list()) {
-        if (entity.path != dst.path) {
-          try {
-            if (entity is File) {
-              await entity.delete();
-            } else if (entity is Directory) {
-              await entity.delete(recursive: true);
-            }
-          } catch (e) {
-            print('Error deleting extra file: $e');
-          }
-        }
-      }
     } else {
       var romOutputPath = Directory(outputPath!);
-      if (romOutputPath.existsSync()) {
-        var files = romOutputPath.listSync().whereType<File>().toList();
-        if (files.isNotEmpty) {
-          [
-            ...VALID_COMPRESSED_ROM_EXTENSIONS,
-            ...VALID_ROM_EXTENSIONS,
-            ...VALID_COMPRESSED_EXTENSIONS
-          ].forEach((ext) {
-            var match = files.firstWhereOrNull(
-                (f) => f.path.toLowerCase().endsWith('.' + ext));
-            if (match != null) {
-              outputPath = match.path;
-            }
-          });
+      await FileSystemService.flattenDirectoryFiles(romOutputPath.path);
+      var outputFile = RomService.locateRomFile(romOutputPath);
+      if (outputFile != null) {
+        outputPath = outputFile.path;
+      }
+    }
+
+    // Cleanup residual folders
+    await for (var entity in Directory(args.downloadPath!).list()) {
+      try {
+        if (entity is Directory) {
+          var isFolderEmpty =
+              entity.listSync(recursive: true).whereType<File>().isEmpty;
+          if (isFolderEmpty) {
+            await entity.delete(recursive: true);
+          }
         }
+      } catch (e) {
+        print('Error deleting extra directories: $e');
       }
     }
 
@@ -429,7 +417,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
 /// Torrent helpers
 /// ============================================================================
 
-Future<String> _resolveTorrent({
+Future<String> _downloadTorrent({
   String? aria2cPath,
   required String uri,
   String? torrentsPath,
@@ -496,14 +484,14 @@ Future<String> _resolveTorrent({
 
   final path = p.join(cache.path, '${uriHash}.torrent');
   if (await File(path).exists()) return path;
-  var certArgs = _getCommonArgs(certPath);
+  var commonArgs = _getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath!,
     [
       '--bt-metadata-only=true',
       '--bt-save-metadata=true',
       '--seed-time=0',
-      ...certArgs,
+      ...commonArgs,
       uri,
     ],
     workingDirectory: cache.path,
@@ -545,10 +533,10 @@ Future<Map<int, String>> _showFiles({
   required void Function(Process) onSetRunning,
   required bool Function() isAborted,
 }) async {
-  var certArgs = _getCommonArgs(certPath);
+  var commonArgs = _getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath,
-    ['--show-files', torrentPath, ...certArgs],
+    ['--show-files', torrentPath, ...commonArgs],
     workingDirectory: cwd,
   );
 
@@ -585,7 +573,9 @@ Future<void> _downloadSelectedFile({
   final proc = await Process.start(
     aria2cPath,
     [
-      ...(selectIndex == null ? [] : ['--select-file=$selectIndex']),
+      ...(selectIndex == null
+          ? []
+          : ['--select-file=$selectIndex', '--bt-remove-unselected-file=true']),
       '--seed-time=0',
       '--file-allocation=none',
       ...certArgs,
@@ -609,7 +599,7 @@ Future<void> _downloadSelectedFile({
 /// ============================================================================
 
 Aria2Progress _parseProgress(String line) {
-  print("Parsing line: $line");
+  print("aria2c: $line");
   return Aria2Progress(
     rawLine: line,
     percent: RegExp(r'\((\d+%)\)').firstMatch(line)?.group(1),
