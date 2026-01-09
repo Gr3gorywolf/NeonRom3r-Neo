@@ -17,8 +17,33 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
+  late final List<Widget> tabs;
+
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List.generate(4, (_) => GlobalKey<NavigatorState>());
+
+  @override
+  void initState() {
+    super.initState();
+    tabs = [
+      _buildTabNavigator(
+        key: _navigatorKeys[0],
+        child: HomePage(),
+      ),
+      _buildTabNavigator(
+        key: _navigatorKeys[1],
+        child: LibraryPage(),
+      ),
+      _buildTabNavigator(
+        key: _navigatorKeys[2],
+        child: DownloadsPage(),
+      ),
+      _buildTabNavigator(
+          key: _navigatorKeys[3],
+          child: const SettingsPage(),
+          maintainState: false),
+    ];
+  }
 
   void _popToRoot(int index) {
     _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
@@ -51,26 +76,6 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     final isSmallScreen = ScreenHelpers.isSmallScreen(context);
     final isMediumScreen = ScreenHelpers.isMediumScreen(context);
-
-    final tabs = [
-      _buildTabNavigator(
-        key: _navigatorKeys[0],
-        child: HomePage(),
-      ),
-      _buildTabNavigator(
-        key: _navigatorKeys[1],
-        child: LibraryPage(),
-      ),
-      _buildTabNavigator(
-        key: _navigatorKeys[2],
-        child: DownloadsPage(),
-      ),
-      _buildTabNavigator(
-          key: _navigatorKeys[3],
-          child: const SettingsPage(),
-          maintainState: false),
-    ];
-
     const navigationItems = [
       {'icon': Icons.home, 'label': 'Home'},
       {'icon': Icons.collections_bookmark, 'label': 'Library'},
