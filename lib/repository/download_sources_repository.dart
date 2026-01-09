@@ -7,7 +7,8 @@ import 'package:yamata_launcher/models/download_source_rom.dart';
 class DownloadSourcesRepository {
   Future<DownloadSourceWithDownloads?> fetchSource(String sourceUrl) async {
     var client = new http.Client();
-    var res = await client.get(Uri.parse(sourceUrl));
+    var res =
+        await client.get(Uri.parse(sourceUrl)).timeout(Duration(seconds: 15));
     try {
       if (res.statusCode == 200) {
         var responseData = json.decode(res.body);

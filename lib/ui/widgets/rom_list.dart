@@ -42,7 +42,7 @@ class _RomListState extends State<RomList> {
   @override
   Widget build(BuildContext context) {
     var gridAxisCount =
-        max(1, (MediaQuery.of(context).size.width / 250).floor());
+        max(1, (MediaQuery.of(context).size.width / 275).floor());
     if (widget.isLoading == true) {
       return const Center(child: CircularProgressIndicator());
     }

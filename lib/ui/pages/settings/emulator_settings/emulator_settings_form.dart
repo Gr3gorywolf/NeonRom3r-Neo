@@ -113,7 +113,8 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
                 children: [
                   Icon(Icons.file_open),
                   SizedBox(width: 8),
-                  const Text('Select Emulator binary'),
+                  Text(
+                      "Select Emulator ${Platform.isAndroid ? "application" : "binary"}"),
                 ],
               )),
           if (selectedBinary.isNotEmpty)

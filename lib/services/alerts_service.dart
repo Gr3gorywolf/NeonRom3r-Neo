@@ -3,6 +3,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 
 class AlertsService {
@@ -38,7 +39,7 @@ class AlertsService {
         icon,
         color: Theme.of(ctx).colorScheme.primary,
       ),
-    ).show(ctx);
+    ).show(navigatorKey.currentContext!);
   }
 
   static showErrorSnackbar(BuildContext ctx,
@@ -67,7 +68,7 @@ class AlertsService {
         Icons.error,
         color: Colors.white,
       ),
-    ).show(ctx);
+    ).show(navigatorKey.currentContext!);
   }
 
   static Future<String?> showPrompt(BuildContext ctx, String title,
@@ -103,13 +104,13 @@ class AlertsService {
                   style: TextButton.styleFrom(
                       textStyle: TextStyle(color: Colors.red)),
                   onPressed: () {
-                    Navigator.pop(ctx);
+                    Navigator.of(ctx, rootNavigator: true).pop();
                     completer.complete(null);
                   },
                   child: Text("Cancel")),
               TextButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
+                    Navigator.of(ctx, rootNavigator: true).pop();
                     completer.complete(value);
                   },
                   child: Text("Ok"))
@@ -144,7 +145,7 @@ class AlertsService {
     final navigator = Navigator.of(ctx, rootNavigator: true);
     return _DialogHandle(() {
       if (navigator.canPop()) {
-        navigator.pop();
+        Navigator.of(ctx, rootNavigator: true).pop();
       }
     });
   }
@@ -175,7 +176,7 @@ class AlertsService {
                     style: TextButton.styleFrom(
                         textStyle: TextStyle(color: Colors.red)),
                     onPressed: () {
-                      Navigator.pop(ctx);
+                      Navigator.of(ctx, rootNavigator: true).pop();
                       if (onClose != null) {
                         onClose();
                       }
@@ -187,7 +188,7 @@ class AlertsService {
               additionalAction ?? SizedBox(),
               TextButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
+                    Navigator.of(ctx, rootNavigator: true).pop();
                     if (callback != null) {
                       callback();
                     }

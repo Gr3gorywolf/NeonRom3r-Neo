@@ -76,6 +76,7 @@ const VALID_ROM_EXTENSIONS = [
   'wud', // Wii U
   'nsp', // Nintendo Switch
   'xci', // Nintendo Switch
+  'vb', // Virtual Boy
 
   // Sony
   'psx', // PlayStation

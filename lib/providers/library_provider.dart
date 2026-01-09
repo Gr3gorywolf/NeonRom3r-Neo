@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
@@ -33,6 +34,7 @@ class LibraryProvider extends ChangeNotifier {
   List<RomLibraryItem> getDownloads() {
     return _libraryItems.values
         .where((item) => item.downloadedAt != null)
+        .sorted((a, b) => a.addedAt!.compareTo(b.addedAt!))
         .toList();
   }
 

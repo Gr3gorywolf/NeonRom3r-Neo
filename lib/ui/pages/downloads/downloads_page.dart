@@ -146,6 +146,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   label: 'Name',
                   field: 'name',
                   value: ToolBarSortByType.ascending),
+              ToolBarSortByElement(
+                  label: 'Added Date',
+                  field: 'addedAt',
+                  value: ToolBarSortByType.descending),
             ],
             filters: getFilters(_downloadedRoms)),
       ),

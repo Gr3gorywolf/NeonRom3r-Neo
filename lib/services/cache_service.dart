@@ -22,6 +22,9 @@ class CacheService {
     Duration? ttl,
   }) async {
     final file = File("${FileSystemService.cachePath}/$fileName");
+    if (file.parent.existsSync() == false) {
+      file.parent.createSync(recursive: true);
+    }
     await file.writeAsString(content);
 
     if (ttl != null) {

@@ -10,7 +10,8 @@ class ConsoleSourcesRepository {
   Future<ConsoleSource?> fetchSource(String sourceUrl) async {
     var client = new http.Client();
     try {
-      var res = await client.get(Uri.parse(sourceUrl));
+      var res =
+          await client.get(Uri.parse(sourceUrl)).timeout(Duration(seconds: 15));
       if (res.statusCode == 200) {
         var responseData = json.decode(res.body);
         return ConsoleSource.fromJson(responseData);

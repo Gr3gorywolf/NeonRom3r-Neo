@@ -1,12 +1,5 @@
-import 'dart:ffi';
-import 'dart:io';
-
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/app_theme.dart';
-import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
-import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
-import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
 import 'package:yamata_launcher/ui/pages/library/library_page.dart';
 import 'package:yamata_launcher/ui/pages/home/home_page.dart';
@@ -15,28 +8,69 @@ import 'package:yamata_launcher/services/assets_service.dart';
 import 'package:yamata_launcher/utils/screen_helpers.dart';
 
 class MainLayout extends StatefulWidget {
+  const MainLayout({Key? key}) : super(key: key);
+
   @override
-  _MainLayoutState createState() => _MainLayoutState();
+  State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
+  final List<GlobalKey<NavigatorState>> _navigatorKeys =
+      List.generate(4, (_) => GlobalKey<NavigatorState>());
+
+  void _popToRoot(int index) {
+    _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+  }
+
+  void _onTabSelected(int index) {
+    if (_currentIndex == index) {
+      _popToRoot(index);
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
+  Widget _buildTabNavigator(
+      {required GlobalKey<NavigatorState> key,
+      required Widget child,
+      bool maintainState = true}) {
+    return Navigator(
+      key:
+          maintainState ? key : ValueKey(DateTime.now().millisecondsSinceEpoch),
+      onGenerateRoute: (_) => MaterialPageRoute(
+        builder: (_) => child,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> routes = [
-      HomePage(),
-      LibraryPage(),
-      DownloadsPage(),
-      SettingsPage()
+    final isSmallScreen = ScreenHelpers.isSmallScreen(context);
+    final isMediumScreen = ScreenHelpers.isMediumScreen(context);
+
+    final tabs = [
+      _buildTabNavigator(
+        key: _navigatorKeys[0],
+        child: HomePage(),
+      ),
+      _buildTabNavigator(
+        key: _navigatorKeys[1],
+        child: LibraryPage(),
+      ),
+      _buildTabNavigator(
+        key: _navigatorKeys[2],
+        child: DownloadsPage(),
+      ),
+      _buildTabNavigator(
+          key: _navigatorKeys[3],
+          child: const SettingsPage(),
+          maintainState: false),
     ];
-    var isSmallScreen = ScreenHelpers.isSmallScreen(context);
-    var isMediumScreen = ScreenHelpers.isMediumScreen(context);
+
     const navigationItems = [
       {'icon': Icons.home, 'label': 'Home'},
       {'icon': Icons.collections_bookmark, 'label': 'Library'},
@@ -44,77 +78,89 @@ class _MainLayoutState extends State<MainLayout> {
       {'icon': Icons.settings, 'label': 'Settings'},
     ];
 
-    _getLogo() {
+    Widget getLogo() {
       if (isMediumScreen) {
         return AssetsService.getSvgImage("logo-orig", size: 65);
       } else {
-        return Center(child: AssetsService.getSvgImage("logo-orig", size: 100));
+        return Center(
+          child: AssetsService.getSvgImage("logo-orig", size: 100),
+        );
       }
     }
 
-    Widget buildDesktopBody() {
+    Widget buildDesktopLayout() {
       return Row(
         children: [
           NavigationRail(
             selectedIndex: _currentIndex,
-            indicatorColor: Colors.transparent,
-            selectedLabelTextStyle: TextStyle(color: primaryGreen),
-            selectedIconTheme: IconThemeData(color: primaryGreen),
             extended: !isMediumScreen,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
             minExtendedWidth: 190,
             minWidth: 60,
-            useIndicator: true,
+            indicatorColor: Colors.transparent,
+            selectedLabelTextStyle: const TextStyle(color: primaryGreen),
+            selectedIconTheme: const IconThemeData(color: primaryGreen),
             leading: Padding(
-                padding: const EdgeInsets.only(top: 0), child: _getLogo()),
-            destinations: navigationItems.map((item) {
-              return NavigationRailDestination(
-                icon: Icon(item['icon'] as IconData),
-                label: Text(item['label'] as String),
-              );
-            }).toList(),
+              padding: const EdgeInsets.only(top: 8),
+              child: getLogo(),
+            ),
+            destinations: navigationItems
+                .map(
+                  (item) => NavigationRailDestination(
+                    icon: Icon(item['icon'] as IconData),
+                    label: Text(item['label'] as String),
+                  ),
+                )
+                .toList(),
+            onDestinationSelected: _onTabSelected,
           ),
-          VerticalDivider(thickness: 1, width: 1, color: grayBorderColor),
+          const VerticalDivider(
+            thickness: 1,
+            width: 1,
+            color: grayBorderColor,
+          ),
           Expanded(
-            child: routes[_currentIndex],
-          )
+            child: IndexedStack(
+              index: _currentIndex,
+              children: tabs,
+            ),
+          ),
         ],
       );
     }
 
     return Scaffold(
-      body: routes[_currentIndex],
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.only(top: 5),
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: grayBorderColor,
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: isSmallScreen
-            ? BottomNavigationBar(
+      body: isSmallScreen
+          ? IndexedStack(
+              index: _currentIndex,
+              children: tabs,
+            )
+          : buildDesktopLayout(),
+      bottomNavigationBar: isSmallScreen
+          ? Container(
+              padding: const EdgeInsets.only(top: 5),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: grayBorderColor,
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: BottomNavigationBar(
                 currentIndex: _currentIndex,
                 showUnselectedLabels: true,
-                items: navigationItems.map((item) {
-                  return BottomNavigationBarItem(
-                      icon: Icon(item['icon'] as IconData),
-                      label: item['label'] as String);
-                }).toList(),
-                onTap: (int index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-              )
-            : buildDesktopBody(),
-      ),
+                onTap: _onTabSelected,
+                items: navigationItems
+                    .map(
+                      (item) => BottomNavigationBarItem(
+                        icon: Icon(item['icon'] as IconData),
+                        label: item['label'] as String,
+                      ),
+                    )
+                    .toList(),
+              ),
+            )
+          : null,
     );
   }
 }
