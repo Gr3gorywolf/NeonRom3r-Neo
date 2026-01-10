@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
@@ -43,8 +44,7 @@ class RomDownloadSourcesDialog extends StatelessWidget {
       item.filePath = file;
       await provider.updateLibraryItem(item);
       await Navigator.of(context).maybePop();
-      AlertsService.showSnackbar(
-          navigatorKey.currentContext!, "Rom file located successfully");
+      AlertsService.showSnackbar("Rom file located successfully");
     }
 
     return AlertDialog(

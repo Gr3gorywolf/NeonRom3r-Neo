@@ -69,9 +69,9 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
 
   void handleSave() {
     if (selectedConsole.isEmpty || selectedBinary.isEmpty) {
-      AlertsService.showErrorSnackbar(context,
-          exception:
-              Exception("Please select a console and emulator binary path"));
+      AlertsService.showErrorSnackbar(
+          "Please select a console and emulator binary path",
+          ctx: context);
       return;
     }
     EmulatorSetting setting = EmulatorSetting(

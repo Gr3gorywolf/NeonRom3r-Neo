@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
@@ -93,7 +94,7 @@ class FileSystemService {
           : Directory("/storage/emulated/0/");
       return await FilesystemPicker.open(
         title: 'Select a file',
-        context: navigatorKey.currentContext!,
+        context: navigatorContext!,
         fsType: FilesystemType.file,
         pickText: 'Select this file',
         shortcuts: [

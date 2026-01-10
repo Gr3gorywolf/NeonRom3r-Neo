@@ -31,15 +31,15 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
         bool added = await ConsoleService.addConsoleSource(source);
         if (added) {
           setState(() {});
-          AlertsService.showSnackbar(
-              context, "Console source added successfully.");
+          AlertsService.showSnackbar("Console source added successfully.",
+              ctx: context);
         } else {
-          AlertsService.showErrorSnackbar(context,
-              exception: Exception("Console source already exists."));
+          AlertsService.showErrorSnackbar("Console source already exists.",
+              ctx: context);
         }
       } else {
-        AlertsService.showErrorSnackbar(context,
-            exception: Exception("Failed to fetch console source."));
+        AlertsService.showErrorSnackbar("Failed to fetch console source.",
+            ctx: context);
       }
     }
   }
@@ -47,8 +47,8 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
   handleUpdateConsoleSource(Console sourceToUpdate) async {
     var source = await ConsoleService.getConsoleSource(sourceToUpdate);
     if (source == null) {
-      AlertsService.showErrorSnackbar(context,
-          exception: Exception("Failed to fetch console source."));
+      AlertsService.showErrorSnackbar("Failed to fetch console source.",
+          ctx: context);
       return;
     }
     var loading = AlertsService.showLoadingAlert(
@@ -63,15 +63,15 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
       bool added = await ConsoleService.updateConsoleSource(updatedSource);
       if (added) {
         setState(() {});
-        AlertsService.showSnackbar(
-            context, "Console source updated successfully.");
+        AlertsService.showSnackbar("Console source updated successfully.",
+            ctx: context);
       } else {
-        AlertsService.showErrorSnackbar(context,
-            exception: Exception("Console source doesn't exist."));
+        AlertsService.showErrorSnackbar("Console source doesn't exist.",
+            ctx: context);
       }
     } else {
-      AlertsService.showErrorSnackbar(context,
-          exception: Exception("Failed to fetch console source."));
+      AlertsService.showErrorSnackbar("Failed to fetch console source.",
+          ctx: context);
     }
   }
 

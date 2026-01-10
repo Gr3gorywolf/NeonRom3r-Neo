@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
@@ -44,13 +45,12 @@ class RomService {
     var emulatorSetting =
         await EmulatorSettingsDao(db!).get(download.rom.console);
     if (emulatorSetting == null) {
-      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
-          exception: Exception(
-              "No emulator configured for ${ConsoleService.getConsoleFromName(download.rom.console)?.name ?? download.rom.console}. Please set it up in settings."));
+      AlertsService.showErrorSnackbar(
+          "No emulator configured for ${ConsoleService.getConsoleFromName(download.rom.console)?.name ?? download.rom.console}. Please set it up in settings.");
       return;
     }
-    var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,
-        listen: false);
+    var provider =
+        Provider.of<LibraryProvider>(navigatorContext!, listen: false);
 
     updateLibraryItem({bool addTime = false}) {
       var currentLibraryItem = provider.getLibraryItem(download.rom.slug);
@@ -93,9 +93,8 @@ class RomService {
         }
         await process.exitCode;
       }
-    } catch (err) {
-      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
-          exception: Exception("Failed to open the rom"));
+    } on Exception catch (err) {
+      AlertsService.showErrorSnackbar("Failed to open the rom", exception: err);
     }
 
     if (_activeGames[download.rom.slug] != null) {
@@ -107,9 +106,7 @@ class RomService {
 
     if (Platform.isAndroid &&
         emulatorLaunchResult == EmulatorLaunchResult.needsUncompression) {
-      AlertsService.showAlert(
-          navigatorKey.currentContext!,
-          "Rom needs to be extracted",
+      AlertsService.showAlert(navigatorContext!, "Rom needs to be extracted",
           "The selected emulator requires the ROM to be extracted before launching, do you want to extract it now?",
           acceptTitle: "Yes", callback: () {
         extractRom(download);
@@ -119,14 +116,13 @@ class RomService {
 
   static Future extractRom(RomLibraryItem downloadedRom) async {
     var resultFile = await ExtractionDialog.show(
-        navigatorKey.currentContext!, File(downloadedRom.filePath ?? ""));
+        navigatorContext!, File(downloadedRom.filePath ?? ""));
     if (resultFile == null) {
-      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
-          exception: Exception("Failed to extract ROM from zip file."));
+      AlertsService.showErrorSnackbar("Failed to extract ROM from zip file.");
       return;
     }
-    var provider = Provider.of<LibraryProvider>(navigatorKey.currentContext!,
-        listen: false);
+    var provider =
+        Provider.of<LibraryProvider>(navigatorContext!, listen: false);
     downloadedRom.filePath = resultFile.path;
     if (Platform.isAndroid) {
       MediaScanner.loadMedia(path: resultFile.path);
@@ -134,8 +130,7 @@ class RomService {
     }
     provider.updateLibraryItem(downloadedRom);
     Future.microtask(() {
-      AlertsService.showSnackbar(
-          navigatorKey.currentContext!, "ROM extracted successfully!");
+      AlertsService.showSnackbar("ROM extracted successfully!");
     });
   }
 

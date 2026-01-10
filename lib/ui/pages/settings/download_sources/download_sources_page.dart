@@ -20,7 +20,7 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
         final provider =
             Provider.of<DownloadSourcesProvider>(context, listen: false);
         provider.removeDownloadSource(source);
-        AlertsService.showSnackbar(context, "Source deleted successfully");
+        AlertsService.showSnackbar("Source deleted successfully");
       },
     );
   }
@@ -45,17 +45,16 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
       var success = await provider.setDownloadSource(source);
       if (success) {
         AlertsService.showSnackbar(
-            context,
             sourceToUpdate == null
                 ? "Source added successfully"
-                : "Source updated successfully");
+                : "Source updated successfully",
+            ctx: context);
       } else {
-        AlertsService.showErrorSnackbar(context,
-            exception: Exception("This source already exists"));
+        AlertsService.showErrorSnackbar("This source already exists",
+            ctx: context);
       }
     } else {
-      AlertsService.showErrorSnackbar(context,
-          exception: Exception("Could not fetch source"));
+      AlertsService.showErrorSnackbar("Could not fetch source", ctx: context);
     }
   }
 

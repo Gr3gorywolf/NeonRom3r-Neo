@@ -67,7 +67,7 @@ class RomActionButton extends StatelessWidget {
       await libraryProvider.addRomToLibrary(rom);
 
       DownloadService().downloadRom(context, rom, romSource);
-      AlertsService.showSnackbar(context, "Download started", duration: 3);
+      AlertsService.showSnackbar("Download started", duration: 3);
     }
 
     Future<void> handleButtonPress() async {
@@ -84,7 +84,7 @@ class RomActionButton extends StatelessWidget {
           callback: () {
             Provider.of<DownloadProvider>(context, listen: false)
                 .abortDownload(downloadInfo);
-            AlertsService.showSnackbar(context,
+            AlertsService.showSnackbar(
                 "${downloadInfo.isExtracting ? "Extraction" : "Download"} cancelled");
           },
           cancelable: true,
@@ -100,8 +100,7 @@ class RomActionButton extends StatelessWidget {
           if (file != null) {
             await handleUpdateRomInLibrary(file);
             await Navigator.of(context).maybePop();
-            AlertsService.showSnackbar(
-                context, "Rom file located successfully");
+            AlertsService.showSnackbar("Rom file located successfully");
           }
         },
             cancelable: true,
@@ -118,7 +117,7 @@ class RomActionButton extends StatelessWidget {
 
       if (isReadyToPlay && libraryItem != null) {
         RomService.openDownloadedRom(libraryItem);
-        AlertsService.showSnackbar(context, "Rom launched");
+        AlertsService.showSnackbar("Rom launched");
         return;
       }
 

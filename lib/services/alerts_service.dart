@@ -3,15 +3,17 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 
 class AlertsService {
   static Flushbar? _currentSnackbar;
-  static showSnackbar(BuildContext ctx, String message,
+  static showSnackbar(String message,
       {String? title,
       IconData? icon,
       int duration = 2,
+      BuildContext? ctx,
       FlushbarPosition? position = null,
       Function? onTap}) async {
     if (icon == null) {
@@ -37,17 +39,18 @@ class AlertsService {
       shouldIconPulse: false,
       icon: Icon(
         icon,
-        color: Theme.of(ctx).colorScheme.primary,
+        color: Theme.of(navigatorContext!).colorScheme.primary,
       ),
-    ).show(navigatorKey.currentContext!);
+    ).show(ctx ?? navigatorContext!);
   }
 
-  static showErrorSnackbar(BuildContext ctx,
-      {Exception? exception, FlushbarPosition? position = null}) async {
-    var title = "Error";
-    var text = "Wow, an unexpected error happened";
+  static showErrorSnackbar(String message,
+      {FlushbarPosition? position = null,
+      BuildContext? ctx,
+      Exception? exception}) async {
+    var exceptionText = "Wow, an unexpected error happened";
     if (exception != null) {
-      text = exception.toString();
+      exceptionText = exception.toString();
     }
     if (position == null) {
       position = FileSystemService.isDesktop
@@ -58,17 +61,17 @@ class AlertsService {
       margin: EdgeInsets.all(8),
       borderRadius: BorderRadius.circular(8),
       duration: Duration(seconds: 4),
-      title: title,
+      title: exception == null ? null : message,
       backgroundColor: Colors.red,
       maxWidth: 600,
       flushbarStyle: FlushbarStyle.FLOATING,
       flushbarPosition: position,
-      message: text,
+      message: exception == null ? message : exceptionText,
       icon: Icon(
         Icons.error,
         color: Colors.white,
       ),
-    ).show(navigatorKey.currentContext!);
+    ).show(ctx ?? navigatorContext!);
   }
 
   static Future<String?> showPrompt(BuildContext ctx, String title,
@@ -76,7 +79,7 @@ class AlertsService {
       TextInputType inputType = TextInputType.text,
       String? inputPlaceholder,
       double? minWidth = 300}) {
-    var completer = Completer<String>();
+    var completer = Completer<String?>();
     var value = "";
     showDialog(
         context: ctx,

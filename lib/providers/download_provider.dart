@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
@@ -213,7 +214,7 @@ class DownloadProvider extends ChangeNotifier {
 
   void _registerCompletedDownload(
       DownloadInfo download, RomInfo rom, String path) async {
-    BuildContext? context = navigatorKey.currentContext;
+    BuildContext? context = navigatorContext;
     if (context == null) {
       return;
     }
@@ -259,7 +260,7 @@ class DownloadProvider extends ChangeNotifier {
     RomInfo rom,
     String path,
   ) async {
-    final context = navigatorKey.currentContext;
+    final context = navigatorContext;
     if (context == null) return;
 
     final libraryProvider =

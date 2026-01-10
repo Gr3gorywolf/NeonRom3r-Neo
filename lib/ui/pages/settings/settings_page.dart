@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
@@ -104,9 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     } catch (_) {
       AlertsService.showErrorSnackbar(
-        context,
-        exception: Exception('Cannot write/read in the selected directory'),
-      );
+          'Cannot write/read in the selected directory');
     }
   }
 
@@ -114,11 +113,10 @@ class _SettingsPageState extends State<SettingsPage> {
     final deleted = await FileSystemService.deleteCachePath();
 
     if (deleted) {
-      AlertsService.showSnackbar(context, 'Cache cleared successfully');
+      AlertsService.showSnackbar('Cache cleared successfully');
     } else {
       AlertsService.showErrorSnackbar(
-        context,
-        exception: Exception('Could not clear the cache'),
+        'Could not clear the cache',
       );
     }
   }
@@ -127,8 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri)) {
       AlertsService.showErrorSnackbar(
-        context,
-        exception: Exception('Could not launch the url'),
+        'Could not launch the url',
       );
     }
   }
@@ -148,13 +145,13 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: Icons.download_sharp,
               title: 'Download Sources',
               subtitle: 'Manage your download sources',
-              onTap: () => _push(DownloadSourcesPage()),
+              onTap: () => context.push("/settings/download-sources"),
             ),
             _NavigationTile(
               icon: Icons.gamepad,
               title: 'Console Sources',
               subtitle: 'Manage your console sources',
-              onTap: () => _push(ConsoleSourcesPage()),
+              onTap: () => context.push("/settings/console-sources"),
             ),
             const _SectionHeader(title: 'Notifications'),
             _SwitchTile(
@@ -200,7 +197,7 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: Icons.gamepad,
               title: 'Emulator settings',
               subtitle: 'Manage your emulators for each console',
-              onTap: () => _push(const EmulatorSettingsPage()),
+              onTap: () => context.push("/settings/emulator-settings"),
             ),
             const _SectionHeader(title: 'Cache Management'),
             _SwitchTile(
@@ -244,12 +241,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _push(Widget page) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => page),
     );
   }
 }

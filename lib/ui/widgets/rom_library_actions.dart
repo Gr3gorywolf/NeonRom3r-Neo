@@ -44,15 +44,13 @@ class RomLibraryActions extends StatelessWidget {
       var newLibraryItem = _libraryDetails;
       newLibraryItem.isFavorite = !isFavorite;
       libraryProvider.updateLibraryItem(newLibraryItem);
-      AlertsService.showSnackbar(
-          context,
-          newLibraryItem.isFavorite
-              ? "Rom added to favorites"
-              : "Rom removed from favorites");
+      AlertsService.showSnackbar(newLibraryItem.isFavorite
+          ? "Rom added to favorites"
+          : "Rom removed from favorites");
     }
 
     handleAddToLibrary() {
-      AlertsService.showSnackbar(context, "Rom added to library");
+      AlertsService.showSnackbar("Rom added to library");
       libraryProvider.addRomToLibrary(rom);
     }
 

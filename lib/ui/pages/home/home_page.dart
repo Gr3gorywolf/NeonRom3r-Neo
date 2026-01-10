@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
@@ -63,9 +64,7 @@ class HomePage_State extends State<HomePage> {
                 child: ConsoleList(
                   consoles: filteredConsoles,
                   onConsoleSelected: (Console console) {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            ConsoleRomsPage(console)));
+                    context.push("/home/console-roms", extra: console);
                   },
                 ),
               ),

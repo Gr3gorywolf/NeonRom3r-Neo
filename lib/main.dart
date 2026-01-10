@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/app_theme.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
@@ -17,13 +18,11 @@ import 'package:yamata_launcher/ui/pages/splashcreen/splashcreen_page.dart';
 import 'package:yamata_launcher/ui/widgets/console_list.dart';
 import 'package:yamata_launcher/services/download_service.dart';
 
-import 'ui/pages/main_layout/main_layout.dart';
+import 'ui/layouts/main_layout.dart';
 
 void main() {
   runApp(MyApp());
 }
-
-final navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
   @override
@@ -51,20 +50,14 @@ class MyApp extends StatelessWidget {
               backgroundColor: appTheme.colorScheme.primary,
             ),
           ),
-          child: MaterialApp(
+          child: Builder(builder: (context) {
+            return MaterialApp.router(
+              routerConfig: router,
               title: 'yamata_launcher',
               theme: appTheme,
-              navigatorKey: navigatorKey,
-              home: Builder(
-                builder: (ctx) {
-                  var _appProvider = AppProvider.of(ctx);
-                  if (_appProvider.isAppLoaded) {
-                    return MainLayout();
-                  } else {
-                    return SplashcreenPage();
-                  }
-                },
-              )),
+              debugShowCheckedModeBanner: false,
+            );
+          }),
         );
       },
     );

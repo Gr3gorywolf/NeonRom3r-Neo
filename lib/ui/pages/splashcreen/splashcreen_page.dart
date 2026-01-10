@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
@@ -40,8 +41,10 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
     Provider.of<DownloadProvider>(context, listen: false);
     await Provider.of<DownloadSourcesProvider>(context, listen: false)
         .initialize();
-    Future.delayed(Duration(milliseconds: 2000)).then((value) =>
-        {Provider.of<AppProvider>(context, listen: false).setAppLoaded(true)});
+    Future.delayed(Duration(milliseconds: 2000)).then((value) {
+      Provider.of<AppProvider>(context, listen: false).setAppLoaded(true);
+      context.push("/home");
+    });
   }
 
   Future initPlugins() async {

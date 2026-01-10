@@ -1,4 +1,5 @@
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/emulator_intent.dart';
@@ -55,10 +56,10 @@ class EmulatorService {
           ]);
 
       await intent.launch();
-    } catch (e) {
+    } on Exception catch (e) {
       print("Error launching emulator: $e");
-      AlertsService.showErrorSnackbar(navigatorKey.currentContext!,
-          exception: Exception('Failed to launch emulator: ${e}'));
+      AlertsService.showErrorSnackbar('Failed to launch emulator',
+          exception: e);
       return EmulatorLaunchResult.failedToLaunch;
     }
     return EmulatorLaunchResult.success;
