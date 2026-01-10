@@ -8,13 +8,10 @@ import 'package:media_scanner/media_scanner.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
-import 'package:yamata_launcher/database/app_database.dart';
-import 'package:yamata_launcher/database/daos/library_dao.dart';
-import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
-import 'package:yamata_launcher/services/alerts_service.dart';
-import 'package:yamata_launcher/services/aria2c/aria2c_download_manager.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_client.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_utils.dart';
 import 'package:yamata_launcher/services/notifications_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
@@ -24,11 +21,8 @@ import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_info.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
-import 'package:yamata_launcher/services/download_service.dart';
-import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/extraction_service.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
-import 'package:toast/toast.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
 
 class _ActiveAria2Download {
@@ -55,10 +49,6 @@ class DownloadProvider extends ChangeNotifier {
 
   List<DownloadInfo> get activeDownloadInfos => _activeDownloadInfos;
 
-  /// ========================================================================
-  /// Public API
-  /// ========================================================================
-
   bool isRomDownloading(RomInfo rom) {
     return activeDownloadInfos.any((d) => d.romSlug == rom.slug);
   }
@@ -70,10 +60,6 @@ class DownloadProvider extends ChangeNotifier {
       return null;
     }
   }
-
-  /// ========================================================================
-  /// Start download
-  /// ========================================================================
 
   Future<void> addRomDownloadToQueue(
     RomInfo rom,
@@ -144,10 +130,6 @@ class DownloadProvider extends ChangeNotifier {
     }
   }
 
-  /// ========================================================================
-  /// Event handling
-  /// ========================================================================
-
   void _handleAria2Event(
     Aria2Event event,
     RomInfo rom,
@@ -161,7 +143,7 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadPercent =
           int.tryParse(p.percent?.replaceAll('%', '') ?? '0');
 
-      info.downloadInfo = _formatProgressInfo(p);
+      info.downloadInfo = Aria2cUtils.formatProgress(p);
       print("Download info: ${info.downloadInfo}");
       notifyListeners();
       if (Platform.isAndroid) {
@@ -310,41 +292,6 @@ class DownloadProvider extends ChangeNotifier {
   void _disposeActive(String? id) {
     final active = _aria2cDownloadProcesses.remove(id);
     active?.sub?.cancel();
-  }
-
-  /// ========================================================================
-  /// Helpers
-  /// ========================================================================
-
-  String _formatProgressInfo(Aria2Progress p) {
-    final parts = <String>[];
-
-    if (p.downloaded != null && p.total != null) {
-      parts.add('${p.downloaded} / ${p.total}');
-    }
-
-    if (p.dlSpeed != null) {
-      parts.add('↓ ${p.dlSpeed}');
-    }
-
-    if (p.ulSpeed != null) {
-      parts.add('↑ ${p.ulSpeed}');
-    }
-
-    if (p.seeds != null) {
-      parts.add('Seeds ${p.seeds}');
-    }
-
-    if (p.eta != null) {
-      parts.add('ETA ${p.eta}');
-    }
-
-    if (p.dlSpeed != null &&
-        [p.ulSpeed, p.seeds, p.eta].every((e) => e == null)) {
-      return 'Fetching metadata...';
-    }
-
-    return parts.join(' • ').replaceAll("[", "").replaceAll("]", "");
   }
 
   void _setExtractionQueuedState(DownloadInfo download) {

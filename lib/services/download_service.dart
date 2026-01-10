@@ -46,7 +46,7 @@ class DownloadService {
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
     }
-    final handle = await Aria2DownloadManager.startDownload(
+    final handle = await Aria2cDownloadManager.startDownload(
       rom: rom,
       source: sourceRom,
       aria2cPath: FileSystemService.aria2cPath,

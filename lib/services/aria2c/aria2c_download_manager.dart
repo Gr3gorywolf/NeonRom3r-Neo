@@ -10,6 +10,7 @@ import 'package:yamata_launcher/constants/torrents_constants.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_client.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_utils.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
@@ -62,11 +63,7 @@ class IsolateArgs {
   });
 }
 
-/// ============================================================================
-/// Download Manager
-/// ============================================================================
-
-class Aria2DownloadManager {
+class Aria2cDownloadManager {
   static final Map<String, IsolateActiveJob> _jobs = {};
 
   /// Starts a ROM download using:
@@ -204,10 +201,6 @@ class Aria2DownloadManager {
   }
 }
 
-/// ============================================================================
-/// Isolate entry point
-/// ============================================================================
-
 Future<void> _downloadIsolateMain(IsolateArgs args) async {
   final main = args.sendPort!;
   final control = ReceivePort();
@@ -228,18 +221,15 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
   void fail(Object e) => main.send({'type': 'error', 'message': e.toString()});
 
   try {
-    final uriType = Aria2cUtils.detectUriType(args.uri!);
+    final uriType = Aria2cClient.detectUriType(args.uri!);
     final romDir = Directory(args.downloadPath!)..createSync(recursive: true);
 
-    // =======================================================================
-    // DIRECT FILE DOWNLOAD (no torrent, no magnet)
-    // =======================================================================
-
+    // Direct download Http/FTP ETC
     if (uriType == DownloadUriType.direct) {
-      var certArgs = Aria2cUtils.getCommonArgs(args.certPath);
+      var certArgs = Aria2cClient.getCommonArgs(args.certPath);
       var url = args.uri ?? "";
       if (url.contains("http")) {
-        url = await Aria2cUtils.handleRedirects(url);
+        url = await Aria2cClient.handleRedirects(url);
       }
 
       final proc = await Process.start(
@@ -270,10 +260,8 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       return;
     }
 
-    // =======================================================================
-    // TORRENT / MAGNET FLOW
-    // =======================================================================
-    final torrentPath = await _downloadTorrent(
+    // Torrent / Magnet downloads
+    final torrentPath = await Aria2cClient.downloadTorrent(
       aria2cPath: args.aria2cPath,
       uri: args.uri!,
       onLog: log,
@@ -283,7 +271,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       onRunning: (p) => running = p,
       isAborted: () => aborted,
     );
-    final files = await Aria2cUtils.showTorrentFiles(
+    final files = await Aria2cClient.showTorrentFiles(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       certPath: args.certPath,
@@ -302,7 +290,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     }
     final relPath = fileIndex != null ? files[args.fileIndex!] : null;
 
-    await Aria2cUtils.downloadSelectedFileFromTorrent(
+    await Aria2cClient.downloadSelectedFileFromTorrent(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       certPath: args.certPath,
@@ -355,111 +343,4 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     running?.kill(ProcessSignal.sigkill);
     control.close();
   }
-}
-
-/// ============================================================================
-/// Torrent helpers
-/// ============================================================================
-
-Future<String> _downloadTorrent({
-  String? aria2cPath,
-  required String uri,
-  String? torrentsPath,
-  String? certPath,
-  void Function(String)? onLog,
-  void Function(String)? onProgress,
-  void Function(Process)? onRunning,
-  bool Function()? isAborted,
-}) async {
-  var uriHash = StringHelper.hash20(uri);
-  final cache = Directory((torrentsPath ?? "") + "/${uriHash}")
-    ..createSync(recursive: true);
-
-  // CASE 1: Remote or local .torrent → download to cache
-  if (uri.toLowerCase().endsWith('.torrent')) {
-    final targetPath =
-        p.join(cache.path, StringHelper.hash20(uri), p.basename(uri));
-
-    // Skip download if already cached
-    if (await File(targetPath).exists()) {
-      return targetPath;
-    }
-
-    onLog!('Downloading torrent via HTTP: $uri');
-
-    final client = HttpClient();
-    final request = await client.getUrl(Uri.parse(uri));
-    final response = await request.close();
-
-    if (response.statusCode != HttpStatus.ok) {
-      throw StateError(
-        'Failed to download torrent (HTTP ${response.statusCode})',
-      );
-    }
-
-    final file = File(targetPath);
-    final sink = file.openWrite();
-
-    try {
-      await for (final chunk in response) {
-        if (isAborted!()) {
-          await sink.close();
-          try {
-            await file.delete();
-          } catch (e) {}
-
-          throw StateError('Aborted');
-        }
-        sink.add(chunk);
-      }
-    } finally {
-      await sink.close();
-      client.close();
-    }
-
-    onLog('Torrent saved to cache: $targetPath');
-    return targetPath;
-  }
-
-  // CASE 2: Magnet → generate torrent
-  if (!uri.contains('magnet:')) {
-    throw StateError('Invalid torrent URI');
-  }
-
-  final path = p.join(cache.path, '${uriHash}.torrent');
-  if (await File(path).exists()) return path;
-  var commonArgs = Aria2cUtils.getCommonArgs(certPath);
-  final proc = await Process.start(
-    aria2cPath!,
-    [
-      '--bt-metadata-only=true',
-      '--bt-save-metadata=true',
-      '--seed-time=0',
-      ...commonArgs,
-      uri,
-    ],
-    workingDirectory: cache.path,
-  );
-
-  onRunning!(proc);
-  ProcessHelper.pipeProcessOutput(
-    process: proc,
-    onLog: onLog,
-    onProgress: onProgress,
-  );
-
-  await ProcessHelper.ensureExitOk(
-      proc, isAborted!, 'Metadata download failed');
-
-  final torrent = cache
-      .listSync()
-      .whereType<File>()
-      .where((f) => f
-          .statSync()
-          .modified
-          .isAfter(DateTime.now().subtract(Duration(minutes: 2))))
-      .firstWhere((f) => f.path.endsWith('.torrent'));
-
-  await torrent.rename(path);
-  return path;
 }
