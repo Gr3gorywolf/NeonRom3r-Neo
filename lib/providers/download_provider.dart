@@ -10,6 +10,7 @@ import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_client.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_utils.dart';
 import 'package:yamata_launcher/services/notifications_service.dart';
@@ -348,7 +349,11 @@ class DownloadProvider extends ChangeNotifier {
       }
       try {
         await zipFile.delete();
-      } catch (e) {}
+      } on Exception catch (e) {
+        AlertsService.showErrorSnackbar(
+            "Failed to delete zip file: ${e.toString()}",
+            exception: e);
+      }
     }
 
     NotificationsService.showNotification(

@@ -97,7 +97,6 @@ class RomService {
     if (directory.existsSync()) {
       // Find the largest valid ROM / compressed file
       final validExtensions = {
-        ...VALID_COMPRESSED_ROM_EXTENSIONS,
         ...VALID_ROM_EXTENSIONS,
         ...(skipCompressedFiles ? [] : VALID_COMPRESSED_EXTENSIONS),
       }.map((e) => '.${e.toLowerCase()}').toSet();
