@@ -113,16 +113,12 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
             },
           ),
           SizedBox(height: 22),
-          ElevatedButton(
-              onPressed: handleSelectEmulatorBinary,
-              child: Row(
-                children: [
-                  Icon(Icons.file_open),
-                  SizedBox(width: 8),
-                  Text(
-                      "Select Emulator ${Platform.isAndroid ? "application" : "binary"}"),
-                ],
-              )),
+          ElevatedButton.icon(
+            onPressed: handleSelectEmulatorBinary,
+            label: Text(
+                "Select Emulator ${Platform.isAndroid ? "application" : "binary"}"),
+            icon: Icon(Icons.videogame_asset),
+          ),
           if (selectedBinary.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),

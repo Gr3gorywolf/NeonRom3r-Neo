@@ -9,6 +9,7 @@ import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
+import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
@@ -64,7 +65,10 @@ class RomSettingsDialog extends StatelessWidget {
 
     _pickEmulatorBinary() async {
       if (Platform.isAndroid) {
-        var result = await AppSelectionDialog.show(context);
+        var consoleEmulators =
+            EmulatorService.getEmulatorPackagesForConsole(rom.console);
+        var result = await AppSelectionDialog.show(context,
+            filteredApps: consoleEmulators);
         if (result != null && libraryItem != null) {
           libraryItem.overrideEmulator = result.packageName;
           await provider.updateLibraryItem(libraryItem);
@@ -74,6 +78,7 @@ class RomSettingsDialog extends StatelessWidget {
       FilePickerResult? selectedFile = await FilePicker.platform.pickFiles(
         dialogTitle: "Select Emulator Binary",
         type: FileType.custom,
+        initialDirectory: Platform.isMacOS ? "/Applications" : null,
         allowedExtensions: VALID_EXECUTABLE_EXTENSIONS,
       );
       if (selectedFile == null || libraryItem == null) return;
