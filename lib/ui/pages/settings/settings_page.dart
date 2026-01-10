@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/repository/emulator_intents_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
@@ -109,6 +110,24 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _updateEmulatorIntents() async {
+    var loadingDialog = AlertsService.showLoadingAlert(
+      context,
+      'Updating emulator intents...',
+      "Please wait",
+    );
+    final success =
+        await EmulatorIntentsRepository().updateEmulatorIntentsFile();
+    loadingDialog.close();
+    if (success) {
+      AlertsService.showSnackbar('Emulator intents updated successfully');
+    } else {
+      AlertsService.showErrorSnackbar(
+        'Could not update the emulator intents',
+      );
+    }
+  }
+
   Future<void> _clearCache() async {
     final deleted = await FileSystemService.deleteCachePath();
 
@@ -199,6 +218,16 @@ class _SettingsPageState extends State<SettingsPage> {
               subtitle: 'Manage your emulators for each console',
               onTap: () => context.push("/settings/emulator-settings"),
             ),
+            if (Platform.isAndroid)
+              ListTile(
+                leading: const Icon(Icons.system_update_alt),
+                title: const Text('Update Emulator Intents'),
+                subtitle: Opacity(
+                    opacity: 0.7,
+                    child: const Text(
+                        'The emulator intents are used to launch emulators on Android devices. Updating them may fix issues with launching emulators.')),
+                onTap: _updateEmulatorIntents,
+              ),
             const _SectionHeader(title: 'Cache Management'),
             _SwitchTile(
               icon: Icons.image,

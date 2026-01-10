@@ -81,7 +81,7 @@ class FileSystemService {
   }
 
   static get emulatorIntentsFilePath {
-    return _appSupportPath + "/emulatorIntents.json";
+    return _appSupportPath + "/emulator-intents.json";
   }
 
   static Future<String?> locateFile() async {
@@ -175,6 +175,17 @@ class FileSystemService {
     }
   }
 
+  static setupAndroidIntents() async {
+    final file = File(emulatorIntentsFilePath);
+    if (await file.exists()) {
+      return;
+    }
+    final byteData = await rootBundle.load("assets/data/emulator-intents.json");
+    final bytes = byteData.buffer.asUint8List();
+    await file.writeAsBytes(bytes, flush: true);
+    return file.path;
+  }
+
   static setupAria2c() async {
     var aria2cDir = Directory("${_appSupportPath}/aria2c");
     final file = File("${aria2cDir.path}/${SystemHelpers.aria2cOutputBinary}");
@@ -256,6 +267,9 @@ class FileSystemService {
     if (isDesktop) {
       await setupAria2c();
       await setupSevenZip();
+    }
+    if (Platform.isAndroid) {
+      await setupAndroidIntents();
     }
 
     var paths = [

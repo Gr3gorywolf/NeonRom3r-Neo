@@ -8,6 +8,7 @@ import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/models/emulator_setting.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
 
 class EmulatorSettingsForm extends StatefulWidget {
@@ -46,7 +47,10 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
 
   void handleSelectEmulatorBinary() async {
     if (Platform.isAndroid) {
-      var result = await AppSelectionDialog.show(context);
+      var consoleEmulators =
+          EmulatorService.getEmulatorPackagesForConsole(selectedConsole);
+      var result = await AppSelectionDialog.show(context,
+          filteredApps: consoleEmulators);
       if (result != null) {
         setState(() {
           selectedBinary = result.packageName;

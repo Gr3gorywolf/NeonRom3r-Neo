@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/repository/emulator_intents_repository.dart';
+import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/native/seven_zip_android_interface.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/console_service.dart';
@@ -37,6 +39,10 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
     await initPlugins();
     await initDb();
     await ConsoleService.loadConsoleSources();
+    if (Platform.isAndroid) {
+      await FileSystemService.setupAndroidIntents();
+      await EmulatorService.loadEmulatorIntents();
+    }
     await Provider.of<LibraryProvider>(context, listen: false).init();
     Provider.of<DownloadProvider>(context, listen: false);
     await Provider.of<DownloadSourcesProvider>(context, listen: false)

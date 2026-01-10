@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AppSelectionDialog extends StatefulWidget {
-  const AppSelectionDialog({super.key});
+  final List<String> filteredApps;
+  AppSelectionDialog({super.key, this.filteredApps = const []});
 
-  static Future<ApplicationWithIcon?> show(BuildContext context) {
+  static Future<ApplicationWithIcon?> show(BuildContext context,
+      {List<String> filteredApps = const []}) {
     return showDialog<ApplicationWithIcon>(
         context: context,
         builder: (_) {
-          return const AppSelectionDialog();
+          return AppSelectionDialog(filteredApps: filteredApps);
         });
   }
 
@@ -20,6 +22,7 @@ class AppSelectionDialog extends StatefulWidget {
 class _AppSelectionDialogState extends State<AppSelectionDialog> {
   var installedApps = [];
   var isLoading = false;
+  var showAllApps = true;
   var controller = TextEditingController();
   var query = '';
 
@@ -39,7 +42,13 @@ class _AppSelectionDialogState extends State<AppSelectionDialog> {
   }
 
   List<ApplicationWithIcon> get filteredApps {
-    return installedApps
+    var apps = showAllApps
+        ? installedApps
+        : installedApps.where((app) {
+            return widget.filteredApps
+                .contains((app as ApplicationWithIcon).packageName);
+          }).toList();
+    return apps
         .where((app) {
           final appName = (app as ApplicationWithIcon).appName;
           return appName.toLowerCase().contains(query.toLowerCase());
@@ -50,6 +59,7 @@ class _AppSelectionDialogState extends State<AppSelectionDialog> {
 
   @override
   void initState() {
+    showAllApps = widget.filteredApps.isEmpty;
     fetchInstalledApps();
     super.initState();
   }
@@ -86,6 +96,14 @@ class _AppSelectionDialogState extends State<AppSelectionDialog> {
                         });
                       },
                     ),
+                    CheckboxListTile(
+                        value: showAllApps,
+                        onChanged: (value) {
+                          setState(() {
+                            showAllApps = value ?? false;
+                          });
+                        },
+                        title: Text("Show All Apps")),
                     Expanded(
                       child: ListView.builder(
                         itemCount: filteredApps.length,

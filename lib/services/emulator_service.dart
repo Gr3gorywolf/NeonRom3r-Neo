@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
@@ -13,90 +14,52 @@ import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/repository/emulator_intents_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:android_intent_plus/flag.dart' as flag;
 import 'package:yamata_launcher/services/rom_service.dart';
 
-enum EmulatorLaunchResult { success, failedToLaunch, needsUncompression }
+enum EmulatorLaunchResult { success, failedToLaunch, needsExtraction }
 
 class EmulatorService {
   static Map<String, Timer> _activeGames = {};
+  static Map<String, Map<String, String>> _emulatorIntents = {};
 
-  static Future openRom(RomLibraryItem download) async {
-    EmulatorLaunchResult emulatorLaunchResult = EmulatorLaunchResult.success;
-    if (db == null) {
+  /**
+   * Since the emulator intents have interpolated values, we need to parse them each time we use them.
+   */
+  static EmulatorIntent _parseEmulatorIntent(
+      String jsonString, String path, String uri) {
+    jsonString = jsonString.replaceAll("{file.uri}", uri);
+    jsonString = jsonString.replaceAll("{file.path}", path);
+    return EmulatorIntent.fromJson(jsonDecode(jsonString));
+  }
+
+  static List<String> getEmulatorPackagesForConsole(String console) {
+    var intents = _emulatorIntents[console];
+    if (intents == null) {
+      return [];
+    }
+    return intents.keys.toList();
+  }
+
+  /*
+    * Loads emulator intents from the local file system.
+    */
+  static Future loadEmulatorIntents() async {
+    var file = File(FileSystemService.emulatorIntentsFilePath);
+    if (await file.exists() == false) {
       return;
     }
-    var emulatorSetting =
-        await EmulatorSettingsDao(db!).get(download.rom.console);
-    if (emulatorSetting == null) {
-      AlertsService.showErrorSnackbar(
-          "No emulator configured for ${ConsoleService.getConsoleFromName(download.rom.console)?.name ?? download.rom.console}. Please set it up in settings.");
-      return;
-    }
-    var provider =
-        Provider.of<LibraryProvider>(navigatorContext!, listen: false);
-
-    updateLibraryItem({bool addTime = false}) {
-      var currentLibraryItem = provider.getLibraryItem(download.rom.slug);
-      if (currentLibraryItem != null) {
-        if (addTime) {
-          currentLibraryItem.playTimeMins += 1;
-        }
-        currentLibraryItem.lastPlayedAt = DateTime.now();
-        provider.updateLibraryItem(currentLibraryItem);
+    var content = await file.readAsString();
+    for (var consoleIntents in jsonDecode(content).entries) {
+      Map<String, String> unparsedIntents = {};
+      for (var intent in consoleIntents.value) {
+        unparsedIntents[intent['package']] = jsonEncode(intent);
       }
+      _emulatorIntents[consoleIntents.key] = unparsedIntents;
     }
-
-    var stopWatch = Timer.periodic(Duration(minutes: 1), (timer) async {
-      updateLibraryItem(addTime: true);
-    });
-    _activeGames[download.rom.slug] = stopWatch;
-    var openParams = download.openParams ?? "";
-    List<String> launchParams = [
-      ...(openParams.isEmpty ? [] : [openParams]),
-      download.filePath ?? ""
-    ];
-    String emulatorBinary = download.overrideEmulator?.isNotEmpty ?? false
-        ? download.overrideEmulator ?? ""
-        : emulatorSetting.emulatorBinary;
-
-    print("Launching emulator ${emulatorBinary} with params: $launchParams");
-    updateLibraryItem();
-    provider.setGameRunning(download.rom.slug, true);
-    try {
-      if (Platform.isAndroid) {
-        emulatorLaunchResult = await EmulatorService.launchEmulatorIntent(
-            download.rom.console, emulatorBinary, download.filePath ?? "");
-      } else {
-        Process process;
-        if (Platform.isMacOS) {
-          process = await Process.start(
-              "open", ["-a", emulatorBinary, ...launchParams]);
-        } else {
-          process = await Process.start(emulatorBinary, launchParams);
-        }
-        await process.exitCode;
-      }
-    } on Exception catch (err) {
-      AlertsService.showErrorSnackbar("Failed to open the rom", exception: err);
-    }
-
-    if (_activeGames[download.rom.slug] != null) {
-      _activeGames[download.rom.slug]?.cancel();
-      _activeGames.remove(download.rom.slug);
-      provider.setGameRunning(download.rom.slug, false);
-      print("Stopped playtime tracking for ${download.rom.slug}");
-    }
-
-    if (Platform.isAndroid &&
-        emulatorLaunchResult == EmulatorLaunchResult.needsUncompression) {
-      AlertsService.showAlert(navigatorContext!, "Rom needs to be extracted",
-          "The selected emulator requires the ROM to be extracted before launching, do you want to extract it now?",
-          acceptTitle: "Yes", callback: () {
-        RomService.extractRom(download);
-      });
-    }
+    print("Loaded ${_emulatorIntents.length} emulator intents");
   }
 
   /**
@@ -107,19 +70,24 @@ class EmulatorService {
     try {
       print(
           'Launching emulator with package: $packageName and file: $filePath');
-      var intents = await EmulatorIntentsRepository()
-          .fetchEmulatorIntents(console, filePath);
+      var intents = _emulatorIntents[console];
       if (intents == null) {
-        intents = [];
+        intents = {};
       }
-      var matchedIntent = intents.firstWhere(
-          (intent) => intent.package == packageName,
-          orElse: () => EmulatorIntent(
-              package: packageName, action: 'android.intent.action.VIEW'));
+      var matchedIntent = EmulatorIntent(
+          package: packageName,
+          action: 'android.intent.action.VIEW',
+          type: '*/*');
+      var filePathUri =
+          await IntentsAndroidInterface.getIntentUri(filePath) ?? filePath;
+      if (intents[packageName] != null) {
+        matchedIntent =
+            _parseEmulatorIntent(intents[packageName]!, filePath, filePathUri);
+      }
       var isCompressed = VALID_COMPRESSED_EXTENSIONS
           .any((ext) => filePath.toLowerCase().endsWith(ext));
       if (matchedIntent.requireExtraction == true && isCompressed) {
-        return EmulatorLaunchResult.needsUncompression;
+        return EmulatorLaunchResult.needsExtraction;
       }
 
       var componentName = matchedIntent.activity != null
@@ -129,8 +97,7 @@ class EmulatorService {
       print(
           'Using component name: $componentName and extras: ${matchedIntent.extras}');
       await IntentsAndroidInterface.grantUriPermission(
-          await IntentsAndroidInterface.getIntentUri(filePath) ?? filePath,
-          packageName);
+          filePathUri, packageName);
       final intent = AndroidIntent(
           action: matchedIntent.action,
           package: matchedIntent.package,
@@ -154,5 +121,115 @@ class EmulatorService {
       return EmulatorLaunchResult.failedToLaunch;
     }
     return EmulatorLaunchResult.success;
+  }
+
+  /**
+   * Opens a ROM using the configured emulator.
+   */
+  static Future openRom(RomLibraryItem download) async {
+    if (db == null) return;
+
+    EmulatorLaunchResult emulatorLaunchResult = EmulatorLaunchResult.success;
+
+    final rom = download.rom;
+    final consoleKey = rom.console;
+    final slug = rom.slug;
+
+    final emulatorSetting = await EmulatorSettingsDao(db!).get(consoleKey);
+
+    if (emulatorSetting == null) {
+      final consoleName =
+          ConsoleService.getConsoleFromName(consoleKey)?.name ?? consoleKey;
+
+      AlertsService.showErrorSnackbar(
+        "No emulator configured for $consoleName. Please set it up in settings.",
+      );
+      return;
+    }
+
+    final provider =
+        Provider.of<LibraryProvider>(navigatorContext!, listen: false);
+
+    void handleUpdateLibraryItem({bool addTime = false}) {
+      final currentItem = provider.getLibraryItem(slug);
+      if (currentItem == null) return;
+
+      if (addTime) {
+        currentItem.playTimeMins += 1;
+      }
+
+      currentItem.lastPlayedAt = DateTime.now();
+      provider.updateLibraryItem(currentItem);
+    }
+
+    final stopWatch = Timer.periodic(const Duration(minutes: 1), (_) async {
+      handleUpdateLibraryItem(addTime: true);
+    });
+
+    _activeGames[slug] = stopWatch;
+
+    final openParams = download.openParams ?? "";
+    final filePath = download.filePath ?? "";
+
+    final launchParams = <String>[
+      if (openParams.isNotEmpty) openParams,
+      filePath,
+    ];
+
+    final overrideEmulator = download.overrideEmulator;
+    final emulatorBinary =
+        (overrideEmulator != null && overrideEmulator.isNotEmpty)
+            ? overrideEmulator
+            : emulatorSetting.emulatorBinary;
+
+    print("Launching emulator $emulatorBinary with params: $launchParams");
+
+    handleUpdateLibraryItem();
+    provider.setGameRunning(slug, true);
+
+    try {
+      if (Platform.isAndroid) {
+        emulatorLaunchResult = await EmulatorService.launchEmulatorIntent(
+          consoleKey,
+          emulatorBinary,
+          filePath,
+        );
+      } else {
+        final Process process;
+
+        if (Platform.isMacOS) {
+          process = await Process.start(
+              "open", ["-W", "-a", emulatorBinary, ...launchParams]);
+        } else {
+          process = await Process.start(emulatorBinary, launchParams);
+        }
+
+        await process.exitCode;
+      }
+    } on Exception catch (err) {
+      AlertsService.showErrorSnackbar("Failed to open the rom", exception: err);
+    } finally {
+      final activeTimer = _activeGames[slug];
+      if (activeTimer != null) {
+        activeTimer.cancel();
+        _activeGames.remove(slug);
+
+        provider.setGameRunning(slug, false);
+        print("Stopped playtime tracking for $slug");
+      }
+    }
+
+    if (Platform.isAndroid &&
+        emulatorLaunchResult == EmulatorLaunchResult.needsExtraction) {
+      AlertsService.showAlert(
+        navigatorContext!,
+        "Rom needs to be extracted",
+        "The selected emulator requires the ROM to be extracted before launching, do you want to extract it now?",
+        acceptTitle: "Yes",
+        callback: () {
+          RomService.extractRom(download);
+        },
+      );
+    }
   }
 }
