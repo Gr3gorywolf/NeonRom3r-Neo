@@ -4,6 +4,7 @@ import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 
 class DownloadSourcesPage extends StatefulWidget {
   @override
@@ -60,32 +61,27 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = DownloadSourcesProvider.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Download Sources'),
       ),
-      body: Consumer<DownloadSourcesProvider>(
-        builder: (_, provider, __) {
+      body: Builder(
+        builder: (
+          _,
+        ) {
           if (provider.downloadSources.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'No download sources',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton.icon(
-                    onPressed: () => _handleSetSource(null),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add source'),
-                  )
-                ],
+            return EmptyPlaceholder(
+              icon: Icons.cloud_download,
+              title: 'No download sources',
+              description:
+                  "You have not added any download sources yet. Add a source to start downloading ROMs.",
+              action: PlaceHolderAction(
+                label: 'Add Source',
+                onPressed: () => _handleSetSource(null),
               ),
             );
           }
-
           return ListView.builder(
             itemCount: provider.downloadSources.length,
             itemBuilder: (_, index) {
@@ -117,10 +113,13 @@ class _DownloadSourcesPageState extends State<DownloadSourcesPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _handleSetSource(null),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: !provider.downloadSources.isEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () => _handleSetSource(null),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Download Source'),
+            )
+          : null,
     );
   }
 }

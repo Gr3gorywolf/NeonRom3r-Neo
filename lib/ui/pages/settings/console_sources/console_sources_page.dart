@@ -7,6 +7,7 @@ import 'package:yamata_launcher/services/console_service.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/models/download_source.dart';
+import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 
 class ConsoleSourcesPage extends StatefulWidget {
   @override
@@ -84,21 +85,14 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
       body: Builder(
         builder: (builder) {
           if (ConsoleService.consolesFromExternalSources.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'No console sources',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton.icon(
-                    onPressed: () => handleSetConsoleSource(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add source'),
-                  )
-                ],
+            return EmptyPlaceholder(
+              icon: Icons.gamepad,
+              title: 'No console sources',
+              description:
+                  "You have not added any console sources yet. Add a source to view more game catalogs.",
+              action: PlaceHolderAction(
+                label: 'Add Source',
+                onPressed: () => handleSetConsoleSource(),
               ),
             );
           }
@@ -137,10 +131,13 @@ class _ConsoleSourcesPageState extends State<ConsoleSourcesPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: handleSetConsoleSource,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: !ConsoleService.consolesFromExternalSources.isEmpty
+          ? FloatingActionButton.extended(
+              onPressed: handleSetConsoleSource,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Console Source'),
+            )
+          : null,
     );
   }
 }

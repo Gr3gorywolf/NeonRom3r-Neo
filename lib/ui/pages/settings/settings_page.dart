@@ -161,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
             // Sources section
             const _SectionHeader(title: 'Sources'),
             _NavigationTile(
-              icon: Icons.download_sharp,
+              icon: Icons.cloud_download,
               title: 'Download Sources',
               subtitle: 'Manage your download sources',
               onTap: () => context.push("/settings/download-sources"),
@@ -213,7 +213,7 @@ class _SettingsPageState extends State<SettingsPage> {
             // Roms & Emulators section
             const _SectionHeader(title: 'Roms & Emulators'),
             _NavigationTile(
-              icon: Icons.gamepad,
+              icon: Icons.videogame_asset,
               title: 'Emulator settings',
               subtitle: 'Manage your emulators for each console',
               onTap: () => context.push("/settings/emulator-settings"),

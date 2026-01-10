@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
@@ -8,6 +9,7 @@ import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/no_downloads_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
@@ -169,7 +171,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 ),
               ],
             )
-          : NoDownloadsPlaceholder()),
+          : EmptyPlaceholder(
+              icon: Icons.download,
+              title: "No downloads yet",
+              description:
+                  "Games you download will appear here. Add download sources, then start exploring the library and find something to download.",
+              action: PlaceHolderAction(
+                  label: "Go to catalog",
+                  onPressed: () {
+                    context.push('/home');
+                  }))),
     );
   }
 }

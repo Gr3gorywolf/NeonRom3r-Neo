@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/services/console_service.dart';
@@ -39,11 +40,14 @@ class _ConsoleListState extends State<ConsoleList> {
       mainAxisSpacing: 8,
       children: List.generate(widget.consoles!.length, (index) {
         var _console = widget.consoles![index];
-        return ConsoleCard(
-          _console,
-          onTap: () {
-            widget.onConsoleSelected(_console);
-          },
+        return FadeIn(
+          delay: Duration(milliseconds: 12 * index),
+          child: ConsoleCard(
+            _console,
+            onTap: () {
+              widget.onConsoleSelected(_console);
+            },
+          ),
         );
       }),
     );

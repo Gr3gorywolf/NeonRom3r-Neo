@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/ui/pages/rom_details_dialog/rom_details_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/rom_action_button.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list_item.dart';
 import 'package:yamata_launcher/ui/widgets/rom_thumbnail.dart';
@@ -49,64 +50,72 @@ class _RomListState extends State<RomList> {
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ViewModeToggle(
-                  value: viewMode,
-                  onChanged: (value) {
-                    if (mounted) setState(() => viewMode = value);
-                    if (widget.onViewModeChanged != null) {
-                      widget.onViewModeChanged!(value);
-                    }
-                  },
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-              ],
-            ),
-          ),
-          if (viewMode == ViewModeToggleMode.list)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final rom = widget.roms![index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: RomListItem(
-                      romItem: rom,
-                      showConsole: widget.showConsole,
-                      itemType: RomListItemType.listItem,
+      child: widget.roms?.isEmpty ?? true
+          ? EmptyPlaceholder(
+              icon: Icons.search_off,
+              title: "No ROMs Found",
+              description: "No ROMs found matching the current criteria.")
+          : FadeIn(
+              duration: Duration(seconds: 1),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ViewModeToggle(
+                          value: viewMode,
+                          onChanged: (value) {
+                            if (mounted) setState(() => viewMode = value);
+                            if (widget.onViewModeChanged != null) {
+                              widget.onViewModeChanged!(value);
+                            }
+                          },
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                      ],
                     ),
-                  );
-                },
-                childCount: widget.roms!.length,
+                  ),
+                  if (viewMode == ViewModeToggleMode.list)
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final rom = widget.roms![index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: RomListItem(
+                              romItem: rom,
+                              showConsole: widget.showConsole,
+                              itemType: RomListItemType.listItem,
+                            ),
+                          );
+                        },
+                        childCount: widget.roms!.length,
+                      ),
+                    ),
+                  if (viewMode == ViewModeToggleMode.grid)
+                    SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final rom = widget.roms![index];
+                            return RomListItem(
+                                romItem: rom,
+                                showConsole: widget.showConsole,
+                                itemType: RomListItemType.card);
+                          },
+                          childCount: widget.roms!.length,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: gridAxisCount,
+                          mainAxisExtent: 410,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                        )),
+                ],
               ),
             ),
-          if (viewMode == ViewModeToggleMode.grid)
-            SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final rom = widget.roms![index];
-                    return RomListItem(
-                        romItem: rom,
-                        showConsole: widget.showConsole,
-                        itemType: RomListItemType.card);
-                  },
-                  childCount: widget.roms!.length,
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: gridAxisCount,
-                  mainAxisExtent: 410,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                )),
-        ],
-      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/emulator.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
@@ -10,6 +11,7 @@ import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/ui/widgets/console_card.dart';
+import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
 import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
@@ -117,13 +119,25 @@ class _LibraryPageState extends State<LibraryPage> {
         ),
         initialValues: _initialToolbarValues,
       ),
-      body: RomList(
-        showConsole: true,
-        initialViewMode: Platform.isAndroid
-            ? ViewModeToggleMode.list
-            : ViewModeToggleMode.grid,
-        roms: getFilteredRoms(),
-      ),
+      body: roms.isEmpty
+          ? EmptyPlaceholder(
+              icon: Icons.collections_bookmark,
+              title: "Library is Empty",
+              description:
+                  "Your library is empty. Browse the catalog to find games to add to your library.",
+              action: PlaceHolderAction(
+                  label: "Go to catalog",
+                  onPressed: () {
+                    context.push('/home');
+                  }),
+            )
+          : RomList(
+              showConsole: true,
+              initialViewMode: Platform.isAndroid
+                  ? ViewModeToggleMode.list
+                  : ViewModeToggleMode.grid,
+              roms: getFilteredRoms(),
+            ),
     );
   }
 }

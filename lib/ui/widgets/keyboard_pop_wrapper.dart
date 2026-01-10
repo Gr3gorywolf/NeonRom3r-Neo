@@ -14,8 +14,6 @@ class KeyboardPopWrapper extends StatelessWidget {
       child: Shortcuts(
         shortcuts: <ShortcutActivator, Intent>{
           const SingleActivator(LogicalKeyboardKey.escape): const _PopIntent(),
-          const SingleActivator(LogicalKeyboardKey.backspace):
-              const _PopIntent(),
           const SingleActivator(
             LogicalKeyboardKey.arrowLeft,
             alt: true,
