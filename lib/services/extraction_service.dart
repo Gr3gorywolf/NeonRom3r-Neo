@@ -20,34 +20,6 @@ enum ExtractionSignal {
   const ExtractionSignal(this.value);
 }
 
-/// Helper utilities for working with progress values.
-class ExtractionProgress {
-  static bool isError(double value) => value == ExtractionSignal.error.value;
-
-  static bool isComplete(double value) =>
-      value >= ExtractionSignal.complete.value;
-
-  static double get unknown => ExtractionSignal.unknown.value;
-}
-
-class _QueueItem {
-  final String id;
-  final File input;
-  final Directory output;
-  final Completer<void> completer;
-  final StreamController<double> progressController;
-  final void Function(Object error)? onError;
-
-  _QueueItem({
-    required this.id,
-    required this.input,
-    required this.output,
-    required this.completer,
-    required this.progressController,
-    this.onError,
-  });
-}
-
 class ExtractionService {
   static int maxConcurrent = 0;
 
@@ -398,4 +370,32 @@ class ExtractionService {
       events.send(ExtractionSignal.error.value);
     }
   }
+}
+
+/// Helper utilities for working with progress values.
+class ExtractionProgress {
+  static bool isError(double value) => value == ExtractionSignal.error.value;
+
+  static bool isComplete(double value) =>
+      value >= ExtractionSignal.complete.value;
+
+  static double get unknown => ExtractionSignal.unknown.value;
+}
+
+class _QueueItem {
+  final String id;
+  final File input;
+  final Directory output;
+  final Completer<void> completer;
+  final StreamController<double> progressController;
+  final void Function(Object error)? onError;
+
+  _QueueItem({
+    required this.id,
+    required this.input,
+    required this.output,
+    required this.completer,
+    required this.progressController,
+    this.onError,
+  });
 }

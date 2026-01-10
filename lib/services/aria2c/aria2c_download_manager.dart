@@ -10,6 +10,7 @@ import 'package:yamata_launcher/constants/torrents_constants.dart';
 import 'package:yamata_launcher/models/aria2c.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/aria2c/aria2c_utils.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
@@ -59,63 +60,6 @@ class IsolateArgs {
     this.downloadPath,
     this.certPath,
   });
-}
-
-List<String> DHT_SOURCES_PARAMS = Platform.isAndroid
-    ? [
-        '--dht-entry-point=router.bittorrent.com:6881',
-        '--dht-entry-point=dht.transmissionbt.com:6881',
-        '--dht-entry-point=router.utorrent.com:6881',
-      ]
-    : [];
-
-enum _UriType { magnet, torrent, direct }
-
-_UriType _detectUriType(String uri) {
-  if (uri.contains('magnet:')) return _UriType.magnet;
-  if (uri.toLowerCase().endsWith('.torrent')) return _UriType.torrent;
-  return _UriType.direct;
-}
-
-List<String> _getCommonArgs(String? certPath) {
-  List<String> params = [
-    '--bt-tracker="${BT_TRACKERS.join(',')}"',
-    "--auto-file-renaming=false",
-    "--allow-overwrite=true",
-    "--summary-interval=3",
-    "--console-log-level=info",
-  ];
-  if (certPath != null) {
-    params.add("--ca-certificate=${certPath}");
-    var dhtPath = "${p.dirname(certPath!)}/dht.dat";
-    if (Platform.isAndroid) {
-      var dhtFile = File(dhtPath);
-      if (!dhtFile.existsSync()) {
-        dhtFile.createSync();
-      }
-      params.add("--bt-require-crypto=true");
-      params.add("--disable-ipv6=true");
-      params.add("--dht-file-path=${dhtPath}");
-      params.add("--dht-file-path6=${p.dirname(certPath!)}/dht6.dat");
-      params.addAll(DHT_SOURCES_PARAMS);
-      params.addAll(
-          ["--async-dns=true", "--async-dns-server=1.1.1.1,8.8.8.8,8.8.4.4"]);
-    }
-  }
-  return params;
-}
-
-Future<String> _handleRedirects(String url) async {
-  final client = HttpClient();
-  final request = await client.getUrl(Uri.parse(url));
-  final response = await request.close();
-  if (response.isRedirect &&
-      response.headers.value(HttpHeaders.locationHeader) != null) {
-    final redirectedUrl = response.headers.value(HttpHeaders.locationHeader)!;
-    return _handleRedirects(redirectedUrl);
-  } else {
-    return url;
-  }
 }
 
 /// ============================================================================
@@ -187,7 +131,7 @@ class Aria2DownloadManager {
 
         case 'progress':
           controller.add(
-            Aria2ProgressEvent(_parseProgress(msg['line'])),
+            Aria2ProgressEvent(Aria2cUtils.parseProgress(msg['line'])),
           );
           break;
 
@@ -284,18 +228,18 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
   void fail(Object e) => main.send({'type': 'error', 'message': e.toString()});
 
   try {
-    final uriType = _detectUriType(args.uri!);
+    final uriType = Aria2cUtils.detectUriType(args.uri!);
     final romDir = Directory(args.downloadPath!)..createSync(recursive: true);
 
     // =======================================================================
     // DIRECT FILE DOWNLOAD (no torrent, no magnet)
     // =======================================================================
 
-    if (uriType == _UriType.direct) {
-      var certArgs = _getCommonArgs(args.certPath);
+    if (uriType == DownloadUriType.direct) {
+      var certArgs = Aria2cUtils.getCommonArgs(args.certPath);
       var url = args.uri ?? "";
       if (url.contains("http")) {
-        url = await _handleRedirects(url);
+        url = await Aria2cUtils.handleRedirects(url);
       }
 
       final proc = await Process.start(
@@ -339,7 +283,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
       onRunning: (p) => running = p,
       isAborted: () => aborted,
     );
-    final files = await _showFiles(
+    final files = await Aria2cUtils.showTorrentFiles(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       certPath: args.certPath,
@@ -358,7 +302,7 @@ Future<void> _downloadIsolateMain(IsolateArgs args) async {
     }
     final relPath = fileIndex != null ? files[args.fileIndex!] : null;
 
-    await _downloadSelectedFile(
+    await Aria2cUtils.downloadSelectedFileFromTorrent(
       aria2cPath: args.aria2cPath!,
       torrentPath: torrentPath,
       certPath: args.certPath,
@@ -484,7 +428,7 @@ Future<String> _downloadTorrent({
 
   final path = p.join(cache.path, '${uriHash}.torrent');
   if (await File(path).exists()) return path;
-  var commonArgs = _getCommonArgs(certPath);
+  var commonArgs = Aria2cUtils.getCommonArgs(certPath);
   final proc = await Process.start(
     aria2cPath!,
     [
@@ -518,96 +462,4 @@ Future<String> _downloadTorrent({
 
   await torrent.rename(path);
   return path;
-}
-
-/// ============================================================================
-/// aria2 helpers
-/// ============================================================================
-
-Future<Map<int, String>> _showFiles({
-  required String aria2cPath,
-  required String torrentPath,
-  String? certPath,
-  String? cwd,
-  void Function(String)? onLog,
-  required void Function(Process) onSetRunning,
-  required bool Function() isAborted,
-}) async {
-  var commonArgs = _getCommonArgs(certPath);
-  final proc = await Process.start(
-    aria2cPath,
-    ['--show-files', torrentPath, ...commonArgs],
-    workingDirectory: cwd,
-  );
-
-  onSetRunning(proc);
-
-  final buffer = StringBuffer();
-  proc.stdout.transform(utf8.decoder).listen(buffer.write);
-  proc.stderr.transform(utf8.decoder).listen(buffer.write);
-
-  await ProcessHelper.ensureExitOk(proc, isAborted, '--show-files failed');
-
-  final reg = RegExp(r'^\s*(\d+)\|\s*(.+)$', multiLine: true);
-  final matches = reg.allMatches(buffer.toString());
-
-  if (matches.isEmpty) {
-    throw StateError('No files found in torrent');
-  }
-
-  return {for (final m in matches) int.parse(m.group(1)!): m.group(2)!.trim()};
-}
-
-Future<void> _downloadSelectedFile({
-  required String aria2cPath,
-  required String torrentPath,
-  int? selectIndex,
-  String? cwd,
-  String? certPath,
-  void Function(String)? onLog,
-  void Function(String)? onProgressLine,
-  required void Function(Process) onSetRunning,
-  required bool Function() isAborted,
-}) async {
-  var certArgs = _getCommonArgs(certPath);
-  final proc = await Process.start(
-    aria2cPath,
-    [
-      ...(selectIndex == null
-          ? []
-          : ['--select-file=$selectIndex', '--bt-remove-unselected-file=true']),
-      '--seed-time=0',
-      '--file-allocation=none',
-      ...certArgs,
-      torrentPath,
-    ],
-    workingDirectory: cwd,
-  );
-
-  onSetRunning(proc);
-  ProcessHelper.pipeProcessOutput(
-    process: proc,
-    onLog: onLog,
-    onProgress: onProgressLine,
-  );
-
-  await ProcessHelper.ensureExitOk(proc, isAborted, 'Download failed');
-}
-
-/// ============================================================================
-/// Progress parser
-/// ============================================================================
-
-Aria2Progress _parseProgress(String line) {
-  print("aria2c: $line");
-  return Aria2Progress(
-    rawLine: line,
-    percent: RegExp(r'\((\d+%)\)').firstMatch(line)?.group(1),
-    downloaded: RegExp(r'\[#\w+\s+([^\s/]+)').firstMatch(line)?.group(1),
-    total: RegExp(r'/([^\s(]+)\(').firstMatch(line)?.group(1),
-    dlSpeed: RegExp(r'\bDL:([^\s]+)').firstMatch(line)?.group(1),
-    ulSpeed: RegExp(r'\bUL:([^\s]+)').firstMatch(line)?.group(1),
-    seeds: RegExp(r'\bSD:(\d+)').firstMatch(line)?.group(1),
-    eta: RegExp(r'\bETA:([^\s]+)').firstMatch(line)?.group(1),
-  );
 }

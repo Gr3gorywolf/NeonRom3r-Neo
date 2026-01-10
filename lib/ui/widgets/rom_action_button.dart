@@ -9,6 +9,7 @@ import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
+import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/ui/widgets/download_spinner.dart';
 import 'package:yamata_launcher/ui/widgets/rom_download_sources_dialog.dart';
@@ -116,7 +117,7 @@ class RomActionButton extends StatelessWidget {
       }
 
       if (isReadyToPlay && libraryItem != null) {
-        RomService.openDownloadedRom(libraryItem);
+        EmulatorService.openRom(libraryItem);
         AlertsService.showSnackbar("Rom launched");
         return;
       }

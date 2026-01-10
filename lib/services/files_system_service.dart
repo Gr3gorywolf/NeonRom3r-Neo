@@ -6,12 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
-import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
 import 'package:yamata_launcher/services/native/system_paths_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'package:path/path.dart' as p;
 
@@ -19,7 +17,6 @@ class FileSystemService {
   static String _rootPath = "";
   static String _appSupportPath = "";
   static String? _downloadsPath;
-  static String? _appDocsPath = "";
   static SystemPaths? _systemPaths;
   static var isDesktop =
       Platform.isWindows || Platform.isLinux || Platform.isMacOS;
@@ -239,7 +236,6 @@ class FileSystemService {
     var rootPath = "";
     rootPath = Directory.current.path;
     _appSupportPath = (await getApplicationSupportDirectory()).path;
-    _appDocsPath = (await getApplicationDocumentsDirectory()).path;
     _rootPath = rootPath;
   }
 
