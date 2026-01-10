@@ -62,6 +62,14 @@ class DownloadProvider extends ChangeNotifier {
     }
   }
 
+  DownloadInfo? getDownloadInfoBySlug(String? slug) {
+    try {
+      return _activeDownloadInfos.where((e) => e.romSlug == slug).first;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> addRomDownloadToQueue(
     RomInfo rom,
     DownloadSourceRom source,
@@ -77,12 +85,12 @@ class DownloadProvider extends ChangeNotifier {
 
     if (Platform.isAndroid) {
       NotificationsService.showNotification(
-        title: 'Downloading ${rom.name}',
-        body: 'Starting download...',
-        image: rom.portrait,
-        progressPercent: info.downloadPercent,
-        tag: rom.slug,
-      );
+          title: 'Downloading ${rom.name}',
+          body: 'Starting download...',
+          image: rom.portrait,
+          progressPercent: info.downloadPercent,
+          tag: rom.slug,
+          androidActions: [AndroidNotificationsActionTypes.CancelDownload]);
     }
 
     _activeDownloadInfos.add(info);
@@ -155,6 +163,7 @@ class DownloadProvider extends ChangeNotifier {
           progressPercent: info.downloadPercent,
           silent: true,
           tag: rom.slug,
+          androidActions: [AndroidNotificationsActionTypes.CancelDownload],
         );
       }
       return;
@@ -316,13 +325,13 @@ class DownloadProvider extends ChangeNotifier {
         return;
       }
       NotificationsService.showNotification(
-        title: '${state} ${progress == 0 ? "for" : ""} ${rom.name}',
-        body: download.downloadInfo ?? "",
-        image: rom.portrait,
-        silent: true,
-        progressPercent: download.downloadPercent,
-        tag: rom.slug,
-      );
+          title: '${state} ${progress == 0 ? "for" : ""} ${rom.name}',
+          body: download.downloadInfo ?? "",
+          image: rom.portrait,
+          silent: true,
+          progressPercent: download.downloadPercent,
+          tag: rom.slug,
+          androidActions: [AndroidNotificationsActionTypes.CancelDownload]);
     }
   }
 
@@ -357,11 +366,11 @@ class DownloadProvider extends ChangeNotifier {
     }
 
     NotificationsService.showNotification(
-      title: download.downloadInfo ?? "",
-      body: '${rom.name} is ready to play!',
-      image: rom.portrait,
-      tag: rom.slug,
-    );
+        title: download.downloadInfo ?? "",
+        body: '${rom.name} is ready to play!',
+        image: rom.portrait,
+        tag: rom.slug,
+        androidActions: [AndroidNotificationsActionTypes.PlayRomAction]);
 
     _activeDownloadInfos.remove(download);
     notifyListeners();

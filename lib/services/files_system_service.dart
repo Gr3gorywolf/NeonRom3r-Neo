@@ -41,6 +41,10 @@ class FileSystemService {
     return cachePath + "/portraits";
   }
 
+  static get notificationImagesPath {
+    return cachePath + "/notification-images";
+  }
+
   static get fetchCachePath {
     return cachePath + "/fetch-cache";
   }
@@ -279,7 +283,8 @@ class FileSystemService {
       torrentsCachePath,
       downloadSourcesPath,
       consoleSourcesPath,
-      fetchCachePath
+      fetchCachePath,
+      notificationImagesPath
     ];
     for (var path in paths) {
       if (!await Directory(path).exists()) {
