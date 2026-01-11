@@ -35,6 +35,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
 
   initApp() async {
     WidgetsFlutterBinding.ensureInitialized();
+    await Provider.of<AppProvider>(context, listen: false).setupTheme();
     await FileSystemService.initPaths();
     await initPlugins();
     await initDb();

@@ -33,6 +33,10 @@ class AlertsService {
       maxWidth: 600,
       flushbarStyle: FlushbarStyle.FLOATING,
       message: message,
+      backgroundColor: Theme.of(navigatorContext!).colorScheme.surface,
+      titleColor: Theme.of(navigatorContext!).colorScheme.onSurface,
+      messageColor:
+          Theme.of(navigatorContext!).colorScheme.onSurface.withOpacity(0.8),
       onTap: (bar) {
         if (onTap != null) onTap();
       },
@@ -62,7 +66,7 @@ class AlertsService {
       borderRadius: BorderRadius.circular(8),
       duration: Duration(seconds: 4),
       title: exception == null ? null : message,
-      backgroundColor: Colors.red,
+      backgroundColor: Theme.of(ctx ?? navigatorContext!).colorScheme.error,
       maxWidth: 600,
       flushbarStyle: FlushbarStyle.FLOATING,
       flushbarPosition: position,

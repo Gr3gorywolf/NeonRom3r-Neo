@@ -4,6 +4,7 @@ import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/app_theme.dart';
+import 'package:yamata_launcher/app_theme_dark.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:provider/provider.dart';
@@ -47,14 +48,17 @@ class MyApp extends StatelessWidget {
           fileTileSelectMode: FileTileSelectMode.wholeTile,
           theme: FilesystemPickerTheme(
             topBar: FilesystemPickerTopBarThemeData(
-              backgroundColor: appTheme.colorScheme.primary,
+              backgroundColor: appThemeDark.colorScheme.primary,
             ),
           ),
           child: Builder(builder: (context) {
+            var appProvider = Provider.of<AppProvider>(context);
             return MaterialApp.router(
               routerConfig: router,
               title: 'yamata_launcher',
-              theme: appTheme,
+              themeMode: appProvider.themeMode,
+              theme: appThemeLight,
+              darkTheme: appThemeDark,
               debugShowCheckedModeBanner: false,
             );
           }),

@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:yamata_launcher/ui/widgets/rom_list_item.dart';
+import 'package:flutter/material.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:yamata_launcher/ui/widgets/view_mode_toggle.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +15,8 @@ class AppProvider extends ChangeNotifier {
 
   bool _isAppLoaded = false;
   bool get isAppLoaded => _isAppLoaded;
+  ThemeMode _theme = ThemeMode.system;
+  ThemeMode get themeMode => _theme;
   ViewModeToggleMode consoleRomsItemType = ViewModeToggleMode.grid;
   setAppLoaded(bool val) {
     _isAppLoaded = val;
@@ -25,5 +29,31 @@ class AppProvider extends ChangeNotifier {
   setConsoleRomsItemType(ViewModeToggleMode type) {
     consoleRomsItemType = type;
     notifyListeners();
+  }
+
+  setupTheme({bool? darkModeEnabled}) async {
+    if (darkModeEnabled != null) {
+      if (darkModeEnabled) {
+        _theme = ThemeMode.dark;
+      } else {
+        _theme = ThemeMode.light;
+      }
+      notifyListeners();
+      return;
+    }
+    await SettingsService()
+        .get<bool>(SettingsKeys.DARK_MODE_ENABLED)
+        .then((value) {
+      if (value != null) {
+        if (value) {
+          _theme = ThemeMode.dark;
+        } else {
+          _theme = ThemeMode.light;
+        }
+      } else {
+        _theme = ThemeMode.system;
+      }
+      notifyListeners();
+    });
   }
 }

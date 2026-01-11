@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app_theme.dart';
+import '../../app_theme_dark.dart';
 import '../../services/assets_service.dart';
 import '../../utils/screen_helpers.dart';
 
@@ -55,8 +55,10 @@ class MainLayout extends StatelessWidget {
             minExtendedWidth: 190,
             minWidth: 60,
             indicatorColor: Colors.transparent,
-            selectedLabelTextStyle: const TextStyle(color: primaryGreen),
-            selectedIconTheme: const IconThemeData(color: primaryGreen),
+            selectedLabelTextStyle:
+                TextStyle(color: Theme.of(context).colorScheme.primary),
+            selectedIconTheme:
+                IconThemeData(color: Theme.of(context).colorScheme.primary),
             leading: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: getLogo(),
@@ -73,10 +75,10 @@ class MainLayout extends StatelessWidget {
               context.go(_routes[index]);
             },
           ),
-          const VerticalDivider(
+          VerticalDivider(
             thickness: 1,
             width: 1,
-            color: grayBorderColor,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
           Expanded(child: child),
         ],
@@ -88,10 +90,10 @@ class MainLayout extends StatelessWidget {
       bottomNavigationBar: isSmallScreen
           ? Container(
               padding: const EdgeInsets.only(top: 5),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: grayBorderColor,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                     width: 0.5,
                   ),
                 ),

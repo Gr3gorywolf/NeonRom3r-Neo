@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:flutter/widgets.dart';
 import 'package:yamata_launcher/models/setting.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 
@@ -7,12 +10,21 @@ enum SettingsKeys {
   ENABLE_IMAGE_CACHING,
   ENABLE_NOTIFICATIONS,
   ENABLE_EXTRACTION,
-  MAX_CONCURRENT_EXTRACTIONS
+  MAX_CONCURRENT_EXTRACTIONS,
+  DARK_MODE_ENABLED
 }
 
+final _systemIsDarkThemed =
+    WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+        Brightness.dark;
 Map<SettingsKeys, Setting> settingsRegistry = {
+  SettingsKeys.DARK_MODE_ENABLED: Setting<bool>(
+    key: 'dark_mode_enabled',
+    type: SettingType.bool,
+    defaultValue: _systemIsDarkThemed,
+  ),
   SettingsKeys.DOWNLOAD_PATH: Setting<String>(
-    key: 'dark_mode',
+    key: 'download_path',
     type: SettingType.string,
     defaultValue: "",
   ),

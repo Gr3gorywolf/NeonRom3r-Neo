@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
+import 'package:yamata_launcher/providers/app_provider.dart';
 import 'package:yamata_launcher/repository/emulator_intents_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
@@ -149,6 +151,12 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _toggleDarkMode(bool value) async {
+    await _setSetting<bool>(SettingsKeys.DARK_MODE_ENABLED, value);
+    var appProvider = Provider.of<AppProvider>(context, listen: false);
+    appProvider.setupTheme(darkModeEnabled: value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,6 +166,17 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            //Theming
+            const _SectionHeader(title: 'Sources'),
+            Consumer<AppProvider>(
+              builder: (context, appProvider, child) => _SwitchTile(
+                icon: Icons.dark_mode,
+                title: 'Enable Dark Mode',
+                subtitle: 'Switch between light and dark themes',
+                value: appProvider.themeMode == ThemeMode.dark,
+                onChanged: (v) => _toggleDarkMode(v),
+              ),
+            ),
             // Sources section
             const _SectionHeader(title: 'Sources'),
             _NavigationTile(
