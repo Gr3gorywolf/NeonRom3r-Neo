@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -83,79 +84,82 @@ class _DownloadsPageState extends State<DownloadsPage> {
             );
           }
 
-          return CustomScrollView(
-            slivers: [
-              const SliverPadding(padding: EdgeInsets.only(top: 16)),
-
-              // ongoing downloads
-              if (ongoingDownloads.isNotEmpty) ...[
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      "Ongoing",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SliverPadding(padding: EdgeInsets.only(top: 10)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final download = ongoingDownloads[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: RomListItem(romItem: download.romInfo!),
-                        );
-                      },
-                      childCount: ongoingDownloads.length,
-                    ),
-                  ),
-                ),
+          return FadeIn(
+            duration: const Duration(seconds: 1),
+            child: CustomScrollView(
+              slivers: [
                 const SliverPadding(padding: EdgeInsets.only(top: 16)),
-              ],
 
-              // Completed downloads
-              if (completedDownloads.isNotEmpty) ...[
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      "Completed",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.secondary,
+                // ongoing downloads
+                if (ongoingDownloads.isNotEmpty) ...[
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        "Ongoing",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SliverPadding(padding: EdgeInsets.only(top: 10)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = completedDownloads[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: RomListItem(romItem: item.rom),
-                        );
-                      },
-                      childCount: completedDownloads.length,
+                  const SliverPadding(padding: EdgeInsets.only(top: 10)),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final download = ongoingDownloads[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: RomListItem(romItem: download.romInfo!),
+                          );
+                        },
+                        childCount: ongoingDownloads.length,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SliverPadding(padding: EdgeInsets.only(top: 16)),
+                ],
 
-              const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-            ],
+                // Completed downloads
+                if (completedDownloads.isNotEmpty) ...[
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        "Completed",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SliverPadding(padding: EdgeInsets.only(top: 10)),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final item = completedDownloads[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: RomListItem(romItem: item.rom),
+                          );
+                        },
+                        childCount: completedDownloads.length,
+                      ),
+                    ),
+                  ),
+                ],
+
+                const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+              ],
+            ),
           );
         },
       ),
