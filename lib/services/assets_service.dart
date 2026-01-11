@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 
 class AssetsService {
+  static Future<bool> assetExists(String path) async {
+    try {
+      await rootBundle.load(path);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static getImage(String name, {double size = 24, double? width}) {
     var hasExtension = name.contains('.');
     return Image.asset(
@@ -22,11 +32,12 @@ class AssetsService {
     final double finalWidth = width ?? size;
     final String? fallbackUrl =
         ConsoleService.getConsoleFromName(name)?.logoUrl;
+    var assetName = "assets/icons/consoles/${name.toUpperCase()}.png";
 
     Widget errorIcon() => Icon(Icons.error, size: size);
 
     return Image.asset(
-      "assets/icons/consoles/${name.toUpperCase()}.png",
+      assetName,
       height: size,
       width: finalWidth,
       errorBuilder: (_, __, ___) {

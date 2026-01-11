@@ -114,7 +114,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           final download = ongoingDownloads[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: RomListItem(romItem: download.romInfo!),
+                            child: RomListItem(
+                                romItem: download.romInfo!, showConsole: true),
                           );
                         },
                         childCount: ongoingDownloads.length,
@@ -148,7 +149,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
                           final item = completedDownloads[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: RomListItem(romItem: item.rom),
+                            child: RomListItem(
+                              romItem: item.rom,
+                              showConsole: true,
+                            ),
                           );
                         },
                         childCount: completedDownloads.length,

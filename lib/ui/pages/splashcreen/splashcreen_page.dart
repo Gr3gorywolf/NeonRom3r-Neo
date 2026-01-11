@@ -35,6 +35,8 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
 
   initApp() async {
     WidgetsFlutterBinding.ensureInitialized();
+    PaintingBinding.instance.imageCache.maximumSize = 100;
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20; // 50MB
     await Provider.of<AppProvider>(context, listen: false).setupTheme();
     await FileSystemService.initPaths();
     await initPlugins();

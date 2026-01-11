@@ -23,9 +23,11 @@ class LaunchboxRomDetails implements JsonSerializable {
     maxPlayers = json['maxPlayers'];
     cooperative = json['cooperative'];
     esrb = json['esrb'];
-    genres = json['genres'].cast<String>();
+    genres = json['genres'] == null ? [] : List<String>.from(json['genres']);
     video = json['video'];
-    screenshots = json['screenshots'].cast<String>();
+    screenshots = json['screenshots'] == null
+        ? []
+        : List<String>.from(json['screenshots']);
   }
 
   Map<String, dynamic> toJson() {

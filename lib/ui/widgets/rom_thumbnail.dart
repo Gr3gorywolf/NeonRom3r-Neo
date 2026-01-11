@@ -65,18 +65,20 @@ class _RomThumbnailState extends State<RomThumbnail> {
         size: widget.width,
       );
     }
+    var cachedImg = getCatchedImage();
+    if (cachedImg != null) {
+      return Image.file(
+        cachedImg,
+        height: this.widget.height,
+        width: this.widget.width,
+        cacheWidth: this.widget.width.toInt() * 4,
+        cacheHeight: this.widget.height.toInt() * 4,
+        fit: BoxFit.cover,
+      );
+    }
     return Image.network(
       url ?? "",
       errorBuilder: (context, obj, trace) {
-        var cachedImg = getCatchedImage();
-        if (cachedImg != null) {
-          return Image.file(
-            cachedImg,
-            height: this.widget.height,
-            width: this.widget.width,
-            fit: BoxFit.cover,
-          );
-        }
         return AssetsService.getConsoleIcon(widget.info.console,
             size: widget.width);
       },
@@ -89,6 +91,8 @@ class _RomThumbnailState extends State<RomThumbnail> {
       },
       height: this.widget.height,
       width: this.widget.width,
+      cacheWidth: this.widget.width.toInt() * 4,
+      cacheHeight: this.widget.height.toInt() * 4,
       fit: BoxFit.cover,
     );
   }
