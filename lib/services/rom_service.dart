@@ -13,7 +13,6 @@ import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/emulator_intent.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
-import 'package:yamata_launcher/repository/settings_repository.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/emulator_service.dart';

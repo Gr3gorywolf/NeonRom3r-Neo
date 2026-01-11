@@ -54,13 +54,11 @@ class MyApp extends StatelessWidget {
           child: Builder(builder: (context) {
             var appProvider = Provider.of<AppProvider>(context);
             return MaterialApp.router(
-              routerConfig: router,
-              title: 'yamata_launcher',
-              themeMode: appProvider.themeMode,
-              theme: appThemeLight,
-              darkTheme: appThemeDark,
-              debugShowCheckedModeBanner: false,
-            );
+                routerConfig: router,
+                title: 'yamata_launcher',
+                themeMode: appProvider.themeMode,
+                theme: appThemeLight,
+                darkTheme: appThemeDark);
           }),
         );
       },

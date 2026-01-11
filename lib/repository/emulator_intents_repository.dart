@@ -13,7 +13,6 @@ class EmulatorIntentsRepository {
   Future<bool> updateEmulatorIntentsFile() async {
     var baseUrl = "${AppConstants.apiBasePath}/Configs/EmulatorIntents.json";
     var client = new http.Client();
-
     try {
       var res = await client.get(Uri.parse(baseUrl));
       if (res.statusCode == 200) {

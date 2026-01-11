@@ -19,27 +19,6 @@ import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'aria2c/aria2c_download_manager.dart';
 
 class DownloadService {
-  Future<Map<String, String>> fetchDownloadHeaders(url) async {
-    var client = new http.Client();
-    try {
-      var res = await client.head(url);
-      return res.headers;
-    } catch (err) {
-      return new Map<String, String>();
-    }
-  }
-
-  String? _getFileNameFromHeaders(Map<String, String> headers) {
-    if (headers.keys.contains('content-disposition')) {
-      var fileNameArray = headers['content-disposition']!.split('filename="');
-      if (fileNameArray.length > 0) {
-        fileNameArray = fileNameArray[1].split('";');
-        return fileNameArray[0];
-      }
-    }
-    return null;
-  }
-
   downloadRom(
       BuildContext context, RomInfo rom, DownloadSourceRom sourceRom) async {
     var downloadsPath = FileSystemService.downloadsPath;

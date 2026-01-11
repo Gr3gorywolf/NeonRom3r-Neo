@@ -1,13 +1,69 @@
 import 'dart:convert';
+import 'package:http/http.dart';
 import 'package:yamata_launcher/models/contracts/json_serializable.dart';
 import 'package:yamata_launcher/services/cache_service.dart';
-import 'package:yamata_launcher/services/files_system_service.dart';
 
 typedef FromJson<T> = T Function(Map<String, dynamic> json);
+typedef FromRawJson<T> = T Function(dynamic json);
 
 class CachedFetch {
   static _getFullkey(String key) {
     return "fetch-cache/" + key;
+  }
+
+  static Future<T?> withContentLengthSignature<T>({
+    required String key,
+    required String url,
+    required FromRawJson<T> parser,
+    Duration? ttl,
+    Client? client,
+  }) async {
+    client ??= Client();
+
+    final fullKey = _getFullkey(key);
+
+    try {
+      final signature = await CacheService.getCacheSignature(fullKey);
+
+      if (signature != null) {
+        final head = await client.head(Uri.parse(url));
+
+        final remoteSignature =
+            head.headers['etag'] ?? head.headers['content-length'];
+
+        if (remoteSignature != null && remoteSignature == signature) {
+          final cached = await CacheService.retrieveCacheFile(fullKey);
+          if (cached != null) {
+            return parser(jsonDecode(cached));
+          }
+        }
+      }
+
+      final res = await client.get(Uri.parse(url));
+      if (res.statusCode != 200) return null;
+
+      await CacheService.writeCacheFile(fullKey, res.body, ttl: ttl);
+
+      final newSignature = res.headers['etag'] ?? res.headers['content-length'];
+
+      if (newSignature != null) {
+        await CacheService.setCacheSignature(fullKey, newSignature);
+      }
+
+      return parser(jsonDecode(res.body));
+    } catch (e, st) {
+      print('CachedFetch<json> [$key]: $e');
+      print(st);
+
+      final cached = await CacheService.retrieveCacheFile(fullKey);
+      if (cached != null) {
+        try {
+          return parser(jsonDecode(cached));
+        } catch (_) {}
+      }
+
+      return null;
+    }
   }
 
   // Object fetcher

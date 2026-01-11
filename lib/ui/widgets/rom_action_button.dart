@@ -108,7 +108,8 @@ class RomActionButton extends StatelessWidget {
             additionalAction: hasDownloadSources
                 ? TextButton(
                     onPressed: () async {
-                      await Navigator.of(context).maybePop();
+                      await Navigator.of(context, rootNavigator: true)
+                          .maybePop();
                       handleDownloadRom();
                     },
                     child: Text("Re-download"))
