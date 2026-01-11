@@ -80,6 +80,7 @@ class DownloadProvider extends ChangeNotifier {
       romSlug: rom.slug,
       downloadId: downloadId,
       downloadPercent: 0,
+      romInfo: rom,
       downloadInfo: 'Starting download...',
     );
 

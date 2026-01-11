@@ -221,7 +221,7 @@ class _ToolbarState extends State<Toolbar> {
               _notifyChange();
             },
           )
-        else
+        else if (!widget.settings.disableSearch)
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {

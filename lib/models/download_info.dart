@@ -1,3 +1,4 @@
+import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 
 class DownloadInfo {
@@ -6,6 +7,7 @@ class DownloadInfo {
   String? downloadId;
   String? downloadInfo;
   bool isExtracting;
+  RomInfo? romInfo;
   bool get isCompleted {
     return downloadPercent == 100;
   }
@@ -14,6 +16,7 @@ class DownloadInfo {
       {required this.romSlug,
       this.downloadPercent,
       this.downloadId,
+      this.romInfo,
       this.isExtracting = false,
       this.downloadInfo});
 }

@@ -1,9 +1,15 @@
 class ToolbarSettings {
   String? searchHint = "Search...";
   String? title = "Search";
+  bool disableSearch = false;
   List<ToolBarSortByElement>? sorts = [];
   List<ToolBarFilterGroup>? filters = [];
-  ToolbarSettings({this.sorts, this.filters, this.title, this.searchHint});
+  ToolbarSettings(
+      {this.sorts,
+      this.filters,
+      this.title,
+      this.searchHint,
+      this.disableSearch = false});
 }
 
 class ToolbarValue {
