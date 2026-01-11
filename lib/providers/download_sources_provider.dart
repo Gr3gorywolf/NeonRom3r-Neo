@@ -21,35 +21,38 @@ class _CompilePayload {
 }
 
 bool _isRomMatch(
-  DownloadSourceRom sourceRom,
-  RomInfo rom,
+  String sourceRomNormalizedTitle,
+  String romNormalizedTitle,
 ) {
-  var sourceRomTitleClear = sourceRom.title_clean ?? "";
-  var romTitleClear = rom.slug.replaceFirst("${rom.console}-", "");
-  if (sourceRomTitleClear.isEmpty || romTitleClear.isEmpty) return false;
-  if (sourceRom.console != rom.console) return false;
+  if (sourceRomNormalizedTitle.isEmpty || romNormalizedTitle.isEmpty)
+    return false;
 
-  if (sourceRom.title_clean == romTitleClear) {
+  if (sourceRomNormalizedTitle == romNormalizedTitle) {
     return true;
   }
-  if (sourceRomTitleClear.contains("the") && romTitleClear.contains("the")) {
-    sourceRomTitleClear = sourceRomTitleClear.replaceAll("the", "").trim();
-    romTitleClear = romTitleClear.replaceAll("the", "").trim();
-  }
-  if (sourceRomTitleClear[0] != romTitleClear[0]) {
+  if (sourceRomNormalizedTitle[0] != romNormalizedTitle[0]) {
     return false;
   }
-  if (sourceRomTitleClear.contains(romTitleClear)) {
-    return true;
-  }
-  final normalizedRomName = RomService.normalizeRomTitle(rom.name);
   return StringHelper.hasMinConsecutiveMatch(
-    sourceRomTitleClear,
-    normalizedRomName,
-    minLength: normalizedRomName.length,
+    romNormalizedTitle,
+    sourceRomNormalizedTitle,
+    minLength: sourceRomNormalizedTitle.length,
   );
 }
 
+/**
+ * Remove words that are commonly misplaced in titles to improve matching accuracy.
+ */
+String _removeMisplacedWords(String input) {
+  var wordsToRemove = ["the", "and", "of", "a", "an"];
+  var pattern =
+      RegExp(r'\b(' + wordsToRemove.join('|') + r')\b', caseSensitive: false);
+  return input.replaceAll(pattern, '').trim();
+}
+
+/**
+ * Isolate function to compile download sources for roms.
+ */
 Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
   _CompilePayload payload,
 ) {
@@ -65,15 +68,24 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
           sourceInfo: source.sourceInfo,
           downloads: source.downloads!
               .where((sourceRom) => sourceRom.console == console)
-              .toList());
+              .map((download) {
+            download.title_clean =
+                _removeMisplacedWords(download.title_clean ?? "");
+            return download;
+          }).toList());
     }).toList();
   }
-  for (final rom in payload.roms) {
+
+  var normalizedRoms = payload.roms.map((rom) {
+    rom.name = _removeMisplacedWords(RomService.normalizeRomTitle(rom.name));
+    return rom;
+  }).toList();
+  for (final rom in normalizedRoms) {
     var sourcesForConsole = sourcesByConsole[rom.console];
     if (sourcesForConsole == null) continue;
     for (final source in sourcesForConsole) {
-      final hasMatch =
-          source.downloads.any((sourceRom) => _isRomMatch(sourceRom, rom));
+      final hasMatch = source.downloads.any(
+          (sourceRom) => _isRomMatch(sourceRom.title_clean ?? "", rom.name));
 
       if (hasMatch) {
         var foundSource = result[rom.slug];
@@ -88,7 +100,7 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
     }
   }
   print("Finished compiling download sources in isolate in "
-      "${stopwatch.elapsed.inSeconds} seconds");
+      "${stopwatch.elapsed.inMilliseconds} milliseconds");
   return result;
 }
 
@@ -124,10 +136,14 @@ class DownloadSourcesProvider extends ChangeNotifier {
     DownloadSourceWithDownloads source,
     RomInfo rom,
   ) {
-    final normalizedRomName = RomService.normalizeRomTitle(rom.name);
+    final normalizedRomName =
+        _removeMisplacedWords(RomService.normalizeRomTitle(rom.name));
 
     return source.downloads
-        .where((sourceRom) => _isRomMatch(sourceRom, rom))
+        .where((sourceRom) =>
+            sourceRom.console == rom.console &&
+            _isRomMatch(_removeMisplacedWords(sourceRom.title_clean ?? ""),
+                normalizedRomName))
         .toList();
   }
 
