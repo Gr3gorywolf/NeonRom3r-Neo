@@ -13,7 +13,7 @@ import 'package:yamata_launcher/providers/app_provider.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
 import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
 import 'package:yamata_launcher/ui/pages/library/library_page.dart';
-import 'package:yamata_launcher/ui/pages/home/home_page.dart';
+import 'package:yamata_launcher/ui/pages/explore/explore_page.dart';
 import 'package:yamata_launcher/ui/pages/settings/settings_page.dart';
 import 'package:yamata_launcher/ui/pages/splashcreen/splashcreen_page.dart';
 import 'package:yamata_launcher/ui/widgets/console_list.dart';

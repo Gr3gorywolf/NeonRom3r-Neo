@@ -16,15 +16,17 @@ import 'package:animate_do/animate_do.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
 
-class HomePage extends StatefulWidget {
+class ExplorePage extends StatefulWidget {
   @override
-  HomePage_State createState() => HomePage_State();
+  ExplorePage_State createState() => ExplorePage_State();
 }
 
-class HomePage_State extends State<HomePage> {
+class ExplorePage_State extends State<ExplorePage> {
   List<Console> _consoles = ConsoleService.getConsoles(unique: true)
     ..sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
   ToolbarValue? filterValues = null;
+
+  var textController = TextEditingController();
 
   get filteredConsoles {
     if (filterValues == null) return _consoles;
@@ -37,8 +39,7 @@ class HomePage_State extends State<HomePage> {
   Widget build(BuildContext bldContext) {
     return Scaffold(
         appBar: Toolbar(
-          settings: ToolbarSettings(
-              title: "Yamata Launcher", searchHint: "Search Consoles"),
+          settings: ToolbarSettings(title: "Explore", disableSearch: true),
           onChanged: (val) => {
             setState(() {
               filterValues = val;
@@ -50,8 +51,29 @@ class HomePage_State extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: textController,
+                      decoration: InputDecoration(
+                        hintText: 'Search for roms',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onSubmitted: (value) {
+                        textController.clear();
+                        context.push("/explore/search-results", extra: value);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
               Text(
-                "Consoles",
+                "Platforms",
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -64,7 +86,7 @@ class HomePage_State extends State<HomePage> {
                 child: ConsoleList(
                   consoles: filteredConsoles,
                   onConsoleSelected: (Console console) {
-                    context.push("/home/console-roms", extra: console);
+                    context.push("/explore/console-roms", extra: console);
                   },
                 ),
               ),

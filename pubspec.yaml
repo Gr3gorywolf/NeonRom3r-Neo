@@ -54,6 +54,7 @@ dependencies:
       url: https://github.com/Iconica-Development/filesystem_picker.git
       path: package
       ref: master
+  text_search: ^1.0.2
 
 
 dev_dependencies:

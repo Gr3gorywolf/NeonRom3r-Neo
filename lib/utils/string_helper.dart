@@ -64,7 +64,7 @@ class StringHelper {
     'û'.codeUnitAt(0): 'u'.codeUnitAt(0),
     'ū'.codeUnitAt(0): 'u'.codeUnitAt(0),
 
-    // Otros
+    // Others
     'ñ'.codeUnitAt(0): 'n'.codeUnitAt(0),
     'ç'.codeUnitAt(0): 'c'.codeUnitAt(0),
   };

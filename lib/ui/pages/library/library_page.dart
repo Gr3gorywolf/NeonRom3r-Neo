@@ -128,7 +128,7 @@ class _LibraryPageState extends State<LibraryPage> {
               action: PlaceHolderAction(
                   label: "Go to catalog",
                   onPressed: () {
-                    context.push('/home');
+                    context.push('/explore');
                   }),
             )
           : RomList(

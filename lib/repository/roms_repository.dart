@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/constants/app_constants.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/utils/cached_fetch.dart';
 
 class RomsRepository {
@@ -39,6 +42,45 @@ class RomsRepository {
     }
 
     return roms.values.toList();
+  }
+
+  Future<List<RomInfo>> searchRoms(String query) async {
+    var client = new http.Client();
+    var searchUrl =
+        "${AppConstants.serverBaseUrl}search?q=${Uri.encodeComponent(query)}";
+    var res = await client.get(Uri.parse(searchUrl));
+    if (res.statusCode == 200) {
+      var results = jsonDecode(res.body) as List<dynamic>;
+      return results.map<RomInfo>((json) => RomInfo.fromJson(json)).toList();
+    } else {
+      return [];
+    }
+  }
+
+  Future<List<RomInfo>> searchFromExternalSources(String query) async {
+    var externalConsoles = ConsoleService.consolesFromExternalSources;
+    var allRoms = <RomInfo>[];
+    if (externalConsoles.isNotEmpty) {
+      for (var console in externalConsoles) {
+        var consoleSource = await ConsoleService.getConsoleSource(console);
+        if (consoleSource == null) continue;
+        for (var rom in consoleSource.games) {
+          allRoms.add(rom);
+        }
+      }
+    }
+    var searchResults = RomService.createRomsTextSearch(allRoms)
+        .search(query)
+        .where((_) => _.score < 0.7)
+        .sorted((a, b) => a.score.compareTo(b.score))
+        .toList()
+        .take(50);
+    print(jsonEncode(searchResults
+        .map((_) => {'object': _.object, 'score': _.score})
+        .toList()));
+    var foundRomSlugs = searchResults.map((_) => _.object).toSet();
+    print("Found ${foundRomSlugs.length} roms from external sources");
+    return allRoms.where((rom) => foundRomSlugs.contains(rom.slug)).toList();
   }
 
   Future<RomInfo?> fetchRomDetails(String infoLink) async {

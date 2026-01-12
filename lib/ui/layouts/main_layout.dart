@@ -11,7 +11,7 @@ class MainLayout extends StatelessWidget {
   const MainLayout({super.key, required this.child});
 
   static const _routes = [
-    '/home',
+    '/explore',
     '/library',
     '/downloads',
     '/settings',
@@ -30,7 +30,7 @@ class MainLayout extends StatelessWidget {
     final isMediumScreen = ScreenHelpers.isMediumScreen(context);
 
     const navigationItems = [
-      {'icon': Icons.home, 'label': 'Home'},
+      {'icon': Icons.explore, 'label': 'Explore'},
       {'icon': Icons.collections_bookmark, 'label': 'Library'},
       {'icon': Icons.download_sharp, 'label': 'Downloads'},
       {'icon': Icons.settings, 'label': 'Settings'},

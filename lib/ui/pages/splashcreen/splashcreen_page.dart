@@ -52,7 +52,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
         .initialize();
     Future.delayed(Duration(milliseconds: 2000)).then((value) {
       Provider.of<AppProvider>(context, listen: false).setAppLoaded(true);
-      context.push("/home");
+      context.push("/explore");
     });
   }
 

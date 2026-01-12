@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:text_search/text_search.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/database/app_database.dart';
@@ -11,6 +12,7 @@ import 'package:yamata_launcher/database/daos/emulator_settings_dao.dart';
 import 'package:yamata_launcher/database/daos/library_dao.dart';
 import 'package:yamata_launcher/main.dart';
 import 'package:yamata_launcher/models/emulator_intent.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
@@ -87,6 +89,14 @@ class RomService {
     }
 
     return "Not played yet";
+  }
+
+  static TextSearch<String> createRomsTextSearch(List<RomInfo> roms) {
+    var searchableItems = roms.map((rom) {
+      return TextSearchItem.fromTerms(
+          rom.slug, [rom.name, normalizeRomTitle(rom.name ?? "")]);
+    }).toList();
+    return TextSearch(searchableItems);
   }
 
   /// Locate the largest valid ROM or compressed file in the given directory

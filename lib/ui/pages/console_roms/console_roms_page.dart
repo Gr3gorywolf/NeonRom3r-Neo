@@ -35,7 +35,7 @@ class _ConsoleRomsPageState extends State<ConsoleRomsPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
+
     super.initState();
     if (widget.infos == null) {
       fetchRoms();
