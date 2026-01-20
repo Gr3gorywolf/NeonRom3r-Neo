@@ -33,8 +33,7 @@ class FilterHelpers {
       filteredSubjects = filteredSubjects.where((subject) {
         final value = _getValueByPath(subject.toJson(), nameField)?.toString();
         return RomService.normalizeRomTitle(value?.toLowerCase() ?? "")
-                .contains(searchLower) ??
-            false;
+            .contains(searchLower);
       }).toList();
     }
 
