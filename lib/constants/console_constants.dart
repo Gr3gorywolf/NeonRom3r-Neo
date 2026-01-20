@@ -52,6 +52,11 @@ class ConsoleConstants {
         altName: "Sony - PlayStation Vita",
         slug: "vita"),
     // =========================
+    // Microsoft
+    // =========================
+    Console(name: "Xbox", altName: "Microsoft - Xbox", slug: "xbox"),
+    Console(name: "Xbox 360", altName: "Microsoft - Xbox 360", slug: "xbox360"),
+    // =========================
     // Sega
     // =========================
     Console(

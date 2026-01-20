@@ -71,7 +71,7 @@ class RomsRepository {
     }
     var searchResults = RomService.createRomsTextSearch(allRoms)
         .search(query)
-        .where((_) => _.score < 0.7)
+        .where((_) => _.score <= 1.1)
         .sorted((a, b) => a.score.compareTo(b.score))
         .toList()
         .take(50);

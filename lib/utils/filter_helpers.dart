@@ -1,6 +1,7 @@
 import 'package:yamata_launcher/models/contracts/json_serializable.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 
 class FilterHelpers {
   static _getValueByPath(Map<String, dynamic> json, String path) {
@@ -26,11 +27,14 @@ class FilterHelpers {
     final sort = toolbarValue.sortBy;
 
     if (toolbarValue.search.isNotEmpty) {
-      final searchLower = toolbarValue.search.toLowerCase();
+      final searchLower =
+          RomService.normalizeRomTitle(toolbarValue.search.toLowerCase());
 
       filteredSubjects = filteredSubjects.where((subject) {
         final value = _getValueByPath(subject.toJson(), nameField)?.toString();
-        return value?.toLowerCase().contains(searchLower) ?? false;
+        return RomService.normalizeRomTitle(value?.toLowerCase() ?? "")
+                .contains(searchLower) ??
+            false;
       }).toList();
     }
 

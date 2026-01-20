@@ -93,8 +93,10 @@ class RomService {
 
   static TextSearch<String> createRomsTextSearch(List<RomInfo> roms) {
     var searchableItems = roms.map((rom) {
-      return TextSearchItem.fromTerms(
-          rom.slug, [rom.name, normalizeRomTitle(rom.name ?? "")]);
+      var withoutSymbols =
+          rom.name.toLowerCase().replaceAll(RegExp(r'\(.*?\)|\[.*?\]'), '');
+      return TextSearchItem.fromTerms(rom.slug,
+          [rom.name, normalizeRomTitle(rom.name ?? ""), withoutSymbols]);
     }).toList();
     return TextSearch(searchableItems);
   }

@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:yamata_launcher/constants/console_constants.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/console_source.dart';
-import 'package:yamata_launcher/models/emulator.dart';
-import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
 

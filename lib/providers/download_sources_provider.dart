@@ -44,7 +44,7 @@ bool _isRomMatch(
  * Remove words that are commonly misplaced in titles to improve matching accuracy.
  */
 String _removeMisplacedWords(String input) {
-  var wordsToRemove = ["the", "and", "of", "a", "an"];
+  var wordsToRemove = ["the", "and", "of"];
   var pattern =
       RegExp(r'\b(' + wordsToRemove.join('|') + r')\b', caseSensitive: false);
   return input.replaceAll(pattern, '').trim();
@@ -69,15 +69,15 @@ Map<String, List<DownloadSource>> _compileRomSourcesIsolate(
           downloads: source.downloads!
               .where((sourceRom) => sourceRom.console == console)
               .map((download) {
-            download.title_clean =
-                _removeMisplacedWords(download.title_clean ?? "");
+            download.title_clean = RomService.normalizeRomTitle(
+                _removeMisplacedWords(download.title ?? ""));
             return download;
           }).toList());
     }).toList();
   }
 
   var normalizedRoms = payload.roms.map((rom) {
-    rom.name = _removeMisplacedWords(RomService.normalizeRomTitle(rom.name));
+    rom.name = RomService.normalizeRomTitle(_removeMisplacedWords(rom.name));
     return rom;
   }).toList();
   for (final rom in normalizedRoms) {
@@ -137,12 +137,14 @@ class DownloadSourcesProvider extends ChangeNotifier {
     RomInfo rom,
   ) {
     final normalizedRomName =
-        _removeMisplacedWords(RomService.normalizeRomTitle(rom.name));
+        RomService.normalizeRomTitle(_removeMisplacedWords(rom.name));
 
     return source.downloads
         .where((sourceRom) =>
             sourceRom.console == rom.console &&
-            _isRomMatch(_removeMisplacedWords(sourceRom.title_clean ?? ""),
+            _isRomMatch(
+                RomService.normalizeRomTitle(
+                    _removeMisplacedWords(sourceRom.title ?? "")),
                 normalizedRomName))
         .toList();
   }
