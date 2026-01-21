@@ -1,6 +1,34 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
+extension StringNormalize on String {
+  String normalizeForSearch() {
+    final lower = toLowerCase();
+
+    final sb = StringBuffer();
+    for (final unit in lower.codeUnits) {
+      final mapped = StringHelper.unicodeMap[unit] ?? unit;
+
+      final ch = String.fromCharCode(mapped);
+      if (RegExp(r'[a-z0-9\s]').hasMatch(ch)) {
+        sb.write(ch);
+      } else {
+        sb.write(' ');
+      }
+    }
+
+    return sb.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  List<String> tokensForSearch() {
+    final normalized = normalizeForSearch();
+    if (normalized.isEmpty) return const [];
+    final tokens = normalized.split(' ')..removeWhere((t) => t.isEmpty);
+    tokens.sort();
+    return tokens;
+  }
+}
+
 class StringHelper {
   static const Map<String, String> diacriticsMap = {
     'á': 'a',

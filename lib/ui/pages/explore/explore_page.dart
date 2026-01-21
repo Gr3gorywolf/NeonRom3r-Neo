@@ -1,20 +1,11 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/models/console.dart';
-import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
-import 'package:yamata_launcher/repository/roms_repository.dart';
-import 'package:yamata_launcher/ui/pages/console_roms/console_roms_page.dart';
-import 'package:yamata_launcher/ui/widgets/console_list.dart';
 import 'package:yamata_launcher/ui/widgets/console_card.dart';
-import 'package:yamata_launcher/ui/pages/rom_details_dialog/rom_details_dialog.dart';
-import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
-import 'package:yamata_launcher/ui/widgets/unselected_placeholder.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
 
@@ -89,8 +80,6 @@ class ExplorePage_State extends State<ExplorePage> {
                 ],
               ),
             ),
-
-            /// Aquí va tu lista/grid pero en versión "sliver"
             SliverPadding(
               padding: const EdgeInsets.only(bottom: 16),
               sliver: SliverGrid(

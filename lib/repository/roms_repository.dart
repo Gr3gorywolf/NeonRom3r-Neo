@@ -9,6 +9,7 @@ import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/utils/cached_fetch.dart';
+import 'package:yamata_launcher/utils/plain_text_search.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {
@@ -69,18 +70,12 @@ class RomsRepository {
         }
       }
     }
-    var searchResults = RomService.createRomsTextSearch(allRoms)
-        .search(query)
-        .where((_) => _.score <= 1.1)
-        .sorted((a, b) => a.score.compareTo(b.score))
-        .toList()
-        .take(50);
-    print(jsonEncode(searchResults
-        .map((_) => {'object': _.object, 'score': _.score})
-        .toList()));
-    var foundRomSlugs = searchResults.map((_) => _.object).toSet();
-    print("Found ${foundRomSlugs.length} roms from external sources");
-    return allRoms.where((rom) => foundRomSlugs.contains(rom.slug)).toList();
+    var romTitles = allRoms.map((rom) => rom.name ?? "").toList();
+    var searchResults =
+        PlainTextSearch.search(query, romTitles).map((e) => e.item).toList();
+    print(searchResults);
+    print("Found ${searchResults.length} roms from external sources");
+    return allRoms.where((rom) => searchResults.contains(rom.name)).toList();
   }
 
   Future<RomInfo?> fetchRomDetails(String infoLink) async {

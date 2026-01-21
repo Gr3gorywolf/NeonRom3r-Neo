@@ -91,16 +91,6 @@ class RomService {
     return "Not played yet";
   }
 
-  static TextSearch<String> createRomsTextSearch(List<RomInfo> roms) {
-    var searchableItems = roms.map((rom) {
-      var withoutSymbols =
-          rom.name.toLowerCase().replaceAll(RegExp(r'\(.*?\)|\[.*?\]'), '');
-      return TextSearchItem.fromTerms(rom.slug,
-          [rom.name, normalizeRomTitle(rom.name ?? ""), withoutSymbols]);
-    }).toList();
-    return TextSearch(searchableItems);
-  }
-
   /// Locate the largest valid ROM or compressed file in the given directory
   static File? locateRomFile(Directory directory,
       {bool skipCompressedFiles = false}) {

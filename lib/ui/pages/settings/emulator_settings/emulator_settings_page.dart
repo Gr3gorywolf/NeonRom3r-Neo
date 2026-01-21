@@ -125,7 +125,8 @@ class _EmulatorSettingsPageState extends State<EmulatorSettingsPage> {
                         ConsoleService.getConsoleFromName(setting.console)
                                 ?.name ??
                             ""),
-                    subtitle: Text(setting.emulatorBinary),
+                    subtitle: Opacity(
+                        opacity: 0.6, child: Text(setting.emulatorBinary)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

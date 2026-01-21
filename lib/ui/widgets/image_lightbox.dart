@@ -34,29 +34,33 @@ class _ImageLightboxState extends State<ImageLightbox> {
             controller: _pageController,
             itemCount: widget.images.length,
             itemBuilder: (context, index) {
-              return InteractiveViewer(
-                minScale: 1,
-                maxScale: 4,
-                child: Center(
-                  child: Hero(
-                    tag: widget.images[index],
-                    child: Image.network(
-                      widget.images[index],
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      },
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(context).pop(),
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Hero(
+                        tag: widget.images[index],
+                        child: Image.network(
+                          widget.images[index],
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ),
               );
             },
           ),
-
-          // Close button
           Positioned(
             top: 16,
             right: 16,

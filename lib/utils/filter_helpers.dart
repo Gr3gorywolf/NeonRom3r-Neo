@@ -1,7 +1,11 @@
+import 'package:collection/collection.dart';
+import 'package:sembast/sembast.dart';
 import 'package:yamata_launcher/models/contracts/json_serializable.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:yamata_launcher/utils/plain_text_search.dart';
+import 'package:yamata_launcher/utils/string_helper.dart';
 
 class FilterHelpers {
   static _getValueByPath(Map<String, dynamic> json, String path) {
@@ -25,15 +29,17 @@ class FilterHelpers {
   }) {
     List<T> filteredSubjects = subjects;
     final sort = toolbarValue.sortBy;
-
     if (toolbarValue.search.isNotEmpty) {
-      final searchLower =
-          RomService.normalizeRomTitle(toolbarValue.search.toLowerCase());
-
+      var filterValues = filteredSubjects.map((subject) {
+        return _getValueByPath(subject.toJson(), nameField)?.toString() ?? "";
+      }).toList();
+      var filterResults =
+          PlainTextSearch.search(toolbarValue.search, filterValues)
+              .map((e) => e.item)
+              .toList();
       filteredSubjects = filteredSubjects.where((subject) {
         final value = _getValueByPath(subject.toJson(), nameField)?.toString();
-        return RomService.normalizeRomTitle(value?.toLowerCase() ?? "")
-            .contains(searchLower);
+        return filterResults.contains(value);
       }).toList();
     }
 
