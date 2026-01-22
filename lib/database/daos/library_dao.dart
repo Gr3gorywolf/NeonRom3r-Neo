@@ -19,6 +19,16 @@ class LibraryDao {
     return records.map((e) => RomLibraryItem.fromJson(e.value)).toList();
   }
 
+  Future<List<RomLibraryItem>> getImported() async {
+    final records = await romLibraryDbStore.find(
+      db,
+      finder: Finder(
+        filter: Filter.equals('isImported', true),
+      ),
+    );
+    return records.map((e) => RomLibraryItem.fromJson(e.value)).toList();
+  }
+
   Future<String?> insert(RomLibraryItem item) async {
     return await romLibraryDbStore.record(item.rom.slug).add(db, item.toJson());
   }

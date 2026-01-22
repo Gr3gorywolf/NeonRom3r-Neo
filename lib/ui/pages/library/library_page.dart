@@ -86,6 +86,7 @@ class _LibraryPageState extends State<LibraryPage> {
     var item = libraryProvider.addRomToLibrary(info);
     item.filePath = filePath;
     item.addedAt = DateTime.now();
+    item.isImported = true;
     await libraryProvider.updateLibraryItem(item);
   }
 
@@ -106,7 +107,7 @@ class _LibraryPageState extends State<LibraryPage> {
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () =>
               {LibraryImportDialog.show(context, handleAddToLibrary)},
-          label: Text('Add Game'),
+          label: Text('Import Game'),
           icon: Icon(Icons.add)),
       appBar: Toolbar(
         onChanged: (values) {

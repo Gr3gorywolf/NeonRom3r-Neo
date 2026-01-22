@@ -6,6 +6,7 @@ import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/ui/widgets/dialog_section_item.dart';
 import 'package:yamata_launcher/ui/widgets/rom_scrape_dialog.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
@@ -158,7 +159,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
   String? get _fileErrorText {
     final canShow = _submitted || _fileTouched;
     if (!canShow) return null;
-    if (romPath.trim().isEmpty) return "ROM file is required";
+    if (romPath.trim().isEmpty) return "Game file is required";
     return null;
   }
 
@@ -166,7 +167,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
     final canShow = _submitted || _titleTouched;
     if (!canShow) return null;
     return _requiredValidator(
-        value: titleController.text, fieldName: "ROM Title");
+        value: titleController.text, fieldName: "Game Title");
   }
 
   String? get _consoleErrorText {
@@ -228,9 +229,13 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
     _validate();
 
     if (!_isImportEnabled) return;
-
+    var romSlug = selectedConsole.trim().toLowerCase() +
+        "-" +
+        RomService.normalizeRomTitle(titleController.text.trim(),
+            deleteRunes: true);
+    print(romSlug);
     final romInfo = RomInfo(
-      slug: titleController.text.normalizeForSearch(),
+      slug: romSlug,
       name: titleController.text.trim(),
       portrait: coverController.text.trim().isEmpty
           ? null
@@ -238,7 +243,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
       gameplayCovers: gameplayCoverController.text.trim().isEmpty
           ? null
           : [gameplayCoverController.text.trim()],
-      console: selectedConsole.trim(),
+      console: selectedConsole.trim().toLowerCase(),
       detailsUrl: detailsUrl.trim(),
     );
 
@@ -256,7 +261,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
     final gameplayErr = _gameplayErrorText;
 
     return AlertDialog(
-      title: const Text('Import ROM'),
+      title: const Text('Import Game'),
       insetPadding:
           const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       contentPadding: const EdgeInsets.all(10.0),
@@ -271,7 +276,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DialogSectionItem(
-                  title: "ROM Title",
+                  title: "Game Title",
                   icon: Icons.title,
                   actions: [
                     IconButton(
@@ -291,7 +296,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
                     focusNode: _titleFocus,
                     controller: titleController,
                     decoration: _inputDecoration(
-                      hintText: "Rom title",
+                      hintText: "Game title",
                     ),
                     onFieldSubmitted: (_) {
                       RomScrapeDialog.show(
@@ -336,7 +341,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
                   ),
                 ),
                 DialogSectionItem(
-                  title: "ROM File",
+                  title: "Game Executable/File",
                   icon: Icons.description,
                   actions: [
                     IconButton(
@@ -344,7 +349,7 @@ class _LibraryImportDialogState extends State<LibraryImportDialog> {
                       onPressed: _pickRomPath,
                     ),
                   ],
-                  helperText: fileErr ?? "Select the ROM file to import",
+                  helperText: fileErr ?? "Select the Game file to import",
                   helperTextIsError: fileErr != null,
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

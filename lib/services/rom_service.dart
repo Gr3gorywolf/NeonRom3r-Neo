@@ -46,12 +46,14 @@ class RomService {
     });
   }
 
-  static String normalizeRomTitle(String input) {
+  static String normalizeRomTitle(String input, {bool deleteRunes = false}) {
     final buffer = StringBuffer();
 
     final cleaned =
         input.toLowerCase().replaceAll(RegExp(r'\(.*?\)|\[.*?\]'), '');
-
+    if (deleteRunes == true) {
+      return cleaned.replaceAll(RegExp(r'[^a-zA-Z0-9]+'), '').trim();
+    }
     for (final rune in cleaned.runes) {
       final mapped = StringHelper.unicodeMap[rune];
       if (mapped != null) {

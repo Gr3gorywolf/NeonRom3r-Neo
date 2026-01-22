@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:yamata_launcher/database/app_database.dart';
+import 'package:yamata_launcher/database/daos/library_dao.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/constants/app_constants.dart';
@@ -10,6 +13,8 @@ import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/utils/cached_fetch.dart';
 import 'package:yamata_launcher/utils/plain_text_search.dart';
+
+import '../providers/library_provider.dart';
 
 class RomsRepository {
   Future<List<RomInfo>> fetchRoms(Console console) async {
@@ -76,6 +81,24 @@ class RomsRepository {
     print(searchResults);
     print("Found ${searchResults.length} roms from external sources");
     return allRoms.where((rom) => searchResults.contains(rom.name)).toList();
+  }
+
+  Future<List<RomInfo>> getImportedRoms(String query) async {
+    if (db == null) return [];
+    var importedRoms = await LibraryDao(db!).getImported();
+
+    var importedRomsTitles =
+        importedRoms.map((rom) => rom?.rom.name ?? "").toList();
+    var importedRomsResults = PlainTextSearch.search(query, importedRomsTitles)
+        .map((res) => res.item)
+        .toList();
+    print(importedRomsResults);
+    return importedRoms
+        .where(
+            (libraryRom) => importedRomsResults.contains(libraryRom.rom.name))
+        .toList()
+        .map((e) => e.rom)
+        .toList();
   }
 
   Future<RomInfo?> fetchRomDetails(String infoLink) async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sembast/sembast.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
@@ -10,6 +11,7 @@ import 'package:yamata_launcher/ui/widgets/rom_list.dart';
 import 'package:yamata_launcher/ui/widgets/toolbar.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/utils/filter_helpers.dart';
+import 'package:yamata_launcher/utils/plain_text_search.dart';
 
 class SearchResultsPage extends StatefulWidget {
   String searchQuery = "";
@@ -42,12 +44,25 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     _roms = await new RomsRepository().searchRoms(widget.searchQuery);
     var externalRoms = await new RomsRepository()
         .searchFromExternalSources(widget.searchQuery);
+    var importedRoms =
+        await new RomsRepository().getImportedRoms(widget.searchQuery);
+
+    print(
+        "Found ${_roms!.length} local roms, ${externalRoms.length} external roms, ${importedRoms.length} imported roms for query '${widget.searchQuery}'");
     _roms!.addAll(externalRoms);
+    _roms!.addAll(importedRoms);
+    final map = <String, RomInfo>{};
+
+    for (final e in _roms!) {
+      map[e.slug] = e;
+    }
+
+    final uniqueList = map.values.toList();
     var downloadSourcesProvider =
         Provider.of<DownloadSourcesProvider>(context, listen: false);
-    downloadSourcesProvider.compileRomDownloadSources(_roms ?? []);
+    downloadSourcesProvider.compileRomDownloadSources(uniqueList);
     setState(() {
-      _roms;
+      _roms = uniqueList;
       _isLoading = false;
     });
   }

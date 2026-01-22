@@ -11,17 +11,18 @@ class RomLibraryItem extends JsonSerializable {
   DateTime? downloadedAt;
   String? openParams;
   String? overrideEmulator;
-  RomLibraryItem({
-    required this.rom,
-    this.isFavorite = false,
-    this.playTimeMins = 0.0,
-    this.filePath,
-    this.addedAt,
-    this.lastPlayedAt,
-    this.downloadedAt,
-    this.openParams,
-    this.overrideEmulator,
-  });
+  bool isImported = false;
+  RomLibraryItem(
+      {required this.rom,
+      this.isFavorite = false,
+      this.playTimeMins = 0.0,
+      this.filePath,
+      this.addedAt,
+      this.lastPlayedAt,
+      this.downloadedAt,
+      this.openParams,
+      this.overrideEmulator,
+      this.isImported = false});
 
   RomLibraryItem.fromJson(Map<String, dynamic> json)
       : rom = RomInfo.fromJson(json['rom']),
@@ -37,7 +38,8 @@ class RomLibraryItem extends JsonSerializable {
             ? DateTime.parse(json['downloadedAt'])
             : null,
         openParams = json['openParams'],
-        overrideEmulator = json['overrideEmulator'];
+        overrideEmulator = json['overrideEmulator'],
+        isImported = json['isImported'] ?? false;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -50,6 +52,7 @@ class RomLibraryItem extends JsonSerializable {
     data['downloadedAt'] = this.downloadedAt?.toIso8601String();
     data['openParams'] = this.openParams;
     data['overrideEmulator'] = this.overrideEmulator;
+    data['isImported'] = this.isImported;
     return data;
   }
 }
