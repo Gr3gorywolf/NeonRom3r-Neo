@@ -79,11 +79,15 @@ class ConsoleService {
     }
   }
 
-  static List<Console> getConsoles({unique = false}) {
+  static List<Console> getConsoles(
+      {bool unique = false, bool includeAdditional = false}) {
     var allConsoles = [
       ...consolesFromExternalSources,
       ...ConsoleConstants.defaultConsoles
     ];
+    if (includeAdditional) {
+      allConsoles.addAll(ConsoleConstants.additionalConsoles);
+    }
     if (!unique) {
       return allConsoles;
     }
@@ -95,7 +99,7 @@ class ConsoleService {
   }
 
   static Console? getConsoleFromName(String? name) {
-    var consoles = getConsoles();
+    var consoles = getConsoles(includeAdditional: true);
     var results = consoles.where((element) =>
         element.altName == name ||
         element.name == name ||

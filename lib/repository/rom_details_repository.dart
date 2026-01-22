@@ -1,5 +1,5 @@
 import 'package:yamata_launcher/models/hltb.dart';
-import 'package:yamata_launcher/models/launchbox_rom_details.dart';
+import 'package:yamata_launcher/models/launchbox.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/tgdb.dart';
 import 'package:yamata_launcher/services/scrapers/hltb_scraper.dart';

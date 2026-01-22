@@ -2,9 +2,71 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
-import 'package:yamata_launcher/models/launchbox_rom_details.dart';
+import 'package:yamata_launcher/models/launchbox.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
+import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:yamata_launcher/services/scrapers/constants/launchbox_consoles_mapping.dart';
 
 class LaunchboxScraper {
+  final String baseUrl = "https://gamesdb.launchbox-app.com/";
+  Future<List<RomInfo>> search(String query) async {
+    final res = await http
+        .get(Uri.parse("$baseUrl/games/results/${Uri.encodeComponent(query)}"));
+
+    if (res.statusCode != 200) {
+      return [];
+    }
+
+    final doc = html_parser.parse(res.body);
+    List<RomInfo> results = [];
+    var cards = doc.querySelectorAll("div.games-grid-card");
+    var slugMap = LAUNCHBOX_CONSOLES_MAPPING.entries
+        .fold<Map<String, String>>({}, (map, entry) {
+      map[entry.value.toLowerCase()] = entry.key;
+      return map;
+    });
+    print("Found ${cards.length} cards");
+    for (var card in cards) {
+      try {
+        final aTag = card.querySelector('a.link-no-underline');
+        final detailsUrl = aTag != null ? aTag.attributes['href'] : null;
+
+        final nameTag = card.querySelector('.cardTitle h3');
+        final name = nameTag != null ? nameTag.text.trim() : 'Unknown';
+        final gameplayCovers = <String>[
+          if (card.querySelector('.cardImgPart img') != null)
+            card.querySelector('.cardImgPart img')!.attributes['src'] ?? ''
+        ];
+        final portrait =
+            card.querySelector(".imgOver img")?.attributes['src'] ?? '';
+        final rating = card.querySelector(".ratings-short h6")?.text.trim();
+        final consoleTag = card.querySelector('.cardTitle p')?.text.trim();
+        final consoleSlug = consoleTag != null
+            ? slugMap[consoleTag.toLowerCase()] ?? 'unknown'
+            : 'unknown';
+        print("Parsed card: $name on $consoleSlug $consoleTag");
+        if (consoleSlug == 'unknown') {
+          continue;
+        }
+
+        results.add(RomInfo(
+            slug: consoleSlug + "-" + RomService.normalizeRomTitle(name),
+            detailsUrl: baseUrl + (detailsUrl ?? ''),
+            name: name,
+            console: consoleSlug,
+            gameplayCovers:
+                gameplayCovers.where((url) => url.isNotEmpty).toList(),
+            rating: rating,
+            portrait: portrait));
+      } catch (_) {
+        print("Error parsing card: $_");
+        // Ignore individual parsing errors
+      }
+    }
+
+    return results;
+  }
+
   Future<LaunchboxRomDetails?> detail(String url) async {
     final res = await http.get(Uri.parse(url));
 

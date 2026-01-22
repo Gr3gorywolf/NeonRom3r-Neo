@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/emulator.dart';
+import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/models/rom_library_item.dart';
 import 'package:yamata_launcher/models/toolbar_elements.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/console_service.dart';
+import 'package:yamata_launcher/ui/pages/library/library_import_dialog/library_import_dialog.dart';
 import 'package:yamata_launcher/ui/widgets/console_card.dart';
 import 'package:yamata_launcher/ui/widgets/empty_placeholder.dart';
 import 'package:yamata_launcher/ui/widgets/rom_list.dart';
@@ -79,6 +81,14 @@ class _LibraryPageState extends State<LibraryPage> {
     super.initState();
   }
 
+  handleAddToLibrary(RomInfo info, String filePath) async {
+    var libraryProvider = Provider.of<LibraryProvider>(context, listen: false);
+    var item = libraryProvider.addRomToLibrary(info);
+    item.filePath = filePath;
+    item.addedAt = DateTime.now();
+    await libraryProvider.updateLibraryItem(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     var libraryProvider = LibraryProvider.of(context);
@@ -93,6 +103,11 @@ class _LibraryPageState extends State<LibraryPage> {
     };
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () =>
+              {LibraryImportDialog.show(context, handleAddToLibrary)},
+          label: Text('Add Game'),
+          icon: Icon(Icons.add)),
       appBar: Toolbar(
         onChanged: (values) {
           setState(() {

@@ -14,6 +14,7 @@ import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/dialog_section_item.dart';
 import 'package:yamata_launcher/ui/widgets/duration_picker_dialog.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'package:yamata_launcher/utils/time_helpers.dart';
@@ -181,7 +182,7 @@ class RomSettingsDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SettingItem(
+              DialogSectionItem(
                 padding: EdgeInsets.only(bottom: 0),
                 title: "Rom path",
                 content: Text(
@@ -224,7 +225,7 @@ class RomSettingsDialog extends StatelessWidget {
                       SizedBox(height: 10),
                     ]
                   : [],
-              _SettingItem(
+              DialogSectionItem(
                 title: "Emulator override",
                 content: Text(overrideEmulator.isEmpty
                     ? "Default Emulator"
@@ -244,7 +245,7 @@ class RomSettingsDialog extends StatelessWidget {
                 ],
               ),
               if (!Platform.isAndroid)
-                _SettingItem(
+                DialogSectionItem(
                   title: "Launch parameters",
                   helperText:
                       "Parameters flags used when launching the ROM (if supported by the emulator)",
@@ -272,7 +273,7 @@ class RomSettingsDialog extends StatelessWidget {
                   icon: Icons.terminal,
                   actions: [],
                 ),
-              _SettingItem(
+              DialogSectionItem(
                 title: "Time played",
                 content: Text(TimeHelpers.formatMinutes(
                     libraryItem?.playTimeMins.toInt() ?? 0)),
@@ -337,68 +338,6 @@ class RomSettingsDialog extends StatelessWidget {
           child: Text('Close'),
         ),
       ],
-    );
-  }
-}
-
-class _SettingItem extends StatelessWidget {
-  final String title;
-  final Widget content;
-  final String? helperText;
-  final IconData icon;
-  final EdgeInsetsGeometry? padding;
-  final List<IconButton> actions;
-
-  const _SettingItem(
-      {required this.title,
-      required this.content,
-      this.helperText,
-      required this.icon,
-      required this.actions,
-      this.padding});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: padding ?? const EdgeInsets.only(bottom: 10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(title,
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
-          ),
-          SizedBox(height: 5),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                constraints: BoxConstraints(minHeight: 40),
-                child: Row(
-                  children: [
-                    Icon(icon),
-                    SizedBox(width: 10),
-                    Expanded(child: content),
-                    Row(children: actions)
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (helperText?.isNotEmpty ?? false)
-            Opacity(
-                opacity: 0.7,
-                child: Container(
-                  margin: EdgeInsets.only(bottom: 5, left: 4),
-                  child: Text(helperText ?? '',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
-                )),
-        ],
-      ),
     );
   }
 }

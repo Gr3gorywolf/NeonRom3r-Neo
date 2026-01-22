@@ -4,7 +4,9 @@ import 'package:device_apps/device_apps.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:yamata_launcher/constants/console_constants.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
+import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/models/emulator_setting.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
@@ -26,20 +28,20 @@ class EmulatorSettingsForm extends StatefulWidget {
 }
 
 class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
-  List<String> availableConsoles = [];
+  List<Console> availableConsoles = [];
   String selectedConsole = "";
   String selectedBinary = "";
   @override
   void initState() {
-    availableConsoles = ConsoleService.getConsoles()
-        .map((e) => e.slug ?? "")
-        .where((slug) => !widget.existingConsoles.contains(slug))
-        .toList();
+    availableConsoles =
+        ConsoleService.getConsoles(includeAdditional: true, unique: true)
+            .where((console) => !widget.existingConsoles.contains(console.slug))
+            .toList();
     if (widget.editingSetting != null) {
       selectedConsole = widget.editingSetting!.console;
       selectedBinary = widget.editingSetting!.emulatorBinary;
     } else if (availableConsoles.isNotEmpty) {
-      selectedConsole = availableConsoles.first;
+      selectedConsole = availableConsoles.first.slug ?? "";
     }
 
     super.initState();
@@ -99,11 +101,9 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
           DropdownButtonFormField<String>(
             value: selectedConsole.isNotEmpty ? selectedConsole : null,
             items: availableConsoles
-                .map((consoleSlug) => DropdownMenuItem<String>(
-                      value: consoleSlug,
-                      child: Text(ConsoleService.getConsoleFromName(consoleSlug)
-                              ?.name ??
-                          ""),
+                .map((console) => DropdownMenuItem<String>(
+                      value: console.slug ?? "",
+                      child: Text(console.name ?? ""),
                     ))
                 .toList(),
             onChanged: (value) {

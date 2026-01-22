@@ -134,6 +134,25 @@ class StringHelper {
     return input.replaceAll(invalidChars, '_');
   }
 
+  static String getTitleFromFile(String filePath) {
+    final segments = filePath.split(RegExp(r'[\\/]+'));
+    final fileName = segments.isNotEmpty ? segments.last : filePath;
+
+    final dotIndex = fileName.lastIndexOf('.');
+    final rawTitle =
+        dotIndex != -1 ? fileName.substring(0, dotIndex) : fileName;
+
+    // Remove anything between (), [], {}
+    final cleaned = rawTitle
+        .replaceAll(RegExp(r'\([^)]*\)'), '') // ( ... )
+        .replaceAll(RegExp(r'\[[^\]]*\]'), '') // [ ... ]
+        .replaceAll(RegExp(r'\{[^}]*\}'), '') // { ... }
+        .replaceAll(RegExp(r'\s{2,}'), ' ') // collapse spaces
+        .trim();
+
+    return cleaned;
+  }
+
   static String truncateWithEllipsis(String input, int maxLength) {
     if (input.length <= maxLength) {
       return input;
