@@ -46,7 +46,11 @@ class RomActionButton extends StatelessWidget {
 
     bool getFileExist() {
       if (isReadyToPlay) {
-        return File(libraryItem!.filePath!).existsSync();
+        var filePath = libraryItem!.filePath!;
+        if (Platform.isMacOS && filePath.endsWith(".app")) {
+          return Directory(filePath).existsSync();
+        }
+        return File(filePath).existsSync();
       }
       return false;
     }

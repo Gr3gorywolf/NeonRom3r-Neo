@@ -244,13 +244,8 @@ class EmulatorService {
 
         if (Platform.isMacOS) {
           final execPath = await _resolveMacAppExecutable(emulatorBinary);
-
-          process = await Process.start(
-            execPath,
-            launchParams,
-            mode: ProcessStartMode.detachedWithStdio,
-            workingDirectory: Directory.current.path,
-          );
+          print("resolved emulator binary to ${execPath}");
+          process = await Process.start(execPath, launchParams);
         } else {
           process = await Process.start(emulatorBinary, launchParams);
         }
