@@ -12,6 +12,7 @@ import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/emulator_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/searchable_dropdown_form_field.dart';
 
 class EmulatorSettingsForm extends StatefulWidget {
   final List<String> existingConsoles;
@@ -98,7 +99,7 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DropdownButtonFormField<String>(
+          SearchableDropdownFormField<String>(
             value: selectedConsole.isNotEmpty ? selectedConsole : null,
             items: availableConsoles
                 .map((console) => DropdownMenuItem<String>(

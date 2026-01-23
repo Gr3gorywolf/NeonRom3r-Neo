@@ -55,6 +55,7 @@ dependencies:
       path: package
       ref: master
   text_search: ^1.0.2
+  reactive_forms: ^17.0.1
 
 
 dev_dependencies:

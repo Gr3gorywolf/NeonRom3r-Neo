@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/app_theme.dart';
 import 'package:yamata_launcher/app_theme_dark.dart';
@@ -44,22 +45,29 @@ class MyApp extends StatelessWidget {
         ),
       ],
       builder: (context, wg) {
-        return FilesystemPickerDefaultOptions(
-          fileTileSelectMode: FileTileSelectMode.wholeTile,
-          theme: FilesystemPickerTheme(
-            topBar: FilesystemPickerTopBarThemeData(
-              backgroundColor: appThemeDark.colorScheme.primary,
+        return ReactiveFormConfig(
+          validationMessages: {
+            ValidationMessage.required: (error) => 'Field must not be empty',
+            ValidationMessage.email: (error) => 'Must enter a valid email',
+            "url": (error) => 'Must enter a valid URL',
+          },
+          child: FilesystemPickerDefaultOptions(
+            fileTileSelectMode: FileTileSelectMode.wholeTile,
+            theme: FilesystemPickerTheme(
+              topBar: FilesystemPickerTopBarThemeData(
+                backgroundColor: appThemeDark.colorScheme.primary,
+              ),
             ),
+            child: Builder(builder: (context) {
+              var appProvider = Provider.of<AppProvider>(context);
+              return MaterialApp.router(
+                  routerConfig: router,
+                  title: 'yamata_launcher',
+                  themeMode: appProvider.themeMode,
+                  theme: appThemeLight,
+                  darkTheme: appThemeDark);
+            }),
           ),
-          child: Builder(builder: (context) {
-            var appProvider = Provider.of<AppProvider>(context);
-            return MaterialApp.router(
-                routerConfig: router,
-                title: 'yamata_launcher',
-                themeMode: appProvider.themeMode,
-                theme: appThemeLight,
-                darkTheme: appThemeDark);
-          }),
         );
       },
     );

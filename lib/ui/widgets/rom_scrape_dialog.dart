@@ -89,7 +89,7 @@ class _RomScrapeDialogState extends State<RomScrapeDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        'REsults for "${StringHelper.truncateWithEllipsis(widget.query, 23)}"',
+        'Results for "${StringHelper.truncateWithEllipsis(widget.query, 23)}"',
         textWidthBasis: TextWidthBasis.parent,
       ),
       content: SingleChildScrollView(
