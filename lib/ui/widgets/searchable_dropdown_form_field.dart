@@ -110,30 +110,17 @@ class _SearchableDropdownBodyState<T>
   Future<void> _openPicker() async {
     if (!widget.enabled) return;
 
-    final theme = Theme.of(context);
-    final pickerTheme = widget.disableRipple
-        ? theme.copyWith(
-            splashFactory: NoSplash.splashFactory,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-          )
-        : theme;
-
     final selected = await showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => Theme(
-        data: pickerTheme,
-        child: _SearchPickerSheet<T>(
-          items: widget.items,
-          selectedValue: widget.state.value,
-          itemLabel: _itemLabel,
-          searchCtrl: _searchCtrl,
-          searchHintText: widget.searchHintText,
-          maxHeight: widget.menuMaxHeight,
-        ),
+      builder: (_) => _SearchPickerSheet<T>(
+        items: widget.items,
+        selectedValue: widget.state.value,
+        itemLabel: _itemLabel,
+        searchCtrl: _searchCtrl,
+        searchHintText: widget.searchHintText,
+        maxHeight: widget.menuMaxHeight,
       ),
     );
 

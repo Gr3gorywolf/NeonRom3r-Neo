@@ -126,7 +126,10 @@ class _EmulatorSettingsPageState extends State<EmulatorSettingsPage> {
                                 ?.name ??
                             ""),
                     subtitle: Opacity(
-                        opacity: 0.6, child: Text(setting.emulatorBinary)),
+                        opacity: 0.6,
+                        child: Text(setting.emulatorBinary.isEmpty
+                            ? "No binary set (Direct launch)"
+                            : setting.emulatorBinary)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

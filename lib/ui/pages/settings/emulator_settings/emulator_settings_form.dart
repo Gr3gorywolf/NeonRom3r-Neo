@@ -11,7 +11,9 @@ import 'package:yamata_launcher/models/emulator_setting.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/console_service.dart';
 import 'package:yamata_launcher/services/emulator_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/ui/widgets/app_selection_dialog.dart';
+import 'package:yamata_launcher/ui/widgets/dialog_section_item.dart';
 import 'package:yamata_launcher/ui/widgets/searchable_dropdown_form_field.dart';
 
 class EmulatorSettingsForm extends StatefulWidget {
@@ -30,6 +32,8 @@ class EmulatorSettingsForm extends StatefulWidget {
 
 class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
   List<Console> availableConsoles = [];
+  var launchParametersController = TextEditingController();
+  var selectedBinaryController = TextEditingController();
   String selectedConsole = "";
   String selectedBinary = "";
   @override
@@ -40,7 +44,8 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
             .toList();
     if (widget.editingSetting != null) {
       selectedConsole = widget.editingSetting!.console;
-      selectedBinary = widget.editingSetting!.emulatorBinary;
+      selectedBinaryController.text = widget.editingSetting!.emulatorBinary;
+      launchParametersController.text = widget.editingSetting!.launchParams;
     } else if (availableConsoles.isNotEmpty) {
       selectedConsole = availableConsoles.first.slug ?? "";
     }
@@ -56,7 +61,7 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
           filteredApps: consoleEmulators);
       if (result != null) {
         setState(() {
-          selectedBinary = result.packageName;
+          selectedBinaryController.text = result.packageName;
         });
       }
       return;
@@ -75,7 +80,9 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
   }
 
   void handleSave() {
-    if (selectedConsole.isEmpty || selectedBinary.isEmpty) {
+    if (selectedConsole.isEmpty ||
+        (selectedBinaryController.text.isEmpty &&
+            !FileSystemService.isDesktop)) {
       AlertsService.showErrorSnackbar(
           "Please select a console and emulator binary path",
           ctx: context);
@@ -83,7 +90,8 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
     }
     EmulatorSetting setting = EmulatorSetting(
       console: selectedConsole,
-      emulatorBinary: selectedBinary,
+      emulatorBinary: selectedBinaryController.text,
+      launchParams: launchParametersController.text,
     );
     widget.onSubmit(setting);
     Navigator.of(context).pop();
@@ -92,44 +100,105 @@ class _EmulatorSettingsFormState extends State<EmulatorSettingsForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Emulator Setting'),
+      title: Text(
+          '${widget.editingSetting == null ? "Add" : "Edit"} Emulator Setting'),
       insetPadding:
           const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
       contentPadding: const EdgeInsets.all(15.0),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SearchableDropdownFormField<String>(
-            value: selectedConsole.isNotEmpty ? selectedConsole : null,
-            items: availableConsoles
-                .map((console) => DropdownMenuItem<String>(
-                      value: console.slug ?? "",
-                      child: Text(console.name ?? ""),
-                    ))
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedConsole = value ?? "";
-              });
-            },
-          ),
-          SizedBox(height: 22),
-          ElevatedButton.icon(
-            onPressed: handleSelectEmulatorBinary,
-            label: Text(
-                "Select Emulator ${Platform.isAndroid ? "application" : "binary"}"),
-            icon: Icon(Icons.videogame_asset),
-          ),
-          if (selectedBinary.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                selectedBinary,
-                maxLines: 4,
-                style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+      content: Container(
+        constraints: BoxConstraints(
+          minWidth: 300,
+          maxWidth: 400,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DialogSectionItem(
+              title: "Console",
+              icon: Icons.gamepad,
+              actions: [],
+              content: SearchableDropdownFormField<String>(
+                value: selectedConsole.isNotEmpty ? selectedConsole : null,
+                items: availableConsoles
+                    .map((console) => DropdownMenuItem<String>(
+                          value: console.slug ?? "",
+                          child: Text(console.name ?? ""),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedConsole = value ?? "";
+                  });
+                },
               ),
             ),
-        ],
+            DialogSectionItem(
+              title:
+                  "Emulator ${Platform.isAndroid ? "application" : "binary"}",
+              icon: Icons.videogame_asset,
+              helperText:
+                  "Select the emulator ${Platform.isAndroid ? "application" : "binary"} to be used for the selected console. ${FileSystemService.isDesktop ? " If no binary is selected will launch the game directly (Useful for desktop Games)" : ""}.",
+              actions: [
+                if (selectedBinary.isNotEmpty)
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedBinary = "";
+                        });
+                      },
+                      icon: Icon(Icons.clear)),
+                IconButton(
+                    onPressed: handleSelectEmulatorBinary,
+                    icon: Icon(Icons.file_open))
+              ],
+              content: TextField(
+                controller: selectedBinaryController,
+                enabled: FileSystemService.isDesktop,
+                decoration: InputDecoration(
+                  hintText: "Emulator binary path",
+                  helperMaxLines: 3,
+                  helperStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: (text) {
+                  setState(() {});
+                },
+              ),
+            ),
+            DialogSectionItem(
+              title: "Launch parameters",
+              helperText:
+                  "Parameters flags used when launching the ROM (if supported by the emulator)",
+              icon: Icons.terminal,
+              actions: [],
+              content: TextField(
+                controller: launchParametersController,
+                decoration: InputDecoration(
+                  hintText: "Custom launch parameters",
+                  helperMaxLines: 3,
+                  helperStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 7),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: (text) {
+                  setState(() {});
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

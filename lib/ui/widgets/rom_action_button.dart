@@ -72,7 +72,14 @@ class RomActionButton extends StatelessWidget {
     }
 
     Future<void> handleButtonPress() async {
-      if (isPlaying) return;
+      if (isPlaying) {
+        if (FileSystemService.isDesktop) {
+          EmulatorService.closeRunningRom(rom.slug);
+          AlertsService.showSnackbar("Closing ${rom.name}...");
+        }
+
+        return;
+      }
 
       if (isDownloading) {
         var downloadInfo = provider.getDownloadInfo(rom);
@@ -159,7 +166,6 @@ class RomActionButton extends StatelessWidget {
         break;
     }
 
-    // ⭐ padding separado
     final padding = EdgeInsets.symmetric(
       horizontal: horizontalPadding,
       vertical: verticalPadding,
@@ -169,8 +175,8 @@ class RomActionButton extends StatelessWidget {
     var text = "No downloads";
 
     if (isPlaying) {
-      icon = Icons.videogame_asset;
-      text = "Playing";
+      icon = FileSystemService.isDesktop ? Icons.close : Icons.videogame_asset;
+      text = FileSystemService.isDesktop ? "Close" : "Playing";
     } else if (isDownloading) {
       icon = Icons.stop;
       text = "Cancel";
@@ -197,10 +203,10 @@ class RomActionButton extends StatelessWidget {
         style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
       ),
       style: ElevatedButton.styleFrom(padding: padding),
-      onPressed:
-          (hasDownloadSources || isReadyToPlay || isDownloading) && !isPlaying
-              ? handleButtonPress
-              : null,
+      onPressed: (hasDownloadSources || isReadyToPlay || isDownloading) ||
+              (isPlaying && FileSystemService.isDesktop)
+          ? handleButtonPress
+          : null,
     );
   }
 }

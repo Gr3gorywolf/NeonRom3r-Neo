@@ -18,11 +18,13 @@ import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:android_intent_plus/flag.dart' as flag;
 import 'package:yamata_launcher/services/rom_service.dart';
+import 'package:path/path.dart' as p;
 
 enum EmulatorLaunchResult { success, failedToLaunch, needsExtraction }
 
 class EmulatorService {
   static Map<String, Timer> _activeGames = {};
+  static Map<String, Process> _activeGamesProcesses = {};
   static Map<String, Map<String, String>> _emulatorIntents = {};
 
   /**
@@ -124,6 +126,41 @@ class EmulatorService {
   }
 
   /**
+   * Resolves the executable path inside a macOS .app bundle.
+   */
+  static Future<String> _resolveMacAppExecutable(String appPath) async {
+    if (!appPath.endsWith('.app')) {
+      throw ArgumentError('Expected a .app bundle path, got: $appPath');
+    }
+
+    final macOSDir = Directory(p.join(appPath, 'Contents', 'MacOS'));
+    if (!await macOSDir.exists()) {
+      throw StateError(
+          'Invalid macOS app bundle (missing Contents/MacOS): $appPath');
+    }
+
+    final candidates = await macOSDir
+        .list(followLinks: false)
+        .where((e) => e is File)
+        .cast<File>()
+        .toList();
+
+    if (candidates.isEmpty) {
+      throw StateError('No executable found inside: ${macOSDir.path}');
+    }
+
+    return candidates.first.path;
+  }
+
+  static closeRunningRom(String slug) {
+    if (_activeGamesProcesses.containsKey(slug)) {
+      _activeGamesProcesses[slug]?.kill();
+      _activeGamesProcesses.remove(slug);
+    }
+    return Future.value();
+  }
+
+  /**
    * Opens a ROM using the configured emulator.
    */
   static Future openRom(RomLibraryItem download) async {
@@ -169,18 +206,26 @@ class EmulatorService {
     _activeGames[slug] = stopWatch;
 
     final openParams = download.openParams ?? "";
-    final filePath = download.filePath ?? "";
-
-    final launchParams = <String>[
-      if (openParams.isNotEmpty) openParams,
-      filePath,
-    ];
+    var filePath = download.filePath ?? "";
 
     final overrideEmulator = download.overrideEmulator;
-    final emulatorBinary =
+    var emulatorBinary =
         (overrideEmulator != null && overrideEmulator.isNotEmpty)
             ? overrideEmulator
             : emulatorSetting.emulatorBinary;
+    // If the emulator binary is empty and its desktop then its a direct launch
+    if (emulatorBinary.isEmpty &&
+        !filePath.isEmpty &&
+        FileSystemService.isDesktop) {
+      emulatorBinary = filePath;
+      filePath = "";
+    }
+
+    final launchParams = <String>[
+      if (emulatorSetting.launchParams.isNotEmpty) emulatorSetting.launchParams,
+      if (openParams.isNotEmpty) openParams,
+      filePath,
+    ];
 
     print("Launching emulator $emulatorBinary with params: $launchParams");
 
@@ -198,11 +243,18 @@ class EmulatorService {
         final Process process;
 
         if (Platform.isMacOS) {
+          final execPath = await _resolveMacAppExecutable(emulatorBinary);
+
           process = await Process.start(
-              "open", ["-W", "-a", emulatorBinary, ...launchParams]);
+            execPath,
+            launchParams,
+            mode: ProcessStartMode.detachedWithStdio,
+            workingDirectory: Directory.current.path,
+          );
         } else {
           process = await Process.start(emulatorBinary, launchParams);
         }
+        _activeGamesProcesses[slug] = process;
 
         await process.exitCode;
       }
@@ -210,6 +262,9 @@ class EmulatorService {
       AlertsService.showErrorSnackbar("Failed to open the rom", exception: err);
     } finally {
       final activeTimer = _activeGames[slug];
+      if (_activeGamesProcesses[slug] != null) {
+        _activeGamesProcesses.remove(slug);
+      }
       if (activeTimer != null) {
         activeTimer.cancel();
         _activeGames.remove(slug);

@@ -193,10 +193,11 @@ class RomSettingsDialog extends StatelessWidget {
                       ? []
                       : [
                           IconButton(
-                              icon: Icon(Icons.settings_backup_restore),
+                              icon: Icon(Icons.clear),
                               onPressed: _removeRomPath),
                         ],
-                  IconButton(icon: Icon(Icons.edit), onPressed: _pickRomPath)
+                  IconButton(
+                      icon: Icon(Icons.file_open), onPressed: _pickRomPath)
                 ],
               ),
               ...!_downloadPath.isEmpty
@@ -236,11 +237,11 @@ class RomSettingsDialog extends StatelessWidget {
                       ? []
                       : [
                           IconButton(
-                              icon: Icon(Icons.settings_backup_restore),
+                              icon: Icon(Icons.clear),
                               onPressed: _restoreEmulator),
                         ],
                   IconButton(
-                      icon: Icon(Icons.edit),
+                      icon: Icon(Icons.file_open),
                       onPressed: () => _pickEmulatorBinary()),
                 ],
               ),
