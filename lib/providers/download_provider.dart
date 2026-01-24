@@ -71,16 +71,15 @@ class DownloadProvider extends ChangeNotifier {
   }
 
   Future<void> addRomDownloadToQueue(
-    RomInfo rom,
-    DownloadSourceRom source,
-    Aria2DownloadHandle handle,
-  ) async {
+      RomInfo rom, DownloadSourceRom source, Aria2DownloadHandle handle,
+      {bool isExtraContent = false}) async {
     final downloadId = handle.id;
     final info = DownloadInfo(
       romSlug: rom.slug,
       downloadId: downloadId,
       downloadPercent: 0,
       romInfo: rom,
+      isExtraContent: isExtraContent,
       downloadInfo: 'Starting download...',
     );
 
@@ -223,7 +222,9 @@ class DownloadProvider extends ChangeNotifier {
       await libraryProvider.addLibraryItem(libraryItem);
       return;
     }
-    libraryItem.filePath = path;
+    if (!download.isExtraContent) {
+      libraryItem.filePath = path;
+    }
     libraryItem.downloadedAt = DateTime.now();
     if (Platform.isAndroid) {
       MediaScanner.loadMedia(path: path);
@@ -353,7 +354,7 @@ class DownloadProvider extends ChangeNotifier {
         MediaScanner.loadMedia(path: extractedFile.path);
         MediaScanner.loadMedia(path: extractedFile.parent.path);
       }
-      if (libraryItem != null) {
+      if (libraryItem != null && !download.isExtraContent) {
         libraryItem.filePath = extractedFile.path;
         libraryProvider.updateLibraryItem(libraryItem);
       }

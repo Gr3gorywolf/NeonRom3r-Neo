@@ -1,12 +1,15 @@
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/services/native/aria2c_android_interface.dart';
+import 'package:yamata_launcher/services/native/intents_android_interface.dart';
 import 'package:yamata_launcher/services/native/system_paths_android_interface.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
 import 'package:path_provider/path_provider.dart';
@@ -124,6 +127,34 @@ class FileSystemService {
         await FilePicker.platform.pickFiles(type: FileType.any);
     if (selectedFiles == null || selectedFiles.files.isEmpty) return null;
     return selectedFiles.files.first.path!;
+  }
+
+  /**
+   * Opens the file explorer at the folder containing the specified file.
+   */
+  static Future openFileFolder(String filePath) async {
+    final fileFolder = p.dirname(filePath);
+
+    if (fileFolder.isEmpty) return;
+    if (Platform.isAndroid) {
+      var intentUri = await IntentsAndroidInterface.getIntentUri(fileFolder);
+      final intent = AndroidIntent(
+        action: 'android.intent.action.VIEW',
+        data: intentUri,
+        flags: <int>[
+          0x10000000,
+          0x00000001,
+        ],
+        type: 'vnd.android.document/directory',
+      );
+
+      await intent.launch();
+    } else {
+      final uri = Uri.file(fileFolder);
+      if (!await launchUrl(uri)) {
+        throw Exception('Failed to open folder $fileFolder');
+      }
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ class DownloadInfo {
   String? downloadInfo;
   bool isExtracting;
   RomInfo? romInfo;
+  bool isExtraContent;
   bool get isCompleted {
     return downloadPercent == 100;
   }
@@ -17,6 +18,7 @@ class DownloadInfo {
       this.downloadPercent,
       this.downloadId,
       this.romInfo,
+      this.isExtraContent = false,
       this.isExtracting = false,
       this.downloadInfo});
 }

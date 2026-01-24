@@ -66,15 +66,6 @@ class RomListItem extends StatelessWidget {
       }
     }
 
-    iconButtonStyle() {
-      return IconButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.inverseSurface,
-          padding: EdgeInsets.all(4),
-          minimumSize: Size(35, 35));
-    }
-
-    buildRating({String? rating, double size = 10}) {}
-
     /// List Item View
     if (itemType == RomListItemType.listItem) {
       return InkWell(

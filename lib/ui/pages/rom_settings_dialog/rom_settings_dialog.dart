@@ -99,28 +99,7 @@ class RomSettingsDialog extends StatelessWidget {
     }
 
     _handleOpenFolder() async {
-      final romFolder = p.dirname(libraryItem?.filePath ?? '');
-
-      if (romFolder.isEmpty) return;
-      if (Platform.isAndroid) {
-        var intentUri = await IntentsAndroidInterface.getIntentUri(romFolder);
-        final intent = AndroidIntent(
-          action: 'android.intent.action.VIEW',
-          data: intentUri,
-          flags: <int>[
-            0x10000000, // FLAG_ACTIVITY_NEW_TASK
-            0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-          ],
-          type: 'vnd.android.document/directory',
-        );
-
-        await intent.launch();
-      } else {
-        final uri = Uri.file(romFolder);
-        if (!await launchUrl(uri)) {
-          throw Exception('Failed to open folder $romFolder');
-        }
-      }
+      FileSystemService.openFileFolder(libraryItem?.filePath ?? "");
     }
 
     _handleExtractRom() async {

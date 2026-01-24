@@ -19,8 +19,8 @@ import 'package:yamata_launcher/utils/system_helpers.dart';
 import 'aria2c/aria2c_download_manager.dart';
 
 class DownloadService {
-  downloadRom(
-      BuildContext context, RomInfo rom, DownloadSourceRom sourceRom) async {
+  downloadRom(BuildContext context, RomInfo rom, DownloadSourceRom sourceRom,
+      {isExtraContent = false}) async {
     var downloadsPath = FileSystemService.downloadsPath;
     if (!await Directory(downloadsPath).exists()) {
       await Directory(downloadsPath).create();
@@ -30,8 +30,9 @@ class DownloadService {
       source: sourceRom,
       aria2cPath: FileSystemService.aria2cPath,
     );
-    Provider.of<DownloadProvider>(context, listen: false)
-        .addRomDownloadToQueue(rom, sourceRom, handle);
+    Provider.of<DownloadProvider>(context, listen: false).addRomDownloadToQueue(
+        rom, sourceRom, handle,
+        isExtraContent: isExtraContent);
   }
 
   void catchRomPortrait(RomInfo romInfo) async {

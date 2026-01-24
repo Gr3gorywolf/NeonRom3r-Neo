@@ -14,10 +14,12 @@ import 'package:yamata_launcher/services/rom_service.dart';
 
 class RomDownloadSourcesDialog extends StatelessWidget {
   final RomInfo rom;
+  final bool showRomLocate;
 
   const RomDownloadSourcesDialog({
     Key? key,
     required this.rom,
+    this.showRomLocate = true,
   }) : super(key: key);
 
   @override
@@ -86,10 +88,11 @@ class RomDownloadSourcesDialog extends StatelessWidget {
               ),
       ),
       actions: [
-        TextButton(
-          onPressed: locateAndAddToLibrary,
-          child: const Text('Locate rom file'),
-        ),
+        if (showRomLocate)
+          TextButton(
+            onPressed: locateAndAddToLibrary,
+            child: const Text('Locate rom file'),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Close'),
