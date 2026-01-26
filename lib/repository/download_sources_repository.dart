@@ -23,7 +23,9 @@ class DownloadSourcesRepository {
 
         return DownloadSourceWithDownloads(
             sourceInfo: DownloadSource(
-                title: responseData['title'] ?? "Unknown",
+                title: responseData['title'] ??
+                    responseData['sourceInfo']['title'] ??
+                    "Unknown",
                 romsCount: downloads.length,
                 lastUpdated: lastDownloadDate.toIso8601String()),
             downloads: downloads);

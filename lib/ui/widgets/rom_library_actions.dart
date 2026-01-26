@@ -167,23 +167,6 @@ class RomLibraryActions extends StatelessWidget {
         ),
         Container(
           width: contentWidth,
-          child: IconButton(
-            iconSize: iconSize,
-            style: iconButtonStyle(),
-            icon: Icon(Icons.tune),
-            onPressed: () {
-              handleOpenConfigurations();
-            },
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(),
-            color: Colors.grey,
-          ),
-        ),
-        SizedBox(
-          width: spacing,
-        ),
-        Container(
-          width: contentWidth,
           child: PopupMenuButton<_RomMenuAction>(
             iconSize: iconSize,
             icon: const Icon(Icons.more_vert, color: Colors.grey),
@@ -212,8 +195,19 @@ class RomLibraryActions extends StatelessWidget {
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem<_RomMenuAction>(
+                  value: _RomMenuAction.settings,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.tune, size: 20),
+                      SizedBox(width: 10),
+                      Text("Game settings"),
+                    ],
+                  )),
               if (libraryItem.filePath != null &&
-                  libraryItem.filePath!.isNotEmpty)
+                  libraryItem.filePath!.isNotEmpty &&
+                  downloadSourcesProvider.getRomSources(rom.slug).isNotEmpty)
                 PopupMenuItem<_RomMenuAction>(
                   value: _RomMenuAction.downloadExtra,
                   child: Row(
