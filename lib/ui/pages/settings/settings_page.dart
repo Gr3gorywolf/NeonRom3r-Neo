@@ -223,15 +223,16 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             // Behavior section
             const _SectionHeader(title: 'Behavior'),
-            _SwitchTile(
-              icon: Icons.close,
-              title: 'Close to system tray',
-              subtitle:
-                  "When closing the app, minimize it to the system tray instead of exiting",
-              value: _closeToSystemTray,
-              onChanged: (v) =>
-                  _setSetting(SettingsKeys.CLOSE_TO_SYSTEM_TRAY, v),
-            ),
+            if (FileSystemService.isDesktop)
+              _SwitchTile(
+                icon: Icons.close,
+                title: 'Close to system tray',
+                subtitle:
+                    "When closing the app, minimize it to the system tray instead of exiting",
+                value: _closeToSystemTray,
+                onChanged: (v) =>
+                    _setSetting(SettingsKeys.CLOSE_TO_SYSTEM_TRAY, v),
+              ),
             _SwitchTile(
               icon: Icons.drive_file_move,
               title: 'Extract roms after download',

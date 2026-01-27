@@ -16,17 +16,18 @@ def flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "
 def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
 
 android {
-    namespace = "com.example.yamata_launcher"
+    namespace = "com.gr3gorywolf.yamata_launcher"
 
     compileSdkVersion flutter.compileSdkVersion
 
     defaultConfig {
-        applicationId "com.example.yamata_launcher"
+        applicationId "com.gr3gorywolf.yamata_launcher"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        resValue "string", "app_name", "Yamata Launcher"
     }
 
     buildTypes {

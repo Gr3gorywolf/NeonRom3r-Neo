@@ -120,7 +120,7 @@ class _MyAppState extends State<MyApp> with WindowListener, TrayListener {
               var appProvider = Provider.of<AppProvider>(context);
               return MaterialApp.router(
                   routerConfig: router,
-                  title: 'yamata_launcher',
+                  title: 'Yamata Launcher',
                   themeMode: appProvider.themeMode,
                   theme: appThemeLight,
                   darkTheme: appThemeDark);

@@ -1,4 +1,4 @@
-package com.example.yamata_launcher.utils
+package com.gr3gorywolf.yamata_launcher.utils
 
 import net.sf.sevenzipjbinding.*
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream

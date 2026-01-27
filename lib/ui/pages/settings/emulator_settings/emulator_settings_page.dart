@@ -73,8 +73,8 @@ class _EmulatorSettingsPageState extends State<EmulatorSettingsPage> {
                 return;
               }
               await EmulatorSettingsDao(db!).update(updatedSetting);
-              int index = emulatorSettings.indexWhere(
-                  (element) => element.console == updatedSetting.console);
+              int index = emulatorSettings
+                  .indexWhere((element) => element.console == setting.console);
               if (index != -1) {
                 emulatorSettings[index] = updatedSetting;
                 setState(() {});

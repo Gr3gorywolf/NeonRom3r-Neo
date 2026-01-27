@@ -1,4 +1,4 @@
-package com.example.yamata_launcher
+package com.gr3gorywolf.yamata_launcher
 
 
 import android.content.Context
@@ -10,8 +10,8 @@ import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import android.os.Environment
 import java.io.File
-import com.example.yamata_launcher.utils.ZipUtils
-import com.example.yamata_launcher.utils.SevenZipHelper
+import com.gr3gorywolf.yamata_launcher.utils.ZipUtils
+import com.gr3gorywolf.yamata_launcher.utils.SevenZipHelper
 import android.content.Intent
 import android.net.Uri
 

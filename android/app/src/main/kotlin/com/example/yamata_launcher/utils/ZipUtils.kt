@@ -1,4 +1,4 @@
-package com.example.yamata_launcher.utils
+package com.gr3gorywolf.yamata_launcher.utils
 
 import android.system.Os
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
