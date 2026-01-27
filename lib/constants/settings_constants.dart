@@ -11,7 +11,8 @@ enum SettingsKeys {
   ENABLE_NOTIFICATIONS,
   ENABLE_EXTRACTION,
   MAX_CONCURRENT_EXTRACTIONS,
-  DARK_MODE_ENABLED
+  DARK_MODE_ENABLED,
+  CLOSE_TO_SYSTEM_TRAY
 }
 
 final _systemIsDarkThemed =
@@ -52,5 +53,10 @@ Map<SettingsKeys, Setting> settingsRegistry = {
     key: 'max_concurrent_extractions',
     type: SettingType.int,
     defaultValue: FileSystemService.isDesktop ? 4 : 2,
+  ),
+  SettingsKeys.CLOSE_TO_SYSTEM_TRAY: Setting<bool>(
+    key: 'close_to_system_tray',
+    type: SettingType.bool,
+    defaultValue: true,
   ),
 };

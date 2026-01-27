@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:yamata_launcher/database/app_database.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
@@ -15,6 +16,7 @@ import 'package:yamata_launcher/services/notifications_service.dart';
 import 'package:provider/provider.dart';
 import 'package:yamata_launcher/providers/app_provider.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
+import 'package:yamata_launcher/services/system_tray_service.dart';
 import 'package:yamata_launcher/utils/animation_helper.dart';
 import 'package:yamata_launcher/services/assets_service.dart';
 import 'package:yamata_launcher/services/download_service.dart';
@@ -36,7 +38,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
   initApp() async {
     WidgetsFlutterBinding.ensureInitialized();
     PaintingBinding.instance.imageCache.maximumSize = 100;
-    PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20; // 50MB
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20;
     await Provider.of<AppProvider>(context, listen: false).setupTheme();
     await FileSystemService.initPaths();
     await initPlugins();
@@ -60,6 +62,9 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
     await NotificationsService.init();
     if (Platform.isAndroid) {
       await Aria2cAndroidInterface.init();
+    }
+    if (FileSystemService.isDesktop) {
+      await SystemTrayService.initialize();
     }
   }
 

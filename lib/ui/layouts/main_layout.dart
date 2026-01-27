@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../app_theme_dark.dart';
+import 'package:tray_manager/tray_manager.dart';
 import '../../services/assets_service.dart';
 import '../../utils/screen_helpers.dart';
 
-class MainLayout extends StatelessWidget {
+class MainLayout extends StatefulWidget {
   final Widget child;
 
   const MainLayout({super.key, required this.child});
@@ -17,8 +16,13 @@ class MainLayout extends StatelessWidget {
     '/settings',
   ];
 
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> with TrayListener {
   int _locationToIndex(String location) {
-    return _routes.indexWhere((e) => location.startsWith(e));
+    return MainLayout._routes.indexWhere((e) => location.startsWith(e));
   }
 
   @override
@@ -72,7 +76,7 @@ class MainLayout extends StatelessWidget {
                 )
                 .toList(),
             onDestinationSelected: (index) {
-              context.go(_routes[index]);
+              context.go(MainLayout._routes[index]);
             },
           ),
           VerticalDivider(
@@ -80,13 +84,13 @@ class MainLayout extends StatelessWidget {
             width: 1,
             color: Theme.of(context).colorScheme.outlineVariant,
           ),
-          Expanded(child: child),
+          Expanded(child: widget.child),
         ],
       );
     }
 
     return Scaffold(
-      body: isSmallScreen ? child : buildDesktopLayout(),
+      body: isSmallScreen ? widget.child : buildDesktopLayout(),
       bottomNavigationBar: isSmallScreen
           ? Container(
               padding: const EdgeInsets.only(top: 5),
@@ -102,7 +106,7 @@ class MainLayout extends StatelessWidget {
                 currentIndex: currentIndex,
                 showUnselectedLabels: true,
                 onTap: (index) {
-                  context.go(_routes[index]);
+                  context.go(MainLayout._routes[index]);
                 },
                 items: navigationItems
                     .map(

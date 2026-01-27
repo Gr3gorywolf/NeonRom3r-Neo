@@ -56,6 +56,13 @@ dependencies:
       ref: master
   text_search: ^1.0.2
   reactive_forms: ^17.0.1
+  window_manager: 0.4.3
+  windows_taskbar: ^1.1.2
+  tray_manager:
+    git:
+      url: https://github.com/cbenhagen/tray_manager.git
+      path: packages/tray_manager
+      ref: fix-windows-context-menu-close
 
 
 dev_dependencies:

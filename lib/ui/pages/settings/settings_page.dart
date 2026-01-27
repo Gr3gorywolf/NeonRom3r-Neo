@@ -33,6 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _enableNotifications = false;
   bool _enableImageCaching = false;
   bool _extractRomsAfterDownload = false;
+  bool _closeToSystemTray = false;
 
   @override
   void initState() {
@@ -56,7 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
         await SettingsService().get<bool>(SettingsKeys.ENABLE_IMAGE_CACHING);
     _extractRomsAfterDownload =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
-
+    _closeToSystemTray =
+        await SettingsService().get<bool>(SettingsKeys.CLOSE_TO_SYSTEM_TRAY);
     setState(() {});
   }
 
@@ -167,7 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //Theming
-            const _SectionHeader(title: 'Sources'),
+            const _SectionHeader(title: 'Theming'),
             Consumer<AppProvider>(
               builder: (context, appProvider, child) => _SwitchTile(
                 icon: Icons.dark_mode,
@@ -219,8 +221,17 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (v) =>
                   _setSetting(SettingsKeys.PREFIX_CONSOLE_SLUG, v),
             ),
-            // Downloads section
-            const _SectionHeader(title: 'Downloads'),
+            // Behavior section
+            const _SectionHeader(title: 'Behavior'),
+            _SwitchTile(
+              icon: Icons.close,
+              title: 'Close to system tray',
+              subtitle:
+                  "When closing the app, minimize it to the system tray instead of exiting",
+              value: _closeToSystemTray,
+              onChanged: (v) =>
+                  _setSetting(SettingsKeys.CLOSE_TO_SYSTEM_TRAY, v),
+            ),
             _SwitchTile(
               icon: Icons.drive_file_move,
               title: 'Extract roms after download',

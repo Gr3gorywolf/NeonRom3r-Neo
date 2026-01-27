@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:windows_taskbar/windows_taskbar.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/constants/files_constants.dart';
 import 'package:yamata_launcher/constants/settings_constants.dart';
@@ -13,6 +14,7 @@ import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:yamata_launcher/services/alerts_service.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_client.dart';
 import 'package:yamata_launcher/services/aria2c/aria2c_utils.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
 import 'package:yamata_launcher/services/notifications_service.dart';
 import 'package:yamata_launcher/services/rom_service.dart';
 import 'package:yamata_launcher/services/settings_service.dart';
@@ -23,6 +25,7 @@ import 'package:yamata_launcher/models/download_info.dart';
 import 'package:yamata_launcher/models/download_source_rom.dart';
 import 'package:yamata_launcher/models/rom_info.dart';
 import 'package:yamata_launcher/services/extraction_service.dart';
+import 'package:yamata_launcher/services/system_tray_service.dart';
 import 'package:yamata_launcher/utils/string_helper.dart';
 import 'package:yamata_launcher/utils/system_helpers.dart';
 
@@ -45,6 +48,7 @@ class DownloadProvider extends ChangeNotifier {
     return Provider.of<DownloadProvider>(ctx);
   }
 
+  static var _currentTaskbarProgressMode = TaskbarProgressMode.noProgress;
   final Map<String?, _ActiveAria2Download> _aria2cDownloadProcesses = {};
   final List<DownloadInfo> _activeDownloadInfos = [];
 
@@ -52,6 +56,17 @@ class DownloadProvider extends ChangeNotifier {
 
   bool isRomDownloading(RomInfo rom) {
     return activeDownloadInfos.any((d) => d.romSlug == rom.slug);
+  }
+
+  double get totalDownloadPercent {
+    if (_activeDownloadInfos.isEmpty) {
+      return 0;
+    }
+    final total = _activeDownloadInfos.fold<int>(
+        0,
+        (previousValue, element) =>
+            previousValue + (element.downloadPercent ?? 0));
+    return total / _activeDownloadInfos.length;
   }
 
   DownloadInfo? getDownloadInfo(RomInfo? rom) {
@@ -110,7 +125,7 @@ class DownloadProvider extends ChangeNotifier {
       handle: handle,
       sub: sub,
     );
-
+    _handleProgressChanged();
     notifyListeners();
   }
 
@@ -123,6 +138,7 @@ class DownloadProvider extends ChangeNotifier {
       _activeDownloadInfos
           .removeWhere((element) => element.downloadId == info.downloadId);
       notifyListeners();
+      _handleProgressChanged();
       return;
     }
     final active = _aria2cDownloadProcesses[info.downloadId];
@@ -136,6 +152,7 @@ class DownloadProvider extends ChangeNotifier {
         NotificationsService.cancelNotificationByTag(info.romSlug);
       }
       notifyListeners();
+      _handleProgressChanged();
     }
   }
 
@@ -155,6 +172,7 @@ class DownloadProvider extends ChangeNotifier {
       info.downloadInfo = Aria2cUtils.formatProgress(p);
       print("Download info: ${info.downloadInfo}");
       notifyListeners();
+      _handleProgressChanged();
       if (Platform.isAndroid) {
         NotificationsService.showNotification(
           title: 'Downloading ${rom.name}',
@@ -193,6 +211,7 @@ class DownloadProvider extends ChangeNotifier {
       Future.delayed(Duration(seconds: 2), () {
         _activeDownloadInfos.removeAt(_activeDownloadInfos.indexOf(info));
         notifyListeners();
+        _handleProgressChanged();
         NotificationsService.showNotification(
           title: 'Failed to download ${rom.name}',
           body:
@@ -201,6 +220,30 @@ class DownloadProvider extends ChangeNotifier {
           tag: rom.slug,
         );
       });
+    }
+  }
+
+  void _handleProgressChanged() {
+    if (FileSystemService.isDesktop) {
+      SystemTrayService.updateTooltip();
+    }
+    if (Platform.isWindows) {
+      print("Updating taskbar progress...");
+      if (_activeDownloadInfos.isEmpty) {
+        WindowsTaskbar.setProgressMode(TaskbarProgressMode.noProgress);
+        WindowsTaskbar.setProgress(0, 0);
+      } else {
+        var isIndeterminate = totalDownloadPercent.toInt() < 1;
+        var newStatus = isIndeterminate
+            ? TaskbarProgressMode.indeterminate
+            : TaskbarProgressMode.normal;
+        if (newStatus != _currentTaskbarProgressMode) {
+          WindowsTaskbar.setProgressMode(newStatus);
+        }
+        if (!isIndeterminate) {
+          WindowsTaskbar.setProgress(totalDownloadPercent.toInt(), 100);
+        }
+      }
     }
   }
 
@@ -238,6 +281,7 @@ class DownloadProvider extends ChangeNotifier {
       tag: rom.slug,
     );
     notifyListeners();
+    _handleProgressChanged();
     var fileExtension = SystemHelpers.getFileExtension(path).toLowerCase();
     var extractionEnabled =
         await SettingsService().get<bool>(SettingsKeys.ENABLE_EXTRACTION);
@@ -284,7 +328,6 @@ class DownloadProvider extends ChangeNotifier {
           progress: progress,
           rom: rom,
         );
-
         if (progress >= 100) {
           _onExtractionEnded(
             download: download,
@@ -335,6 +378,7 @@ class DownloadProvider extends ChangeNotifier {
           tag: rom.slug,
           androidActions: [AndroidNotificationsActionTypes.CancelDownload]);
     }
+    _handleProgressChanged();
   }
 
   void _onExtractionEnded({
@@ -375,6 +419,7 @@ class DownloadProvider extends ChangeNotifier {
         androidActions: [AndroidNotificationsActionTypes.PlayRomAction]);
 
     _activeDownloadInfos.remove(download);
+    _handleProgressChanged();
     notifyListeners();
   }
 }

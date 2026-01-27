@@ -1,32 +1,90 @@
-import 'dart:io';
-
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:tray_manager/tray_manager.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:yamata_launcher/app_router.dart';
 import 'package:yamata_launcher/app_theme.dart';
 import 'package:yamata_launcher/app_theme_dark.dart';
+import 'package:yamata_launcher/constants/settings_constants.dart';
 import 'package:yamata_launcher/providers/download_sources_provider.dart';
 import 'package:yamata_launcher/providers/library_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:yamata_launcher/models/console.dart';
 import 'package:yamata_launcher/providers/app_provider.dart';
 import 'package:yamata_launcher/providers/download_provider.dart';
-import 'package:yamata_launcher/ui/pages/downloads/downloads_page.dart';
-import 'package:yamata_launcher/ui/pages/library/library_page.dart';
-import 'package:yamata_launcher/ui/pages/explore/explore_page.dart';
-import 'package:yamata_launcher/ui/pages/settings/settings_page.dart';
-import 'package:yamata_launcher/ui/pages/splashcreen/splashcreen_page.dart';
-import 'package:yamata_launcher/ui/widgets/console_list.dart';
-import 'package:yamata_launcher/services/download_service.dart';
+import 'package:yamata_launcher/services/files_system_service.dart';
+import 'package:yamata_launcher/services/settings_service.dart';
+import 'package:yamata_launcher/services/system_tray_service.dart';
 
-import 'ui/layouts/main_layout.dart';
-
-void main() {
+void main() async {
+  if (FileSystemService.isDesktop) {
+    WidgetsFlutterBinding.ensureInitialized();
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = WindowOptions(
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      minimumSize: Size(800, 800),
+      title: "Yamata Launcher",
+      titleBarStyle: TitleBarStyle.normal,
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WindowListener, TrayListener {
+  // Window overrides
+  @override
+  void onWindowClose() async {
+    var closeToTray =
+        await SettingsService().get<bool>(SettingsKeys.CLOSE_TO_SYSTEM_TRAY);
+    if (closeToTray) {
+      windowManager.hide();
+    } else {
+      windowManager.destroy();
+    }
+  }
+
+  // Tray overrides
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) async {
+    await SystemTrayService.handleTrayMenuItemClick(menuItem);
+  }
+
+  @override
+  void onTrayIconMouseDown() async {
+    await SystemTrayService.handleTrayIconClick();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() async {
+    await SystemTrayService.handleTrayRightIconClick();
+  }
+
+  // Standard overrides
+  @override
+  void initState() {
+    super.initState();
+    windowManager.setPreventClose(true);
+    windowManager.addListener(this);
+    trayManager.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    trayManager.removeListener(this);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
