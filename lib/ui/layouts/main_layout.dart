@@ -42,10 +42,10 @@ class _MainLayoutState extends State<MainLayout> with TrayListener {
 
     Widget getLogo() {
       if (isMediumScreen) {
-        return AssetsService.getSvgImage("logo-orig", size: 65);
+        return AssetsService.getSvgImage("logo-orig", size: 70);
       } else {
         return Center(
-          child: AssetsService.getSvgImage("logo-orig", size: 100),
+          child: AssetsService.getSvgImage("logo-orig", size: 165, width: 200),
         );
       }
     }

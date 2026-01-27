@@ -23,8 +23,13 @@ class AssetsService {
   }
 
   static getSvgImage(String name, {double size = 24, double? width}) {
-    return SvgPicture.asset("assets/svgs/$name.svg",
-        semanticsLabel: 'Dart Logo', height: size, width: width ?? size);
+    return SvgPicture.asset(
+      "assets/svgs/$name.svg",
+      semanticsLabel: 'Dart Logo',
+      height: size,
+      width: width ?? size,
+      fit: BoxFit.contain,
+    );
   }
 
   static Image getConsoleIcon(String name,

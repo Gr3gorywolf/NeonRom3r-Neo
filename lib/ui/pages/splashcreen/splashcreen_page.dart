@@ -76,7 +76,7 @@ class _SplashcreenPageState extends State<SplashcreenPage> {
       duration: Duration(milliseconds: 2000),
       manualTrigger: true,
       controller: (controller) => AnimationHelper.handleAnimation(controller),
-      child: AssetsService.getSvgImage("logo-orig", size: 250),
+      child: AssetsService.getSvgImage("logo-orig", size: 330),
     )));
   }
 }
