@@ -37,13 +37,6 @@ AppDir:
     - libgdk-pixbuf2.0-bin
     - librsvg2-2
     exclude:
-    - libglib2.0-0
-    - libglib2.0-dev
-    - libselinux1
-    - libselinux-dev
-    - libmount1
-    - libpcre3
-    - libpcre2-8-0
     - humanity-icon-theme
     - hicolor-icon-theme
     - adwaita-icon-theme
