@@ -77,6 +77,12 @@ if(PLUGIN_BUNDLED_LIBRARIES)
   )
 endif()
 
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
+  install(FILES "${AOT_LIBRARY}"
+    DESTINATION "${BUNDLE_LIB_DIR}"
+  )
+endif()
+
 # Flutter assets
 install(DIRECTORY "${PROJECT_BUILD_DIR}/flutter_assets"
   DESTINATION "${BUNDLE_DATA_DIR}"
