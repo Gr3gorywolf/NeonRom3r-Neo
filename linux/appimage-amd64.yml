@@ -4,18 +4,11 @@ script:
   - rm -rf AppDir || true
   - mkdir -p AppDir
 
-  # Copy Flutter bundle
   - cp -r ../build/linux/x64/release/bundle/* AppDir/
 
-  # Move libs to usr/
-  - mkdir -p AppDir/usr
-  - mv AppDir/lib AppDir/usr/
-
-  # ---- FIX: ensure SVG pixbuf loader is bundled ----
   - mkdir -p AppDir/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
   - cp /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-svg.so AppDir/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/
 
-  # Icons (PNG)
   - mkdir -p AppDir/usr/share/icons/hicolor/64x64/apps
   - cp ../assets/images/logo.png AppDir/usr/share/icons/hicolor/64x64/apps/logo.png
 AppDir:
