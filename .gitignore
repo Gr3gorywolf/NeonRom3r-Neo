@@ -30,7 +30,10 @@
 .pub-cache/
 .pub/
 /build/
-
+/linux/AppDir/
+/linux/appimage-build/
+**.AppImage
+**.AppImage.zsync
 # Web related
 lib/generated_plugin_registrant.dart
 
