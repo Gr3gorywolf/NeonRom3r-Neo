@@ -63,6 +63,7 @@ dependencies:
       url: https://github.com/cbenhagen/tray_manager.git
       path: packages/tray_manager
       ref: fix-windows-context-menu-close
+  dmg: ^0.1.7
 
 
 dev_dependencies:
