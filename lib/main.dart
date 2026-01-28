@@ -21,7 +21,6 @@ void main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
-      backgroundColor: Colors.transparent,
       skipTaskbar: false,
       minimumSize: Size(800, 800),
       title: "Yamata Launcher",
