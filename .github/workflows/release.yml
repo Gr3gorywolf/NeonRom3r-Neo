@@ -33,47 +33,7 @@ jobs:
         env:
             FLUTTER_APP_PATH: .
         run: |
-          set -euo pipefail
-
-          cd "${FLUTTER_APP_PATH}"
-
-          CUR_VERSION="$(grep -E '^version:\s*' pubspec.yml | head -n1 | sed -E 's/^version:\s*//')"
-
-          if [[ -z "${CUR_VERSION}" ]]; then
-           echo "ERROR: Could not find 'version:' in pubspec.yml"
-           exit 1
-          fi
-
-          # Find previous tag (excluding current tag if present)
-          git fetch --tags --force
-
-          CURRENT_TAG="${GITHUB_REF_NAME:-}"
-          PREV_TAG="$(git tag --sort=-creatordate | grep -v "^${CURRENT_TAG}$" | head -n1 || true)"
-
-          if [[ -z "${PREV_TAG}" ]]; then
-            echo "No previous tag found. Allowing workflow to run."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "pubspec_version=${CUR_VERSION}" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Get pubspec version at previous tag
-          PREV_VERSION="$(git show "${PREV_TAG}:pubspec.yml" | grep -E '^version:\s*' | head -n1 | sed -E 's/^version:\s*//')"
-
-          echo "Current tag: ${CURRENT_TAG}"
-          echo "Previous tag: ${PREV_TAG}"
-          echo "Current pubspec version: ${CUR_VERSION}"
-          echo "Previous pubspec version: ${PREV_VERSION}"
-
-          if [[ "${CUR_VERSION}" == "${PREV_VERSION}" ]]; then
-            echo "pubspec version did NOT change vs previous tag -> skipping."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "pubspec version changed -> ok."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          fi
-
-          echo "pubspec_version=${CUR_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
 
   android:
     name: Android
