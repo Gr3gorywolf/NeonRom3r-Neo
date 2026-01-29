@@ -102,4 +102,11 @@ inno_bundle:
   id: e5a55a91-bdd4-4536-99be-05a564ae1882
   publisher: gr3gorywolf
   name: Yamata Launcher
+  languages:
+    - english
+    - french
+    - german
+    - spanish
+    - italian
+    - portuguese
   installer_icon: assets/icons/app.ico
