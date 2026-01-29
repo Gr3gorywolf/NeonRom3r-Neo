@@ -70,6 +70,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
+  inno_bundle: ^0.9.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -95,3 +96,10 @@ flutter:
 dependency_overrides:
   file: 6.1.4
   platform: 3.1.0
+
+
+inno_bundle:
+  id: e5a55a91-bdd4-4536-99be-05a564ae1882
+  publisher: gr3gorywolf
+  name: Yamata Launcher
+  installer_icon: assets/icons/app.ico

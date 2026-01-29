@@ -194,6 +194,14 @@ packages:
       url: "https://github.com/Iconica-Development/filesystem_picker.git"
     source: git
     version: "4.1.2"
+  fixnum:
+    dependency: transitive
+    description:
+      name: fixnum
+      sha256: b6dc7065e46c974bc7c5f143080a6764ec7a4be6da1285ececdc37be96de53be
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -302,6 +310,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.7.2"
+  inno_bundle:
+    dependency: "direct dev"
+    description:
+      name: inno_bundle
+      sha256: "544ca69ce64c5b06b346f328170ae407ca99605beab23ccc779b39acf6ba1c9a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.0"
   intl:
     dependency: transitive
     description:
@@ -900,6 +916,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.3"
+  uuid:
+    dependency: transitive
+    description:
+      name: uuid
+      sha256: a11b666489b1954e01d992f3d601b1804a33937b5a8fe677bd26b8a9f96f96e8
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.2"
   vector_graphics:
     dependency: transitive
     description:
