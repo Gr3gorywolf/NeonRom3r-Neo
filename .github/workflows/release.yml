@@ -122,10 +122,6 @@ jobs:
         shell: powershell
         run: flutter pub get
 
-      - name: Build Windows (flutter)
-        shell: powershell
-        run: flutter build windows --release
-
       - name: Package Windows (script)
         shell: cmd
         run: scripts\package-windows.bat
@@ -162,8 +158,6 @@ jobs:
             brew install pipx
             pipx ensurepath
             pipx install dmgbuild
-      - name: Build macOS (flutter)
-        run: flutter build macos --release
 
       - name: Package macOS (script)
         shell: bash
@@ -227,69 +221,6 @@ jobs:
         with:
           name: linux-x86-build-output
           path: ${{ env.FLUTTER_APP_PATH }}/build/output/**
-  linux_arm:
-        name: Linux arm64 (Ubuntu 22.04 ARM)
-        needs: [check_version_changed]
-        if: needs.check_version_changed.outputs.should_run == 'true'
-        runs-on: ubuntu-22.04-arm
-
-        env:
-            FLUTTER_APP_PATH: .
-
-        steps:
-        - uses: actions/checkout@v4
-
-        - name: Install deps (Linux ARM)
-          shell: bash
-          run: |
-            set -euo pipefail
-
-            FLUTTER_DIR="$HOME/flutter"
-
-            git clone https://github.com/flutter/flutter.git "$FLUTTER_DIR"
-            cd "$FLUTTER_DIR"
-            git checkout 3.22.0
-
-            # Make flutter available IMMEDIATELY
-            export PATH="$FLUTTER_DIR/bin:$PATH"
-
-            # Persist for next steps
-            echo "$FLUTTER_DIR/bin" >> $GITHUB_PATH
-
-            flutter doctor
-
-        - name: Install Flutter (ARM64 from source)
-          shell: bash
-          run: |
-            set -euo pipefail
-
-            git clone https://github.com/flutter/flutter.git "$HOME/flutter"
-            cd "$HOME/flutter"
-            git checkout 3.22.0
-
-            echo "$HOME/flutter/bin" >> $GITHUB_PATH
-
-            flutter doctor
-
-        - name: Pub get
-          shell: bash
-          run: |
-            cd "${FLUTTER_APP_PATH}"
-            flutter pub get
-
-        - name: Package Linux ARM (script)
-          shell: bash
-          run: |
-            cd "${FLUTTER_APP_PATH}"
-            bash scripts/package-linux.sh arm
-
-        - name: Upload artifact (Linux ARM)
-          uses: actions/upload-artifact@v4
-          env:
-            FLUTTER_APP_PATH: .
-          with:
-            name: linux-arm-build-output
-            path: ${{ env.FLUTTER_APP_PATH }}/build/output/**
   release:
     name: Create GitHub Release
     needs:
@@ -298,7 +229,6 @@ jobs:
       - windows
       - macos_arm
       - linux_x86
-      - linux_arm
     if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: ubuntu-22.04
     environment: release
