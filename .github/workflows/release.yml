@@ -30,14 +30,18 @@ jobs:
 
       - id: check
         shell: bash
+        env:
+            FLUTTER_APP_PATH: .
         run: |
           set -euo pipefail
 
-          # Extract current pubspec version (line: version: x.y.z+build)
+          cd "${FLUTTER_APP_PATH}"
+
           CUR_VERSION="$(grep -E '^version:\s*' pubspec.yml | head -n1 | sed -E 's/^version:\s*//')"
+
           if [[ -z "${CUR_VERSION}" ]]; then
-            echo "ERROR: Could not find 'version:' in pubspec.yml"
-            exit 1
+           echo "ERROR: Could not find 'version:' in pubspec.yml"
+           exit 1
           fi
 
           # Find previous tag (excluding current tag if present)
