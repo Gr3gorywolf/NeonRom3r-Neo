@@ -211,9 +211,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       # -----------------------------------------
       # Version bump (pubspec.yml)
       # -----------------------------------------
@@ -225,7 +222,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PUBSPEC="${{ env.FLUTTER_APP_PATH }}/pubspec.yml"
+          PUBSPEC="${{ env.FLUTTER_APP_PATH }}/pubspec.yaml"
 
           CURRENT_LINE="$(grep -E '^version:\s*' "$PUBSPEC")"
           CURRENT_VERSION="${CURRENT_LINE#version: }"
@@ -263,7 +260,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add pubspec.yml
+          git add pubspec.yaml
           git commit -m "chore(release): bump version to ${{ steps.bump.outputs.version }}"
           git tag "v${{ steps.bump.outputs.version }}"
           git push origin HEAD --tags
