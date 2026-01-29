@@ -6,7 +6,6 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    
 
 permissions:
   contents: write
@@ -16,29 +15,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check_version_changed:
-    name: Check pubspec version changed
-    runs-on: ubuntu-22.04
-    environment: release
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-      pubspec_version: ${{ steps.check.outputs.pubspec_version }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - id: check
-        shell: bash
-        env:
-            FLUTTER_APP_PATH: .
-        run: |
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
-
+  
   android:
     name: Android
-    needs: [check_version_changed]
-    if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: ubuntu-22.04
     environment: release
     steps:
@@ -101,8 +80,6 @@ jobs:
 
   windows:
     name: Windows
-    needs: [check_version_changed]
-    if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: windows-2022
     environment: release
     steps:
@@ -136,8 +113,6 @@ jobs:
 
   macos_arm:
     name: macOS arm64
-    needs: [check_version_changed]
-    if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: macos-14
     environment: release
     steps:
@@ -181,8 +156,6 @@ jobs:
 
   linux_x86:
     name: Linux x86_64 (Ubuntu 22.04)
-    needs: [check_version_changed]
-    if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: ubuntu-22.04
     environment: release
     steps:
@@ -224,30 +197,98 @@ jobs:
   release:
     name: Create GitHub Release
     needs:
-      - check_version_changed
       - android
       - windows
       - macos_arm
       - linux_x86
-    if: needs.check_version_changed.outputs.should_run == 'true'
     runs-on: ubuntu-22.04
     environment: release
+    permissions:
+      contents: write
+
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -----------------------------------------
+      # Version bump (pubspec.yml)
+      # -----------------------------------------
+      - name: Bump pubspec version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PUBSPEC="pubspec.yml"
+
+          CURRENT_LINE="$(grep -E '^version:\s*' "$PUBSPEC")"
+          CURRENT_VERSION="${CURRENT_LINE#version: }"
+
+          # Split version: x.y.z+build
+          BASE_VERSION="${CURRENT_VERSION%%+*}"
+          BUILD_NUMBER="${CURRENT_VERSION##*+}"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+
+          NEW_PATCH=$((PATCH + 1))
+          NEW_BUILD=$((BUILD_NUMBER + 1))
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}+${NEW_BUILD}"
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "New version:     $NEW_VERSION"
+
+          # Replace version line
+          sed -i "s/^version:.*/version: ${NEW_VERSION}/" "$PUBSPEC"
+
+          # Export outputs
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEW_VERSION%%+*}" >> "$GITHUB_OUTPUT"
+
+      # -----------------------------------------
+      # Commit & tag
+      # -----------------------------------------
+      - name: Commit version bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add pubspec.yml
+          git commit -m "chore(release): bump version to ${{ steps.bump.outputs.version }}"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin HEAD --tags
+
+      # -----------------------------------------
+      # Download artifacts
+      # -----------------------------------------
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
 
       - name: List files
-        shell: bash
-        run: |
-          set -euo pipefail
-          ls -R dist
+        run: ls -R dist
 
+      # -----------------------------------------
+      # Create GitHub Release
+      # -----------------------------------------
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "Release ${{ github.ref_name }} (pubspec: ${{ needs.check_version_changed.outputs.pubspec_version }})"
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: "Yamata Launcher v${{ steps.bump.outputs.version }}"
+          body: |
+            **Yamata Launcher v${{ steps.bump.outputs.version }}**
+
+            - Automatic release from CI
+            - Version bumped from pubspec.yml
+            - Multi-platform build included
+
           files: |
             dist/**/*
