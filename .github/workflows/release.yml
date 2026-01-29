@@ -229,7 +229,12 @@ jobs:
 
           # Split version: x.y.z+build
           BASE_VERSION="${CURRENT_VERSION%%+*}"
-          BUILD_NUMBER="${CURRENT_VERSION##*+}"
+
+          if [[ "$CURRENT_VERSION" == *"+"* ]]; then
+            BUILD_NUMBER="${CURRENT_VERSION##*+}"
+          else
+            BUILD_NUMBER=0
+          fi
 
           IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
 
