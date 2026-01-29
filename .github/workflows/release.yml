@@ -111,8 +111,8 @@ jobs:
           name: windows-build-output
           path: ${{ env.FLUTTER_APP_PATH }}/build/output/**
 
-  macos_arm:
-    name: macOS arm64
+  macos_universal:
+    name: macOS arm64 + x86_64 (Universal)
     runs-on: macos-14
     environment: release
     steps:
@@ -143,10 +143,10 @@ jobs:
         run: |
           set -euo pipefail
           if ls build/output/*.dmg >/dev/null 2>&1; then
-            mv build/output/*.dmg build/output/yamata-launcher-installer-arm64.dmg
+            mv build/output/*.dmg build/output/yamata-launcher-installer.dmg
           fi
 
-      - name: Upload artifact (macOS arm64)
+      - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         env:
           FLUTTER_APP_PATH: .
@@ -199,7 +199,7 @@ jobs:
     needs:
       - android
       - windows
-      - macos_arm
+      - macos_universal
       - linux_x86
     runs-on: ubuntu-22.04
     environment: release
@@ -220,10 +220,12 @@ jobs:
       - name: Bump pubspec version
         id: bump
         shell: bash
+        env:
+          FLUTTER_APP_PATH: .
         run: |
           set -euo pipefail
 
-          PUBSPEC="pubspec.yml"
+          PUBSPEC="${{ env.FLUTTER_APP_PATH }}/pubspec.yml"
 
           CURRENT_LINE="$(grep -E '^version:\s*' "$PUBSPEC")"
           CURRENT_VERSION="${CURRENT_LINE#version: }"
@@ -254,6 +256,8 @@ jobs:
       # -----------------------------------------
       - name: Commit version bump
         shell: bash
+        env:
+          FLUTTER_APP_PATH: .
         run: |
           set -euo pipefail
           git config user.name "github-actions"
